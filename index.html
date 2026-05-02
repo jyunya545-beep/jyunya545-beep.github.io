@@ -3,293 +3,280 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>アルネの開発室｜制御設計エンジニアのAI活用ポートフォリオ</title>
-  <meta name="description" content="制御設計エンジニアがAIを使って開発した無料Webツール・アプリの公開ページ。PLCスケーリング計算、WBGT熱中症判定など。">
+  <title>とある制御屋の備忘録</title>
+  <meta name="description" content="制御設計エンジニアによるAI活用ツール・アプリ公開サイト。PLCツール・WBGT計算・ライフプランシミュレーターなど無料で公開中。">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0f1117;
-      --bg2: #181c27;
-      --bg3: #1e2235;
-      --border: #2a2f45;
-      --text: #f1f3f9;
-      --text2: #a0a8c0;
-      --muted: #626880;
-      --accent: #6c8fff;
-      --accent-dark: #4d6ef5;
-      --accent-glow: rgba(108,143,255,.15);
-      --green: #34d399;
-      --green-bg: rgba(52,211,153,.1);
-      --orange: #fb923c;
-      --orange-bg: rgba(251,146,60,.1);
-      --card: #181c27;
+      --indigo: #6366f1; --violet: #a855f7; --rose: #ec4899;
+      --text: #1e1b4b; --text2: #4c4980; --muted: #8b87c0;
+      --bg: #f3f4ff; --card: rgba(255,255,255,.65); --border: rgba(255,255,255,.85);
+      --shadow: rgba(99,102,241,.1);
     }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Segoe UI','Hiragino Sans','Yu Gothic UI',sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    body { font-family: 'Segoe UI','Hiragino Sans','Yu Gothic UI',sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; overflow-x: hidden; }
 
-    /* ── TOPBAR ── */
-    .topbar { position: sticky; top: 0; z-index: 100; background: rgba(15,17,23,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-    .topbar-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; }
-    .topbar-logo { font-size: .92rem; font-weight: 800; color: var(--accent); letter-spacing: .02em; }
-    .topbar-nav { display: flex; gap: 24px; }
-    .topbar-nav a { font-size: .82rem; color: var(--text2); text-decoration: none; transition: color .15s; }
-    .topbar-nav a:hover { color: var(--text); }
+    /* ── BACKGROUND ORBS ── */
+    .orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+    .orb-1 { width: 600px; height: 600px; background: rgba(99,102,241,.18); top: -200px; left: -150px; animation: drift 14s ease-in-out infinite; }
+    .orb-2 { width: 500px; height: 500px; background: rgba(168,85,247,.13); bottom: -100px; right: -100px; animation: drift 11s ease-in-out infinite reverse 2s; }
+    .orb-3 { width: 350px; height: 350px; background: rgba(236,72,153,.1); top: 40%; left: 45%; animation: drift 16s ease-in-out infinite 4s; }
+    @keyframes drift { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(25px,-18px) scale(1.04)} 66%{transform:translate(-15px,22px) scale(.97)} }
 
-    /* ── HERO ── */
-    .hero { position: relative; overflow: hidden; padding: 96px 24px 80px; }
-    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(108,143,255,.18) 0%, transparent 70%); pointer-events: none; }
-    .hero-inner { max-width: 1000px; margin: 0 auto; position: relative; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-glow); border: 1px solid rgba(108,143,255,.3); border-radius: 100px; padding: 5px 14px; font-size: .73rem; font-weight: 700; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 24px; }
-    .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-    .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; line-height: 1.15; margin-bottom: 20px; }
-    .hero h1 span { background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .hero p { font-size: 1.05rem; color: var(--text2); max-width: 560px; line-height: 1.85; margin-bottom: 36px; }
-    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; font-size: .88rem; font-weight: 700; padding: 12px 24px; border-radius: 8px; text-decoration: none; transition: background .15s, transform .1s; }
-    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
-    .btn-ghost { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text2); font-size: .88rem; font-weight: 600; padding: 12px 24px; border-radius: 8px; border: 1px solid var(--border); text-decoration: none; transition: border-color .15s, color .15s; }
-    .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+    /* ── HEADER ── */
+    header { position: sticky; top: 0; z-index: 100; background: rgba(243,244,255,.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,.7); }
+    .header-inner { max-width: 1060px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 54px; position: relative; z-index: 1; }
+    .header-logo { font-size: .9rem; font-weight: 800; background: linear-gradient(135deg, var(--indigo), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .header-nav { display: flex; gap: 20px; }
+    .header-nav a { font-size: .8rem; font-weight: 600; color: var(--text2); text-decoration: none; transition: color .15s; }
+    .header-nav a:hover { color: var(--indigo); }
 
-    .hero-stats { display: flex; gap: 32px; margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border); flex-wrap: wrap; }
-    .stat { }
-    .stat .sv { font-size: 1.8rem; font-weight: 900; color: var(--text); }
-    .stat .sl { font-size: .75rem; color: var(--muted); margin-top: 2px; letter-spacing: .04em; }
+    /* ── LAYOUT ── */
+    .page { max-width: 1060px; margin: 0 auto; padding: 36px 24px 72px; display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; position: relative; z-index: 1; }
 
-    /* ── SECTION ── */
-    section { max-width: 1000px; margin: 0 auto; padding: 72px 24px; }
-    .sec-label { font-size: .72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
-    .sec-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; }
-    .sec-desc { font-size: .9rem; color: var(--text2); max-width: 560px; line-height: 1.75; margin-bottom: 40px; }
-    .divider { border: none; border-top: 1px solid var(--border); }
+    /* ── GLASS CARD BASE ── */
+    .glass { background: var(--card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 22px; box-shadow: 0 8px 32px var(--shadow), inset 0 1px 0 rgba(255,255,255,.9); }
+
+    /* ── PROFILE CARD ── */
+    .profile { padding: 28px 24px; position: sticky; top: 74px; animation: fadeUp .5s ease both; }
+    .avatar { width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, var(--indigo), var(--violet)); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(99,102,241,.3); }
+    .profile-name { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+    .profile-handle { font-size: .75rem; color: var(--muted); margin-bottom: 12px; }
+    .profile-bio { font-size: .8rem; color: var(--text2); line-height: 1.75; margin-bottom: 16px; }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+    .tag { font-size: .68rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; border: 1px solid; }
+    .tag-indigo { background: rgba(99,102,241,.08); color: var(--indigo); border-color: rgba(99,102,241,.2); }
+    .tag-violet { background: rgba(168,85,247,.08); color: var(--violet); border-color: rgba(168,85,247,.2); }
+    .tag-rose   { background: rgba(236,72,153,.08); color: var(--rose);   border-color: rgba(236,72,153,.2); }
+    .tag-slate  { background: rgba(100,116,139,.07); color: #64748b;      border-color: rgba(100,116,139,.2); }
+    .divider-line { border: none; border-top: 1px solid rgba(99,102,241,.1); margin-bottom: 16px; }
+    .social-links { display: flex; flex-direction: column; gap: 8px; }
+    .social-link { display: flex; align-items: center; gap: 10px; text-decoration: none; padding: 9px 12px; border-radius: 12px; border: 1px solid rgba(99,102,241,.15); background: rgba(99,102,241,.04); transition: all .15s; }
+    .social-link:hover { background: rgba(99,102,241,.1); border-color: rgba(99,102,241,.3); transform: translateX(3px); }
+    .social-link .sl-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .social-link .sl-text { font-size: .78rem; font-weight: 600; color: var(--text2); }
+    .social-link .sl-arrow { margin-left: auto; font-size: .72rem; color: var(--muted); }
+
+    /* ── RIGHT COLUMN ── */
+    .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── SECTION HEADER ── */
+    .sec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .sec-header h2 { font-size: .95rem; font-weight: 800; }
+    .sec-chip { font-size: .68rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: linear-gradient(135deg, var(--indigo), var(--violet)); color: #fff; }
 
     /* ── TOOL CARDS ── */
-    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-    .tool-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 14px; transition: border-color .15s, transform .15s, box-shadow .15s; }
-    .tool-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,143,255,.12); }
-    .tc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .tc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
-    .ic-orange { background: var(--orange-bg); }
-    .ic-blue   { background: var(--accent-glow); }
-    .ic-green  { background: var(--green-bg); }
-    .tc-badge { font-size: .68rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
-    .badge-live { background: var(--green-bg); color: var(--green); }
-    .badge-soon { background: rgba(168,139,250,.1); color: #a78bfa; }
-    .tc-title { font-size: 1rem; font-weight: 700; line-height: 1.3; }
-    .tc-desc { font-size: .82rem; color: var(--text2); line-height: 1.7; flex: 1; }
-    .tc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .tc-tag { font-size: .7rem; color: var(--muted); background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
-    .tc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
-    .tc-link { font-size: .78rem; font-weight: 600; color: var(--accent); }
-    .tc-arrow { font-size: .8rem; color: var(--muted); transition: transform .15s; }
-    .tool-card:hover .tc-arrow { transform: translateX(4px); }
+    .tools-section { animation: fadeUp .5s ease .1s both; }
+    .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tool-card { display: flex; flex-direction: column; gap: 10px; padding: 20px; text-decoration: none; color: var(--text); transition: transform .2s, box-shadow .2s, border-color .2s; }
+    .tool-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px var(--shadow), inset 0 1px 0 rgba(255,255,255,.9); border-color: rgba(99,102,241,.3); }
+    .tc-top { display: flex; align-items: center; justify-content: space-between; }
+    .tc-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .ic-indigo { background: rgba(99,102,241,.12); }
+    .ic-violet { background: rgba(168,85,247,.12); }
+    .ic-rose   { background: rgba(236,72,153,.12); }
+    .ic-emerald{ background: rgba(16,185,129,.12); }
+    .tc-live { font-size: .65rem; font-weight: 700; padding: 3px 9px; border-radius: 100px; background: rgba(16,185,129,.1); color: #059669; border: 1px solid rgba(16,185,129,.2); }
+    .tc-soon { font-size: .65rem; font-weight: 700; padding: 3px 9px; border-radius: 100px; background: rgba(168,85,247,.1); color: var(--violet); border: 1px solid rgba(168,85,247,.2); }
+    .tc-title { font-size: .9rem; font-weight: 800; line-height: 1.3; }
+    .tc-desc { font-size: .77rem; color: var(--text2); line-height: 1.7; flex: 1; }
+    .tc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid rgba(99,102,241,.08); }
+    .tc-url { font-size: .7rem; color: var(--muted); font-family: 'Consolas', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+    .tc-open { font-size: .75rem; font-weight: 700; background: linear-gradient(135deg, var(--indigo), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; align-items: center; gap: 3px; transition: gap .15s; }
+    .tool-card:hover .tc-open { gap: 6px; }
 
-    /* ── ABOUT ── */
-    .about-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
-    .about-text h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 14px; }
-    .about-text p { font-size: .88rem; color: var(--text2); line-height: 1.85; margin-bottom: 16px; }
-    .about-certs { display: flex; flex-direction: column; gap: 8px; }
-    .cert-item { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--text2); }
-    .cert-item::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
-
-    .about-cards { display: flex; flex-direction: column; gap: 12px; }
-    .about-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
-    .about-card .ac-label { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
-    .about-card .ac-val { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .about-card .ac-desc { font-size: .78rem; color: var(--text2); line-height: 1.6; }
-
-    /* ── AI INFO ── */
-    .coming-soon { background: var(--bg2); border: 1px dashed var(--border); border-radius: 16px; padding: 48px 32px; text-align: center; }
-    .coming-soon .cs-icon { font-size: 2.5rem; margin-bottom: 16px; }
-    .coming-soon h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
-    .coming-soon p { font-size: .85rem; color: var(--text2); max-width: 440px; margin: 0 auto; line-height: 1.75; }
+    /* ── LINKS SECTION ── */
+    .links-section { animation: fadeUp .5s ease .2s both; }
+    .links-list { display: flex; flex-direction: column; gap: 8px; }
+    .link-item { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--text); padding: 14px 18px; transition: transform .15s, box-shadow .15s, border-color .15s; }
+    .link-item:hover { transform: translateX(4px); box-shadow: 0 8px 28px var(--shadow); border-color: rgba(99,102,241,.25); }
+    .li-icon { font-size: 1.2rem; width: 36px; text-align: center; flex-shrink: 0; }
+    .li-body { flex: 1; min-width: 0; }
+    .li-title { font-size: .85rem; font-weight: 700; }
+    .li-desc { font-size: .74rem; color: var(--text2); margin-top: 1px; }
+    .li-url { font-size: .7rem; color: var(--muted); font-family: 'Consolas', monospace; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .li-arrow { font-size: .8rem; color: var(--muted); flex-shrink: 0; transition: transform .15s; }
+    .link-item:hover .li-arrow { transform: translateX(3px); }
 
     /* ── FOOTER ── */
-    footer { border-top: 1px solid var(--border); }
-    .footer-inner { max-width: 1000px; margin: 0 auto; padding: 32px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-    .footer-copy { font-size: .78rem; color: var(--muted); }
-    .footer-links { display: flex; gap: 20px; }
-    .footer-links a { font-size: .78rem; color: var(--muted); text-decoration: none; transition: color .15s; }
-    .footer-links a:hover { color: var(--text2); }
+    footer { text-align: center; padding: 32px 24px; position: relative; z-index: 1; }
+    .footer-text { font-size: .75rem; color: var(--muted); }
+    .footer-text span { background: linear-gradient(135deg, var(--indigo), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700; }
 
-    @media (max-width: 640px) {
-      .about-layout { grid-template-columns: 1fr; gap: 32px; }
-      .topbar-nav { display: none; }
-      .hero-stats { gap: 20px; }
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width: 700px) {
+      .page { grid-template-columns: 1fr; }
+      .profile { position: static; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .header-nav { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="topbar-inner">
-    <div class="topbar-logo">⚙️ アルネの開発室</div>
-    <nav class="topbar-nav">
-      <a href="#tools">ツール一覧</a>
-      <a href="#about">プロフィール</a>
-      <a href="#info">AI情報</a>
+<!-- Background orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <span class="header-logo">⚙️ とある制御屋の備忘録</span>
+    <nav class="header-nav">
+      <a href="#tools">ツール</a>
+      <a href="#links">リンク</a>
     </nav>
   </div>
-</div>
+</header>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-inner">
-    <div class="hero-badge">Portfolio & Free Tools</div>
-    <h1>制御設計エンジニアが<br><span>AIと一緒に作った</span><br>無料ツール集</h1>
-    <p>現場で「あったらいいな」を形にしています。PLC・電気・労務・ライフプランなど、実務に根ざした無料Webツールを公開中。</p>
-    <div class="hero-actions">
-      <a class="btn-primary" href="#tools">ツールを見る →</a>
-      <a class="btn-ghost" href="#about">作った人について</a>
+<div class="page">
+
+  <!-- ── PROFILE ── -->
+  <aside>
+    <div class="glass profile">
+      <div class="avatar">⚙️</div>
+      <div class="profile-name">とある制御屋</div>
+      <div class="profile-handle">制御設計エンジニア × AI開発</div>
+      <p class="profile-bio">AutoCAD・GX Worksで制御設計をしながら、Claude CodeでWebツール・アプリを開発中。現場の「あったらいいな」を形にしています。</p>
+      <div class="skill-tags">
+        <span class="tag tag-indigo">PLC</span>
+        <span class="tag tag-indigo">FA / 制御設計</span>
+        <span class="tag tag-violet">Claude Code</span>
+        <span class="tag tag-violet">AI開発</span>
+        <span class="tag tag-slate">基本情報技術者</span>
+        <span class="tag tag-slate">FP3級</span>
+        <span class="tag tag-rose">副業</span>
+      </div>
+      <hr class="divider-line">
+      <div class="social-links">
+        <a class="social-link" href="https://github.com/jyunya545-beep" target="_blank" rel="noopener">
+          <span class="sl-icon">🐙</span>
+          <span class="sl-text">GitHub</span>
+          <span class="sl-arrow">↗</span>
+        </a>
+        <a class="social-link" href="#tools">
+          <span class="sl-icon">🛠️</span>
+          <span class="sl-text">公開ツール一覧</span>
+          <span class="sl-arrow">↓</span>
+        </a>
+      </div>
     </div>
-    <div class="hero-stats">
-      <div class="stat"><div class="sv">3</div><div class="sl">公開済みツール</div></div>
-      <div class="stat"><div class="sv">無料</div><div class="sl">すべて無料・会員登録不要</div></div>
-      <div class="stat"><div class="sv">HTML/JS</div><div class="sl">インストール不要・ブラウザで動作</div></div>
+  </aside>
+
+  <!-- ── RIGHT COLUMN ── -->
+  <div class="right-col">
+
+    <!-- Tools -->
+    <div class="tools-section" id="tools">
+      <div class="sec-header">
+        <h2>公開ツール</h2>
+        <span class="sec-chip">3 Tools</span>
+      </div>
+      <div class="tools-grid">
+
+        <a class="glass tool-card" href="https://jyunya545-beep.github.io/plc-scaling-tool/" target="_blank" rel="noopener">
+          <div class="tc-top">
+            <div class="tc-icon ic-indigo">⚡</div>
+            <span class="tc-live">公開中</span>
+          </div>
+          <div class="tc-title">PLCアナログスケーリング計算ツール</div>
+          <div class="tc-desc">4-20mA / 0-10V ↔ PLC内部値 ↔ 物理量を相互変換。FA・制御盤設計の現場向け。</div>
+          <div class="tc-footer">
+            <span class="tc-url">plc-scaling-tool/</span>
+            <span class="tc-open">開く →</span>
+          </div>
+        </a>
+
+        <a class="glass tool-card" href="https://jyunya545-beep.github.io/wbgt-heatstroke-tool/" target="_blank" rel="noopener">
+          <div class="tc-top">
+            <div class="tc-icon ic-rose">🌡️</div>
+            <span class="tc-live">公開中</span>
+          </div>
+          <div class="tc-title">職場の熱中症対策 完全ガイド</div>
+          <div class="tc-desc">2025年義務化対応。WBGT推定・罰則解説・対応チェックリストを1ページに集約。</div>
+          <div class="tc-footer">
+            <span class="tc-url">wbgt-heatstroke-tool/</span>
+            <span class="tc-open">開く →</span>
+          </div>
+        </a>
+
+        <a class="glass tool-card" href="https://jyunya545-beep.github.io/lifeplan-simulator/" target="_blank" rel="noopener">
+          <div class="tc-top">
+            <div class="tc-icon ic-violet">📊</div>
+            <span class="tc-live">公開中</span>
+          </div>
+          <div class="tc-title">ライフプランシミュレーター</div>
+          <div class="tc-desc">年収・ライフイベントから老後資産推移をグラフ表示。年金・住宅ローン・教育費を加味。</div>
+          <div class="tc-footer">
+            <span class="tc-url">lifeplan-simulator/</span>
+            <span class="tc-open">開く →</span>
+          </div>
+        </a>
+
+        <div class="glass tool-card" style="cursor:default; opacity:.6;">
+          <div class="tc-top">
+            <div class="tc-icon ic-emerald">🎮</div>
+            <span class="tc-soon">開発予定</span>
+          </div>
+          <div class="tc-title">オリジナルゲーム</div>
+          <div class="tc-desc">シンプルゲーム＋オリジナルキャラ・BGM付き。開発予定。</div>
+          <div class="tc-footer">
+            <span class="tc-url">coming soon</span>
+            <span class="tc-open" style="-webkit-text-fill-color:var(--muted);">準備中</span>
+          </div>
+        </div>
+
+      </div>
     </div>
+
+    <!-- Links -->
+    <div class="links-section" id="links">
+      <div class="sec-header">
+        <h2>リンク</h2>
+      </div>
+      <div class="links-list">
+
+        <a class="glass link-item" href="https://github.com/jyunya545-beep" target="_blank" rel="noopener">
+          <span class="li-icon">🐙</span>
+          <div class="li-body">
+            <div class="li-title">GitHub</div>
+            <div class="li-desc">公開ツールのソースコード・リポジトリ一覧</div>
+            <div class="li-url">github.com/jyunya545-beep</div>
+          </div>
+          <span class="li-arrow">↗</span>
+        </a>
+
+        <div class="glass link-item" style="opacity:.5; cursor:default;">
+          <span class="li-icon">𝕏</span>
+          <div class="li-body">
+            <div class="li-title">X（旧Twitter）</div>
+            <div class="li-desc">開発ログ・AI情報を発信予定</div>
+            <div class="li-url">近日公開予定</div>
+          </div>
+          <span class="li-arrow">–</span>
+        </div>
+
+        <div class="glass link-item" style="opacity:.5; cursor:default;">
+          <span class="li-icon">📝</span>
+          <div class="li-body">
+            <div class="li-title">Note</div>
+            <div class="li-desc">ツール作成の裏側・AI活用記事を投稿予定</div>
+            <div class="li-url">近日公開予定</div>
+          </div>
+          <span class="li-arrow">–</span>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </div>
 
-<hr class="divider">
-
-<!-- TOOLS -->
-<section id="tools">
-  <div class="sec-label">Free Tools</div>
-  <h2 class="sec-title">公開中のツール</h2>
-  <p class="sec-desc">すべてブラウザで動作します。インストール・会員登録・利用料は一切不要です。</p>
-
-  <div class="tools-grid">
-
-    <!-- PLC Tool -->
-    <a class="tool-card" href="https://jyunya545-beep.github.io/plc-scaling-tool/" target="_blank" rel="noopener">
-      <div class="tc-top">
-        <div class="tc-icon ic-orange">⚡</div>
-        <span class="tc-badge badge-live">公開中</span>
-      </div>
-      <div class="tc-title">PLCアナログスケーリング計算ツール</div>
-      <div class="tc-desc">4-20mA / 0-10V などのアナログ信号とPLC内部値・物理量を相互変換。逆算・警報値・ST言語の計算式コピーにも対応。FA・制御盤設計の現場向け。</div>
-      <div class="tc-tags">
-        <span class="tc-tag">PLC</span>
-        <span class="tc-tag">制御設計</span>
-        <span class="tc-tag">アナログ信号</span>
-        <span class="tc-tag">FA</span>
-      </div>
-      <div class="tc-footer">
-        <span class="tc-link">ツールを開く</span>
-        <span class="tc-arrow">→</span>
-      </div>
-    </a>
-
-    <!-- WBGT Tool -->
-    <a class="tool-card" href="https://jyunya545-beep.github.io/wbgt-heatstroke-tool/" target="_blank" rel="noopener">
-      <div class="tc-top">
-        <div class="tc-icon ic-orange">🌡️</div>
-        <span class="tc-badge badge-live">公開中</span>
-      </div>
-      <div class="tc-title">職場の熱中症対策 完全ガイド</div>
-      <div class="tc-desc">2025年6月施行の改正労働安全衛生規則に対応。義務化の背景・罰則・具体的な対応義務を解説。気温・湿度からWBGTを推定する計算ツールと対応チェックリスト付き。</div>
-      <div class="tc-tags">
-        <span class="tc-tag">熱中症</span>
-        <span class="tc-tag">WBGT</span>
-        <span class="tc-tag">労務管理</span>
-        <span class="tc-tag">2025年義務化</span>
-      </div>
-      <div class="tc-footer">
-        <span class="tc-link">ツールを開く</span>
-        <span class="tc-arrow">→</span>
-      </div>
-    </a>
-
-    <!-- Lifeplan -->
-    <a class="tool-card" href="https://jyunya545-beep.github.io/lifeplan-simulator/" target="_blank" rel="noopener">
-      <div class="tc-top">
-        <div class="tc-icon ic-blue">📊</div>
-        <span class="tc-badge badge-live">公開中</span>
-      </div>
-      <div class="tc-title">ライフプランシミュレーター</div>
-      <div class="tc-desc">年収・支出・ライフイベントを入力して老後の資産推移をシミュレーション。住宅ローン・教育費・年金を加味した資産グラフと老後診断をブラウザで確認。</div>
-      <div class="tc-tags">
-        <span class="tc-tag">ライフプラン</span>
-        <span class="tc-tag">老後資金</span>
-        <span class="tc-tag">年金</span>
-        <span class="tc-tag">FP</span>
-      </div>
-      <div class="tc-footer">
-        <span class="tc-link">ツールを開く</span>
-        <span class="tc-arrow">→</span>
-      </div>
-    </a>
-
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- ABOUT -->
-<section id="about">
-  <div class="sec-label">Profile</div>
-  <h2 class="sec-title">作った人について</h2>
-  <p class="sec-desc">制御設計エンジニアとして働きながら、AIを使った開発を副業・趣味として進めています。</p>
-
-  <div class="about-layout">
-    <div class="about-text">
-      <h3>アルネ</h3>
-      <p>AutoCAD で回路図を作り、GX Works でシーケンスプログラムを組む、制御設計エンジニアです。「業務中に毎回手計算するのが面倒」「自動化したい」という現場の感覚を元にツールを作っています。</p>
-      <p>AIと組み合わせることで、1人では難しかった規模の開発が現実的になってきました。今は知識とスキルの蓄積フェーズ。徐々に本格的なアプリへと展開していきます。</p>
-      <h3 style="margin-top:24px; margin-bottom:12px;">保有資格</h3>
-      <div class="about-certs">
-        <div class="cert-item">基本情報技術者</div>
-        <div class="cert-item">ITパスポート</div>
-        <div class="cert-item">情報セキュリティマネジメント</div>
-        <div class="cert-item">FP3級</div>
-        <div class="cert-item">日商簿記3級</div>
-      </div>
-    </div>
-    <div class="about-cards">
-      <div class="about-card">
-        <div class="ac-label">専門領域</div>
-        <div class="ac-val">制御設計 / FA / PLC</div>
-        <div class="ac-desc">シーケンス制御・アナログ信号処理・電気回路設計が得意分野。制御盤の設計から現場調整まで担当。</div>
-      </div>
-      <div class="about-card">
-        <div class="ac-label">開発スタイル</div>
-        <div class="ac-val">AI × 実務知識</div>
-        <div class="ac-desc">Claude Code をAI CEOとして活用。市場調査・開発・公開までのサイクルを回しながら知見を蓄積中。</div>
-      </div>
-      <div class="about-card">
-        <div class="ac-label">目指すもの</div>
-        <div class="ac-val">供給が少なく、需要のあるツール</div>
-        <div class="ac-desc">AIが量産できるコンテンツではなく、実務経験に裏打ちされた「本当に使えるツール」の開発を目標にしています。</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider">
-
-<!-- AI INFO -->
-<section id="info">
-  <div class="sec-label">AI Information</div>
-  <h2 class="sec-title">AI活用情報の発信</h2>
-  <p class="sec-desc">ツール開発で得た知見・AI活用のTipsを発信予定です。</p>
-  <div class="coming-soon">
-    <div class="cs-icon">📝</div>
-    <h3>記事・情報を準備中です</h3>
-    <p>Claude Code の使い方、AIを使ったツール開発の実録、制御設計×AIの可能性など、実体験ベースの情報を発信していきます。しばらくお待ちください。</p>
-  </div>
-</section>
-
-<!-- FOOTER -->
 <footer>
-  <div class="footer-inner">
-    <div class="footer-copy">© 2026 アルネの開発室</div>
-    <div class="footer-links">
-      <a href="https://github.com/jyunya545-beep" target="_blank" rel="noopener">GitHub</a>
-      <a href="#tools">ツール一覧</a>
-      <a href="#about">プロフィール</a>
-    </div>
-  </div>
+  <p class="footer-text">© 2026 <span>とある制御屋の備忘録</span> — All tools are free to use.</p>
 </footer>
 
 </body>
