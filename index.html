@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アルネの開発室｜制御設計エンジニアのAI活用ポートフォリオ</title>
+  <meta name="description" content="制御設計エンジニアがAIを使って開発した無料Webツール・アプリの公開ページ。PLCスケーリング計算、WBGT熱中症判定など。">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117;
+      --bg2: #181c27;
+      --bg3: #1e2235;
+      --border: #2a2f45;
+      --text: #f1f3f9;
+      --text2: #a0a8c0;
+      --muted: #626880;
+      --accent: #6c8fff;
+      --accent-dark: #4d6ef5;
+      --accent-glow: rgba(108,143,255,.15);
+      --green: #34d399;
+      --green-bg: rgba(52,211,153,.1);
+      --orange: #fb923c;
+      --orange-bg: rgba(251,146,60,.1);
+      --card: #181c27;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Segoe UI','Hiragino Sans','Yu Gothic UI',sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* ── TOPBAR ── */
+    .topbar { position: sticky; top: 0; z-index: 100; background: rgba(15,17,23,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .topbar-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; }
+    .topbar-logo { font-size: .92rem; font-weight: 800; color: var(--accent); letter-spacing: .02em; }
+    .topbar-nav { display: flex; gap: 24px; }
+    .topbar-nav a { font-size: .82rem; color: var(--text2); text-decoration: none; transition: color .15s; }
+    .topbar-nav a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero { position: relative; overflow: hidden; padding: 96px 24px 80px; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(108,143,255,.18) 0%, transparent 70%); pointer-events: none; }
+    .hero-inner { max-width: 1000px; margin: 0 auto; position: relative; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-glow); border: 1px solid rgba(108,143,255,.3); border-radius: 100px; padding: 5px 14px; font-size: .73rem; font-weight: 700; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 24px; }
+    .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; line-height: 1.15; margin-bottom: 20px; }
+    .hero h1 span { background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { font-size: 1.05rem; color: var(--text2); max-width: 560px; line-height: 1.85; margin-bottom: 36px; }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; font-size: .88rem; font-weight: 700; padding: 12px 24px; border-radius: 8px; text-decoration: none; transition: background .15s, transform .1s; }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-ghost { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text2); font-size: .88rem; font-weight: 600; padding: 12px 24px; border-radius: 8px; border: 1px solid var(--border); text-decoration: none; transition: border-color .15s, color .15s; }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+
+    .hero-stats { display: flex; gap: 32px; margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .stat { }
+    .stat .sv { font-size: 1.8rem; font-weight: 900; color: var(--text); }
+    .stat .sl { font-size: .75rem; color: var(--muted); margin-top: 2px; letter-spacing: .04em; }
+
+    /* ── SECTION ── */
+    section { max-width: 1000px; margin: 0 auto; padding: 72px 24px; }
+    .sec-label { font-size: .72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+    .sec-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; }
+    .sec-desc { font-size: .9rem; color: var(--text2); max-width: 560px; line-height: 1.75; margin-bottom: 40px; }
+    .divider { border: none; border-top: 1px solid var(--border); }
+
+    /* ── TOOL CARDS ── */
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .tool-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 14px; transition: border-color .15s, transform .15s, box-shadow .15s; }
+    .tool-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,143,255,.12); }
+    .tc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .tc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .ic-orange { background: var(--orange-bg); }
+    .ic-blue   { background: var(--accent-glow); }
+    .ic-green  { background: var(--green-bg); }
+    .tc-badge { font-size: .68rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+    .badge-live { background: var(--green-bg); color: var(--green); }
+    .badge-soon { background: rgba(168,139,250,.1); color: #a78bfa; }
+    .tc-title { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+    .tc-desc { font-size: .82rem; color: var(--text2); line-height: 1.7; flex: 1; }
+    .tc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tc-tag { font-size: .7rem; color: var(--muted); background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
+    .tc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
+    .tc-link { font-size: .78rem; font-weight: 600; color: var(--accent); }
+    .tc-arrow { font-size: .8rem; color: var(--muted); transition: transform .15s; }
+    .tool-card:hover .tc-arrow { transform: translateX(4px); }
+
+    /* ── ABOUT ── */
+    .about-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .about-text h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 14px; }
+    .about-text p { font-size: .88rem; color: var(--text2); line-height: 1.85; margin-bottom: 16px; }
+    .about-certs { display: flex; flex-direction: column; gap: 8px; }
+    .cert-item { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--text2); }
+    .cert-item::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+    .about-cards { display: flex; flex-direction: column; gap: 12px; }
+    .about-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+    .about-card .ac-label { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+    .about-card .ac-val { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .about-card .ac-desc { font-size: .78rem; color: var(--text2); line-height: 1.6; }
+
+    /* ── AI INFO ── */
+    .coming-soon { background: var(--bg2); border: 1px dashed var(--border); border-radius: 16px; padding: 48px 32px; text-align: center; }
+    .coming-soon .cs-icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .coming-soon h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+    .coming-soon p { font-size: .85rem; color: var(--text2); max-width: 440px; margin: 0 auto; line-height: 1.75; }
+
+    /* ── FOOTER ── */
+    footer { border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1000px; margin: 0 auto; padding: 32px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer-copy { font-size: .78rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: .78rem; color: var(--muted); text-decoration: none; transition: color .15s; }
+    .footer-links a:hover { color: var(--text2); }
+
+    @media (max-width: 640px) {
+      .about-layout { grid-template-columns: 1fr; gap: 32px; }
+      .topbar-nav { display: none; }
+      .hero-stats { gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-logo">⚙️ アルネの開発室</div>
+    <nav class="topbar-nav">
+      <a href="#tools">ツール一覧</a>
+      <a href="#about">プロフィール</a>
+      <a href="#info">AI情報</a>
+    </nav>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">Portfolio & Free Tools</div>
+    <h1>制御設計エンジニアが<br><span>AIと一緒に作った</span><br>無料ツール集</h1>
+    <p>現場で「あったらいいな」を形にしています。PLC・電気・労務・ライフプランなど、実務に根ざした無料Webツールを公開中。</p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#tools">ツールを見る →</a>
+      <a class="btn-ghost" href="#about">作った人について</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="sv">2</div><div class="sl">公開済みツール</div></div>
+      <div class="stat"><div class="sv">無料</div><div class="sl">すべて無料・会員登録不要</div></div>
+      <div class="stat"><div class="sv">HTML/JS</div><div class="sl">インストール不要・ブラウザで動作</div></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- TOOLS -->
+<section id="tools">
+  <div class="sec-label">Free Tools</div>
+  <h2 class="sec-title">公開中のツール</h2>
+  <p class="sec-desc">すべてブラウザで動作します。インストール・会員登録・利用料は一切不要です。</p>
+
+  <div class="tools-grid">
+
+    <!-- PLC Tool -->
+    <a class="tool-card" href="https://jyunya545-beep.github.io/plc-scaling-tool/" target="_blank" rel="noopener">
+      <div class="tc-top">
+        <div class="tc-icon ic-orange">⚡</div>
+        <span class="tc-badge badge-live">公開中</span>
+      </div>
+      <div class="tc-title">PLCアナログスケーリング計算ツール</div>
+      <div class="tc-desc">4-20mA / 0-10V などのアナログ信号とPLC内部値・物理量を相互変換。逆算・警報値・ST言語の計算式コピーにも対応。FA・制御盤設計の現場向け。</div>
+      <div class="tc-tags">
+        <span class="tc-tag">PLC</span>
+        <span class="tc-tag">制御設計</span>
+        <span class="tc-tag">アナログ信号</span>
+        <span class="tc-tag">FA</span>
+      </div>
+      <div class="tc-footer">
+        <span class="tc-link">ツールを開く</span>
+        <span class="tc-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- WBGT Tool -->
+    <a class="tool-card" href="https://jyunya545-beep.github.io/wbgt-heatstroke-tool/" target="_blank" rel="noopener">
+      <div class="tc-top">
+        <div class="tc-icon ic-orange">🌡️</div>
+        <span class="tc-badge badge-live">公開中</span>
+      </div>
+      <div class="tc-title">職場の熱中症対策 完全ガイド</div>
+      <div class="tc-desc">2025年6月施行の改正労働安全衛生規則に対応。義務化の背景・罰則・具体的な対応義務を解説。気温・湿度からWBGTを推定する計算ツールと対応チェックリスト付き。</div>
+      <div class="tc-tags">
+        <span class="tc-tag">熱中症</span>
+        <span class="tc-tag">WBGT</span>
+        <span class="tc-tag">労務管理</span>
+        <span class="tc-tag">2025年義務化</span>
+      </div>
+      <div class="tc-footer">
+        <span class="tc-link">ツールを開く</span>
+        <span class="tc-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Coming Soon -->
+    <div class="tool-card" style="cursor:default; opacity:.7;">
+      <div class="tc-top">
+        <div class="tc-icon ic-blue">📊</div>
+        <span class="tc-badge badge-soon">開発中</span>
+      </div>
+      <div class="tc-title">ライフプランシミュレーター</div>
+      <div class="tc-desc">収入・支出・貯蓄・老後資金など、人生の家計設計をシミュレーション。FP3級知識に基づいた計算ロジックで精度を担保。</div>
+      <div class="tc-tags">
+        <span class="tc-tag">ライフプラン</span>
+        <span class="tc-tag">家計</span>
+        <span class="tc-tag">FP</span>
+      </div>
+      <div class="tc-footer">
+        <span class="tc-link" style="color:var(--muted);">近日公開予定</span>
+        <span class="tc-arrow" style="opacity:.3;">→</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="sec-label">Profile</div>
+  <h2 class="sec-title">作った人について</h2>
+  <p class="sec-desc">制御設計エンジニアとして働きながら、AIを使った開発を副業・趣味として進めています。</p>
+
+  <div class="about-layout">
+    <div class="about-text">
+      <h3>アルネ</h3>
+      <p>AutoCAD で回路図を作り、GX Works でシーケンスプログラムを組む、制御設計エンジニアです。「業務中に毎回手計算するのが面倒」「自動化したい」という現場の感覚を元にツールを作っています。</p>
+      <p>AIと組み合わせることで、1人では難しかった規模の開発が現実的になってきました。今は知識とスキルの蓄積フェーズ。徐々に本格的なアプリへと展開していきます。</p>
+      <h3 style="margin-top:24px; margin-bottom:12px;">保有資格</h3>
+      <div class="about-certs">
+        <div class="cert-item">基本情報技術者</div>
+        <div class="cert-item">ITパスポート</div>
+        <div class="cert-item">情報セキュリティマネジメント</div>
+        <div class="cert-item">FP3級</div>
+        <div class="cert-item">日商簿記3級</div>
+      </div>
+    </div>
+    <div class="about-cards">
+      <div class="about-card">
+        <div class="ac-label">専門領域</div>
+        <div class="ac-val">制御設計 / FA / PLC</div>
+        <div class="ac-desc">シーケンス制御・アナログ信号処理・電気回路設計が得意分野。制御盤の設計から現場調整まで担当。</div>
+      </div>
+      <div class="about-card">
+        <div class="ac-label">開発スタイル</div>
+        <div class="ac-val">AI × 実務知識</div>
+        <div class="ac-desc">Claude Code をAI CEOとして活用。市場調査・開発・公開までのサイクルを回しながら知見を蓄積中。</div>
+      </div>
+      <div class="about-card">
+        <div class="ac-label">目指すもの</div>
+        <div class="ac-val">供給が少なく、需要のあるツール</div>
+        <div class="ac-desc">AIが量産できるコンテンツではなく、実務経験に裏打ちされた「本当に使えるツール」の開発を目標にしています。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- AI INFO -->
+<section id="info">
+  <div class="sec-label">AI Information</div>
+  <h2 class="sec-title">AI活用情報の発信</h2>
+  <p class="sec-desc">ツール開発で得た知見・AI活用のTipsを発信予定です。</p>
+  <div class="coming-soon">
+    <div class="cs-icon">📝</div>
+    <h3>記事・情報を準備中です</h3>
+    <p>Claude Code の使い方、AIを使ったツール開発の実録、制御設計×AIの可能性など、実体験ベースの情報を発信していきます。しばらくお待ちください。</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">© 2026 アルネの開発室</div>
+    <div class="footer-links">
+      <a href="https://github.com/jyunya545-beep" target="_blank" rel="noopener">GitHub</a>
+      <a href="#tools">ツール一覧</a>
+      <a href="#about">プロフィール</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
