@@ -37,7 +37,7 @@ const games = [
   ['odd-one','オッドワン','?','ひとつだけ違う図形を探す、短時間の観察ゲーム。','odd',{rounds:15}]
 ];
 
-const engine = String.raw`
+let engine = String.raw`
 (function(){
 const cfg=window.GAME||{};const $=s=>document.querySelector(s);const app=$('#app');
 let score=0,round=0,timer=0,interval=0,secret=[];
@@ -104,7 +104,11 @@ const card = (g) => `        <a class="game-card" href="./${g[0]}/">
           </div>
         </a>`;
 
-fs.writeFileSync(path.join(gamesDir, 'mini-game.js'), engine.trim() + '\n', 'utf8');
+const enginePath = path.join(gamesDir, 'mini-game.js');
+if (fs.existsSync(enginePath)) {
+  engine = fs.readFileSync(enginePath, 'utf8');
+}
+fs.writeFileSync(enginePath, engine.trim() + '\n', 'utf8');
 for (const g of games) {
   const dir = path.join(gamesDir, g[0]);
   fs.mkdirSync(dir, { recursive: true });

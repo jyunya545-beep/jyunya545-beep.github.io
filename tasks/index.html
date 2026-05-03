@@ -278,6 +278,7 @@
     .meta-high { background: #ffe4e6; color: #be123c; }
     .meta-medium { background: #fef3c7; color: #a16207; }
     .meta-low { background: #dcfce7; color: #15803d; }
+    .meta-due { background: #e0f2fe; color: #0369a1; }
     .task.done .task-text {
       color: var(--muted);
       text-decoration: line-through;
@@ -725,6 +726,10 @@
       }
 
       function clearDone() {
+        if (!tasks.some(function (task) { return task.done; })) {
+          show('完了タスクはありません。');
+          return;
+        }
         if (!confirm('完了タスクを全て削除してもよろしいですか')) return;
         tasks = tasks.filter(function (task) { return !task.done; });
         if (!tasks.some(function (task) { return task.id === selectedId; })) selectedId = null;
@@ -831,9 +836,20 @@
           var dot = document.createElement('span');
           dot.className = 'color-dot';
           dot.style.background = task.color || colors[0];
-          meta.innerHTML =
-            '<span class="meta-pill' + priorityClass + '">' + priority + '</span>' +
-            '<span class="meta-pill">' + (task.progress || '未着手') + '</span>';
+          var priorityPill = document.createElement('span');
+          priorityPill.className = 'meta-pill' + priorityClass;
+          priorityPill.textContent = priority;
+          var progressPill = document.createElement('span');
+          progressPill.className = 'meta-pill';
+          progressPill.textContent = task.progress || '未着手';
+          meta.appendChild(priorityPill);
+          meta.appendChild(progressPill);
+          if (task.due) {
+            var duePill = document.createElement('span');
+            duePill.className = 'meta-pill meta-due';
+            duePill.textContent = task.due;
+            meta.appendChild(duePill);
+          }
           meta.appendChild(dot);
 
           var subtasks = document.createElement('div');
