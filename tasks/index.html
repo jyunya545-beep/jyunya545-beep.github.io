@@ -108,6 +108,30 @@
     }
     textarea:focus { border-color: rgba(37,99,235,.55); box-shadow: 0 0 0 4px rgba(37,99,235,.1); }
     .tool-block { margin-top: 14px; }
+    .task-editor {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+    }
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .field {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255,255,255,.85);
+      color: var(--text);
+      font: inherit;
+      font-weight: 700;
+      padding: 10px 11px;
+      outline: none;
+    }
+    .field:disabled { opacity: .55; background: rgba(241,245,249,.7); }
     .color-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .swatch {
       width: 34px;
@@ -173,6 +197,16 @@
       overflow: auto;
       padding-right: 4px;
     }
+    .group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 8px 2px 2px;
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 900;
+    }
+    .group-title:first-child { margin-top: 0; }
     .task {
       display: grid;
       grid-template-columns: 28px 1fr;
@@ -197,6 +231,24 @@
       line-height: 1.55;
       font-weight: 700;
     }
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      grid-column: 2;
+      margin-top: 6px;
+    }
+    .meta-pill {
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: .68rem;
+      font-weight: 900;
+    }
+    .meta-high { background: #ffe4e6; color: #be123c; }
+    .meta-medium { background: #fef3c7; color: #a16207; }
+    .meta-low { background: #dcfce7; color: #15803d; }
     .task.done .task-text {
       color: var(--muted);
       text-decoration: line-through;
@@ -290,10 +342,6 @@
         </div>
         <label for="taskInput">タスク内容</label>
         <textarea id="taskInput" placeholder="例: 見積書を確認する&#10;部品表を更新する"></textarea>
-        <div class="tool-block">
-          <label>色</label>
-          <div class="color-row" id="colorRow"></div>
-        </div>
         <div class="import-drop" id="dropZone">
           <input id="fileInput" type="file" multiple accept=".txt,.md,.csv,.tsv,text/plain,text/markdown,text/csv">
           <span id="filePick">ファイルを選択</span>、またはここへドラッグ
@@ -310,10 +358,41 @@
           <h2>タスク一覧</h2>
           <span class="count" id="taskCount">0 Tasks</span>
         </div>
+        <div class="task-editor">
+          <div class="tool-block" style="margin-top:0">
+            <label>選択タスクの色</label>
+            <div class="color-row" id="colorRow"></div>
+          </div>
+          <div class="editor-grid tool-block">
+            <div>
+              <label for="groupInput">グループ</label>
+              <input class="field" id="groupInput" type="text" placeholder="例: 仕事" disabled>
+            </div>
+            <div>
+              <label for="dueInput">期限</label>
+              <input class="field" id="dueInput" type="date" disabled>
+            </div>
+            <div>
+              <label for="prioritySelect">重要度</label>
+              <select class="field" id="prioritySelect" disabled>
+                <option value="高">高</option>
+                <option value="中">中</option>
+                <option value="低">低</option>
+              </select>
+            </div>
+            <div>
+              <label for="progressSelect">進捗</label>
+              <select class="field" id="progressSelect" disabled>
+                <option value="未着手">未着手</option>
+                <option value="進行中">進行中</option>
+              </select>
+            </div>
+          </div>
+        </div>
         <div id="taskList" class="task-list" aria-live="polite"></div>
         <div class="item-editor">
-          <input id="itemInput" type="text" placeholder="選択タスクに項目を追加" disabled>
-          <button class="subtle" id="itemButton" type="button" disabled>項目追加</button>
+          <input id="itemInput" type="text" placeholder="選択タスクにサブ項目を追加" disabled>
+          <button class="subtle" id="itemButton" type="button" disabled>サブ項目追加</button>
         </div>
         <div class="list-actions">
           <button class="danger" id="deleteButton" type="button" disabled>選択を削除</button>
@@ -335,12 +414,15 @@
       var count = document.getElementById('taskCount');
       var itemInput = document.getElementById('itemInput');
       var itemButton = document.getElementById('itemButton');
+      var groupInput = document.getElementById('groupInput');
+      var dueInput = document.getElementById('dueInput');
+      var prioritySelect = document.getElementById('prioritySelect');
+      var progressSelect = document.getElementById('progressSelect');
       var deleteButton = document.getElementById('deleteButton');
       var clearDoneButton = document.getElementById('clearDoneButton');
       var toast = document.getElementById('toast');
       var storageKey = 'toaruseigyoya-task-app';
       var colors = ['#2563eb', '#0891b2', '#16a34a', '#f59e0b', '#e11d48', '#7c3aed', '#475569'];
-      var currentColor = colors[0];
       var selectedId = null;
       var tasks = load();
 
@@ -374,7 +456,11 @@
             id: makeId(),
             text: text,
             done: false,
-            color: currentColor,
+            color: colors[0],
+            group: '未分類',
+            priority: '中',
+            progress: '未着手',
+            due: '',
             items: []
           };
         });
@@ -392,9 +478,6 @@
 
       function selectTask(id) {
         selectedId = selectedId === id ? null : id;
-        var selected = tasks.find(function (task) { return task.id === selectedId; });
-        if (selected && selected.color) currentColor = selected.color;
-        renderColors();
         render();
       }
 
@@ -431,29 +514,60 @@
         render();
       }
 
-      function setColor(color) {
-        currentColor = color;
-        if (selectedId) {
-          tasks = tasks.map(function (task) {
-            return task.id === selectedId ? Object.assign({}, task, { color: color }) : task;
-          });
-          save();
-        }
-        renderColors();
+      function selectedTask() {
+        return tasks.find(function (task) { return task.id === selectedId; }) || null;
+      }
+
+      function updateSelected(values) {
+        if (!selectedId) return;
+        tasks = tasks.map(function (task) {
+          return task.id === selectedId ? Object.assign({}, task, values) : task;
+        });
+        save();
         render();
+      }
+
+      function setColor(color) {
+        if (!selectedId) {
+          show('色を変更するタスクを選択してください。');
+          return;
+        }
+        updateSelected({ color: color });
       }
 
       function renderColors() {
         colorRow.innerHTML = '';
+        var selected = selectedTask();
+        var selectedColor = selected && selected.color ? selected.color : colors[0];
         colors.forEach(function (color) {
           var button = document.createElement('button');
           button.type = 'button';
-          button.className = 'swatch' + (color === currentColor ? ' active' : '');
+          button.className = 'swatch' + (color === selectedColor ? ' active' : '');
           button.style.background = color;
+          button.disabled = !selected;
           button.setAttribute('aria-label', '色を変更');
           button.addEventListener('click', function () { setColor(color); });
           colorRow.appendChild(button);
         });
+      }
+
+      function renderEditor() {
+        var selected = selectedTask();
+        [groupInput, dueInput, prioritySelect, progressSelect].forEach(function (field) {
+          field.disabled = !selected;
+        });
+        if (!selected) {
+          groupInput.value = '';
+          dueInput.value = '';
+          prioritySelect.value = '中';
+          progressSelect.value = '未着手';
+        } else {
+          groupInput.value = selected.group || '未分類';
+          dueInput.value = selected.due || '';
+          prioritySelect.value = selected.priority || '中';
+          progressSelect.value = selected.progress || '未着手';
+        }
+        renderColors();
       }
 
       function deleteSelected() {
@@ -477,6 +591,7 @@
         deleteButton.disabled = !selectedId;
         itemInput.disabled = !selectedId;
         itemButton.disabled = !selectedId;
+        renderEditor();
 
         if (!tasks.length) {
           var empty = document.createElement('div');
@@ -486,7 +601,24 @@
           return;
         }
 
-        tasks.forEach(function (task) {
+        var grouped = tasks.reduce(function (acc, task) {
+          var group = (task.group || '未分類').trim() || '未分類';
+          if (!acc[group]) acc[group] = [];
+          acc[group].push(task);
+          return acc;
+        }, {});
+
+        Object.keys(grouped).sort(function (a, b) {
+          if (a === '未分類') return 1;
+          if (b === '未分類') return -1;
+          return a.localeCompare(b, 'ja');
+        }).forEach(function (group) {
+          var heading = document.createElement('div');
+          heading.className = 'group-title';
+          heading.innerHTML = '<span>' + group + '</span><span>' + grouped[group].length + '</span>';
+          list.appendChild(heading);
+
+          grouped[group].forEach(function (task) {
           var item = document.createElement('div');
           item.className = 'task' + (task.done ? ' done' : '') + (task.id === selectedId ? ' selected' : '');
           item.style.setProperty('--task-color', task.color || colors[0]);
@@ -506,6 +638,15 @@
           var text = document.createElement('div');
           text.className = 'task-text';
           text.textContent = task.text;
+
+          var meta = document.createElement('div');
+          meta.className = 'task-meta';
+          var priority = task.priority || '中';
+          var priorityClass = priority === '高' ? ' meta-high' : priority === '低' ? ' meta-low' : ' meta-medium';
+          meta.innerHTML =
+            '<span class="meta-pill' + priorityClass + '">重要度: ' + priority + '</span>' +
+            '<span class="meta-pill">進捗: ' + (task.progress || '未着手') + '</span>' +
+            (task.due ? '<span class="meta-pill">期限: ' + task.due + '</span>' : '');
 
           var subtasks = document.createElement('div');
           subtasks.className = 'subtasks';
@@ -538,8 +679,10 @@
 
           item.appendChild(checkbox);
           item.appendChild(text);
+          item.appendChild(meta);
           if ((task.items || []).length) item.appendChild(subtasks);
           list.appendChild(item);
+        });
         });
       }
 
@@ -578,13 +721,24 @@
       itemInput.addEventListener('keydown', function (event) {
         if (event.key === 'Enter') addItem();
       });
+      groupInput.addEventListener('change', function () {
+        updateSelected({ group: groupInput.value.trim() || '未分類' });
+      });
+      dueInput.addEventListener('change', function () {
+        updateSelected({ due: dueInput.value });
+      });
+      prioritySelect.addEventListener('change', function () {
+        updateSelected({ priority: prioritySelect.value });
+      });
+      progressSelect.addEventListener('change', function () {
+        updateSelected({ progress: progressSelect.value });
+      });
       deleteButton.addEventListener('click', deleteSelected);
       clearDoneButton.addEventListener('click', clearDone);
       input.addEventListener('keydown', function (event) {
         if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') addTask();
       });
 
-      renderColors();
       render();
     })();
   </script>
