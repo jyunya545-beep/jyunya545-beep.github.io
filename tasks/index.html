@@ -107,12 +107,35 @@
       outline: none;
     }
     textarea:focus { border-color: rgba(37,99,235,.55); box-shadow: 0 0 0 4px rgba(37,99,235,.1); }
-    .input-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
+    .tool-block { margin-top: 14px; }
+    .color-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .swatch {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      padding: 0;
+      border: 3px solid rgba(255,255,255,.92);
+      box-shadow: 0 4px 12px rgba(15,23,42,.12);
     }
+    .swatch.active { outline: 3px solid rgba(37,99,235,.38); }
+    .import-drop {
+      margin-top: 14px;
+      padding: 16px;
+      border: 2px dashed rgba(37,99,235,.28);
+      border-radius: 16px;
+      background: rgba(224,242,254,.42);
+      color: var(--muted);
+      font-size: .84rem;
+      font-weight: 800;
+      text-align: center;
+    }
+    .import-drop.dragging {
+      border-color: var(--blue);
+      background: rgba(37,99,235,.12);
+      color: var(--blue);
+    }
+    .import-drop input { display: none; }
+    .import-drop span { color: var(--blue); text-decoration: underline; cursor: pointer; }
     button {
       border: 0;
       border-radius: 14px;
@@ -160,11 +183,12 @@
       border-radius: 15px;
       background: rgba(255,255,255,.72);
       cursor: pointer;
+      border-left: 6px solid var(--task-color, var(--blue));
     }
     .task.selected {
       border-color: rgba(37,99,235,.62);
       background: linear-gradient(135deg, rgba(37,99,235,.13), rgba(8,145,178,.12));
-      box-shadow: inset 4px 0 0 var(--blue);
+      box-shadow: inset 4px 0 0 var(--task-color, var(--blue));
     }
     .task input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--green); }
     .task-text {
@@ -177,6 +201,38 @@
       color: var(--muted);
       text-decoration: line-through;
       text-decoration-thickness: 2px;
+    }
+    .subtasks {
+      grid-column: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .subtask {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      align-items: start;
+      gap: 7px;
+      color: var(--muted);
+      font-size: .85rem;
+      font-weight: 700;
+    }
+    .subtask input { width: 15px; height: 15px; }
+    .subtask.done span { text-decoration: line-through; }
+    .item-editor {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .item-editor input {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0 12px;
+      font: inherit;
+      outline: none;
     }
     .list-actions {
       display: grid;
@@ -223,7 +279,7 @@
     <div class="title-row">
       <div>
         <h1>タスク管理</h1>
-        <p class="lead">左に入力して中央の矢印で右へ追加。右側では完了チェックと選択削除ができます。</p>
+        <p class="lead">左に入力して中央の矢印で右へ追加。改行ごとに別タスクとして登録できます。</p>
       </div>
     </div>
 
@@ -231,13 +287,16 @@
       <section class="panel">
         <div class="panel-head">
           <h2>入力</h2>
-          <span class="count">Draft</span>
         </div>
         <label for="taskInput">タスク内容</label>
-        <textarea id="taskInput" placeholder="例: 見積書を確認する"></textarea>
-        <div class="input-actions">
-          <button class="subtle" id="addButton" type="button">追加</button>
-          <button class="subtle" id="clearInputButton" type="button">入力を消す</button>
+        <textarea id="taskInput" placeholder="例: 見積書を確認する&#10;部品表を更新する"></textarea>
+        <div class="tool-block">
+          <label>色</label>
+          <div class="color-row" id="colorRow"></div>
+        </div>
+        <div class="import-drop" id="dropZone">
+          <input id="fileInput" type="file" multiple accept=".txt,.md,.csv,.tsv,text/plain,text/markdown,text/csv">
+          <span id="filePick">ファイルを選択</span>、またはここへドラッグ
         </div>
         <div class="toast" id="toast" aria-live="polite"></div>
       </section>
@@ -252,6 +311,10 @@
           <span class="count" id="taskCount">0 Tasks</span>
         </div>
         <div id="taskList" class="task-list" aria-live="polite"></div>
+        <div class="item-editor">
+          <input id="itemInput" type="text" placeholder="選択タスクに項目を追加" disabled>
+          <button class="subtle" id="itemButton" type="button" disabled>項目追加</button>
+        </div>
         <div class="list-actions">
           <button class="danger" id="deleteButton" type="button" disabled>選択を削除</button>
           <button class="subtle" id="clearDoneButton" type="button">完了を削除</button>
@@ -263,15 +326,21 @@
   <script>
     (function () {
       var input = document.getElementById('taskInput');
-      var addButton = document.getElementById('addButton');
       var arrowButton = document.getElementById('arrowButton');
-      var clearInputButton = document.getElementById('clearInputButton');
+      var colorRow = document.getElementById('colorRow');
+      var dropZone = document.getElementById('dropZone');
+      var fileInput = document.getElementById('fileInput');
+      var filePick = document.getElementById('filePick');
       var list = document.getElementById('taskList');
       var count = document.getElementById('taskCount');
+      var itemInput = document.getElementById('itemInput');
+      var itemButton = document.getElementById('itemButton');
       var deleteButton = document.getElementById('deleteButton');
       var clearDoneButton = document.getElementById('clearDoneButton');
       var toast = document.getElementById('toast');
       var storageKey = 'toaruseigyoya-task-app';
+      var colors = ['#2563eb', '#0891b2', '#16a34a', '#f59e0b', '#e11d48', '#7c3aed', '#475569'];
+      var currentColor = colors[0];
       var selectedId = null;
       var tasks = load();
 
@@ -292,26 +361,40 @@
       }
 
       function addTask() {
-        var text = input.value.trim();
-        if (!text) {
+        var lines = input.value.split(/\r?\n/).map(function (line) {
+          return line.trim();
+        }).filter(Boolean);
+        if (!lines.length) {
           show('タスクを入力してください。');
           input.focus();
           return;
         }
-        tasks.unshift({
-          id: String(Date.now()) + Math.random().toString(16).slice(2),
-          text: text,
-          done: false
+        var added = lines.map(function (text) {
+          return {
+            id: makeId(),
+            text: text,
+            done: false,
+            color: currentColor,
+            items: []
+          };
         });
+        tasks = added.concat(tasks);
         input.value = '';
-        selectedId = tasks[0].id;
-        show('');
+        selectedId = added[0].id;
+        show(lines.length + '件追加しました。');
         save();
         render();
       }
 
+      function makeId() {
+        return String(Date.now()) + Math.random().toString(16).slice(2);
+      }
+
       function selectTask(id) {
         selectedId = selectedId === id ? null : id;
+        var selected = tasks.find(function (task) { return task.id === selectedId; });
+        if (selected && selected.color) currentColor = selected.color;
+        renderColors();
         render();
       }
 
@@ -321,6 +404,56 @@
         });
         save();
         render();
+      }
+
+      function toggleItem(taskId, itemId, checked) {
+        tasks = tasks.map(function (task) {
+          if (task.id !== taskId) return task;
+          var items = (task.items || []).map(function (item) {
+            return item.id === itemId ? Object.assign({}, item, { done: checked }) : item;
+          });
+          return Object.assign({}, task, { items: items });
+        });
+        save();
+        render();
+      }
+
+      function addItem() {
+        var text = itemInput.value.trim();
+        if (!selectedId || !text) return;
+        tasks = tasks.map(function (task) {
+          if (task.id !== selectedId) return task;
+          var items = (task.items || []).concat([{ id: makeId(), text: text, done: false }]);
+          return Object.assign({}, task, { items: items });
+        });
+        itemInput.value = '';
+        save();
+        render();
+      }
+
+      function setColor(color) {
+        currentColor = color;
+        if (selectedId) {
+          tasks = tasks.map(function (task) {
+            return task.id === selectedId ? Object.assign({}, task, { color: color }) : task;
+          });
+          save();
+        }
+        renderColors();
+        render();
+      }
+
+      function renderColors() {
+        colorRow.innerHTML = '';
+        colors.forEach(function (color) {
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'swatch' + (color === currentColor ? ' active' : '');
+          button.style.background = color;
+          button.setAttribute('aria-label', '色を変更');
+          button.addEventListener('click', function () { setColor(color); });
+          colorRow.appendChild(button);
+        });
       }
 
       function deleteSelected() {
@@ -342,6 +475,8 @@
         list.innerHTML = '';
         count.textContent = tasks.length + (tasks.length === 1 ? ' Task' : ' Tasks');
         deleteButton.disabled = !selectedId;
+        itemInput.disabled = !selectedId;
+        itemButton.disabled = !selectedId;
 
         if (!tasks.length) {
           var empty = document.createElement('div');
@@ -354,6 +489,7 @@
         tasks.forEach(function (task) {
           var item = document.createElement('div');
           item.className = 'task' + (task.done ? ' done' : '') + (task.id === selectedId ? ' selected' : '');
+          item.style.setProperty('--task-color', task.color || colors[0]);
           item.tabIndex = 0;
           item.setAttribute('role', 'button');
           item.setAttribute('aria-pressed', task.id === selectedId ? 'true' : 'false');
@@ -371,6 +507,27 @@
           text.className = 'task-text';
           text.textContent = task.text;
 
+          var subtasks = document.createElement('div');
+          subtasks.className = 'subtasks';
+          (task.items || []).forEach(function (sub) {
+            var row = document.createElement('label');
+            row.className = 'subtask' + (sub.done ? ' done' : '');
+
+            var subCheck = document.createElement('input');
+            subCheck.type = 'checkbox';
+            subCheck.checked = sub.done;
+            subCheck.addEventListener('click', function (event) {
+              event.stopPropagation();
+              toggleItem(task.id, sub.id, subCheck.checked);
+            });
+
+            var subText = document.createElement('span');
+            subText.textContent = sub.text;
+            row.appendChild(subCheck);
+            row.appendChild(subText);
+            subtasks.appendChild(row);
+          });
+
           item.addEventListener('click', function () { selectTask(task.id); });
           item.addEventListener('keydown', function (event) {
             if (event.key === 'Enter' || event.key === ' ') {
@@ -381,16 +538,45 @@
 
           item.appendChild(checkbox);
           item.appendChild(text);
+          if ((task.items || []).length) item.appendChild(subtasks);
           list.appendChild(item);
         });
       }
 
-      addButton.addEventListener('click', addTask);
+      function importFiles(files) {
+        Array.prototype.slice.call(files || []).forEach(function (file) {
+          var reader = new FileReader();
+          reader.onload = function () {
+            var text = String(reader.result || '').trim();
+            if (!text) return;
+            input.value = input.value ? input.value.replace(/\s*$/, '') + '\n' + text : text;
+            show(file.name + ' を読み込みました。');
+          };
+          reader.readAsText(file);
+        });
+      }
+
       arrowButton.addEventListener('click', addTask);
-      clearInputButton.addEventListener('click', function () {
-        input.value = '';
-        show('');
-        input.focus();
+      filePick.addEventListener('click', function () { fileInput.click(); });
+      fileInput.addEventListener('change', function () {
+        importFiles(fileInput.files);
+        fileInput.value = '';
+      });
+      dropZone.addEventListener('dragover', function (event) {
+        event.preventDefault();
+        dropZone.classList.add('dragging');
+      });
+      dropZone.addEventListener('dragleave', function () {
+        dropZone.classList.remove('dragging');
+      });
+      dropZone.addEventListener('drop', function (event) {
+        event.preventDefault();
+        dropZone.classList.remove('dragging');
+        importFiles(event.dataTransfer.files);
+      });
+      itemButton.addEventListener('click', addItem);
+      itemInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') addItem();
       });
       deleteButton.addEventListener('click', deleteSelected);
       clearDoneButton.addEventListener('click', clearDone);
@@ -398,6 +584,7 @@
         if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') addTask();
       });
 
+      renderColors();
       render();
     })();
   </script>
