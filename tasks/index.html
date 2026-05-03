@@ -194,12 +194,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
       margin: 8px 2px 2px;
       color: var(--muted);
       font-size: .76rem;
       font-weight: 900;
     }
     .group-title:first-child { margin-top: 0; }
+    .group-actions { display: flex; gap: 5px; align-items: center; }
+    .group-actions button {
+      border-radius: 9px;
+      padding: 4px 7px;
+      background: #e0f2fe;
+      color: var(--cyan);
+      font-size: .68rem;
+    }
     .task {
       display: grid;
       grid-template-columns: 28px minmax(0, 1fr) auto;
@@ -372,9 +381,11 @@
       var clearDoneButton = document.getElementById('clearDoneButton');
       var toast = document.getElementById('toast');
       var storageKey = 'toaruseigyoya-task-app';
+      var groupOrderKey = 'toaruseigyoya-task-groups';
       var colors = ['#2563eb', '#0891b2', '#16a34a', '#f59e0b', '#e11d48', '#7c3aed', '#475569'];
       var selectedId = null;
       var tasks = load();
+      var groupOrder = loadGroupOrder();
 
       function load() {
         try {
@@ -386,6 +397,18 @@
 
       function save() {
         localStorage.setItem(storageKey, JSON.stringify(tasks));
+      }
+
+      function loadGroupOrder() {
+        try {
+          return JSON.parse(localStorage.getItem(groupOrderKey) || '[]');
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveGroupOrder() {
+        localStorage.setItem(groupOrderKey, JSON.stringify(groupOrder));
       }
 
       function show(message) {
@@ -474,6 +497,56 @@
           return task.id === selectedId ? Object.assign({}, task, values) : task;
         });
         save();
+        syncGroupOrder();
+        render();
+      }
+
+      function taskGroup(task) {
+        return (task.group || '未分類').trim() || '未分類';
+      }
+
+      function groupsFromTasks() {
+        return tasks.reduce(function (acc, task) {
+          var group = taskGroup(task);
+          if (!acc.includes(group)) acc.push(group);
+          return acc;
+        }, []);
+      }
+
+      function syncGroupOrder() {
+        var groups = groupsFromTasks();
+        groupOrder = groupOrder.filter(function (group) { return groups.includes(group); });
+        groups.forEach(function (group) {
+          if (!groupOrder.includes(group)) groupOrder.push(group);
+        });
+        saveGroupOrder();
+      }
+
+      function moveGroup(group, direction) {
+        syncGroupOrder();
+        var index = groupOrder.indexOf(group);
+        var next = index + direction;
+        if (index < 0 || next < 0 || next >= groupOrder.length) return;
+        var temp = groupOrder[index];
+        groupOrder[index] = groupOrder[next];
+        groupOrder[next] = temp;
+        saveGroupOrder();
+        render();
+      }
+
+      function sortGroupByPriority(group) {
+        var rank = { '高': 0, '中': 1, '低': 2 };
+        tasks = tasks.slice().sort(function (a, b) {
+          var ag = taskGroup(a);
+          var bg = taskGroup(b);
+          if (ag === group && bg === group) {
+            var ar = Object.prototype.hasOwnProperty.call(rank, a.priority) ? rank[a.priority] : 1;
+            var br = Object.prototype.hasOwnProperty.call(rank, b.priority) ? rank[b.priority] : 1;
+            return ar - br;
+          }
+          return 0;
+        });
+        save();
         render();
       }
 
@@ -543,6 +616,7 @@
         var groupInput = document.createElement('input');
         groupInput.className = 'field';
         groupInput.type = 'text';
+        groupInput.setAttribute('list', 'groupOptions');
         groupInput.value = task.group || '未分類';
         groupInput.placeholder = '例: 仕事';
         groupInput.addEventListener('change', function () {
@@ -610,6 +684,14 @@
         itemEditor.appendChild(itemButton);
 
         editor.appendChild(colorBlock);
+        var datalist = document.createElement('datalist');
+        datalist.id = 'groupOptions';
+        groupsFromTasks().forEach(function (group) {
+          var option = document.createElement('option');
+          option.value = group;
+          datalist.appendChild(option);
+        });
+        editor.appendChild(datalist);
         editor.appendChild(grid);
         if ((task.items || []).length) editor.appendChild(subtasks);
         editor.appendChild(itemEditor);
@@ -635,6 +717,7 @@
         list.innerHTML = '';
         count.textContent = tasks.length + (tasks.length === 1 ? ' Task' : ' Tasks');
         deleteButton.disabled = !selectedId;
+        syncGroupOrder();
 
         if (!tasks.length) {
           var empty = document.createElement('div');
@@ -645,25 +728,41 @@
         }
 
         var grouped = tasks.reduce(function (acc, task) {
-          var group = (task.group || '未分類').trim() || '未分類';
+          var group = taskGroup(task);
           if (!acc[group]) acc[group] = [];
           acc[group].push(task);
           return acc;
         }, {});
 
-        Object.keys(grouped).sort(function (a, b) {
-          if (a === '未分類') return 1;
-          if (b === '未分類') return -1;
-          return a.localeCompare(b, 'ja');
-        }).forEach(function (group) {
+        groupOrder.filter(function (group) { return grouped[group]; }).forEach(function (group, groupIndex) {
           var heading = document.createElement('div');
           heading.className = 'group-title';
           var groupName = document.createElement('span');
           groupName.textContent = group;
           var groupCount = document.createElement('span');
           groupCount.textContent = grouped[group].length;
+          var actions = document.createElement('div');
+          actions.className = 'group-actions';
+          var up = document.createElement('button');
+          up.type = 'button';
+          up.textContent = '↑';
+          up.disabled = groupIndex === 0;
+          up.addEventListener('click', function () { moveGroup(group, -1); });
+          var down = document.createElement('button');
+          down.type = 'button';
+          down.textContent = '↓';
+          down.disabled = groupIndex === groupOrder.length - 1;
+          down.addEventListener('click', function () { moveGroup(group, 1); });
+          var sort = document.createElement('button');
+          sort.type = 'button';
+          sort.textContent = '優先度順';
+          sort.addEventListener('click', function () { sortGroupByPriority(group); });
+          actions.appendChild(up);
+          actions.appendChild(down);
+          actions.appendChild(sort);
+          actions.appendChild(groupCount);
           heading.appendChild(groupName);
-          heading.appendChild(groupCount);
+          heading.appendChild(actions);
           list.appendChild(heading);
 
           grouped[group].forEach(function (task) {
