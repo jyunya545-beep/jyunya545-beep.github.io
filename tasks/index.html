@@ -132,6 +132,11 @@
       grid-template-columns: minmax(0, 1fr) minmax(120px, .8fr);
       gap: 7px;
     }
+    .inline-fields {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+    }
     .field {
       min-width: 0;
       border: 1px solid var(--line);
@@ -396,8 +401,9 @@
       var toast = document.getElementById('toast');
       var storageKey = 'toaruseigyoya-task-app';
       var groupOrderKey = 'toaruseigyoya-task-groups';
-      var colors = ['#2563eb', '#0891b2', '#16a34a', '#f59e0b', '#e11d48', '#7c3aed', '#475569'];
+      var colors = ['#2563eb', '#0891b2', '#16a34a', '#f59e0b', '#e11d48', '#7c3aed', '#475569', '#db2777', '#ea580c', '#0f766e'];
       var selectedId = null;
+      var selectedDisplayGroup = null;
       var tasks = load();
       var groupOrder = loadGroupOrder();
 
@@ -464,7 +470,14 @@
       }
 
       function selectTask(id) {
-        selectedId = selectedId === id ? null : id;
+        if (selectedId === id) {
+          selectedId = null;
+          selectedDisplayGroup = null;
+        } else {
+          selectedId = id;
+          var task = selectedTask();
+          selectedDisplayGroup = task ? taskGroup(task) : null;
+        }
         render();
       }
 
@@ -649,10 +662,14 @@
           updateSelected({ progress: progressSelect.value });
         });
 
+        var inlineFields = document.createElement('div');
+        inlineFields.className = 'inline-fields';
+        inlineFields.appendChild(dueInput);
+        inlineFields.appendChild(prioritySelect);
+        inlineFields.appendChild(progressSelect);
+
         grid.appendChild(fieldBlock('グループ', groupFields));
-        grid.appendChild(fieldBlock('期限', dueInput));
-        grid.appendChild(fieldBlock('重要度', prioritySelect));
-        grid.appendChild(fieldBlock('進捗', progressSelect));
+        grid.appendChild(fieldBlock('期限・重要度・進捗', inlineFields));
 
         var subtasks = document.createElement('div');
         subtasks.className = 'subtasks';
@@ -699,16 +716,35 @@
 
       function deleteSelected() {
         if (!selectedId) return;
+        if (!confirm('選択タスクを削除してもよろしいですか')) return;
         tasks = tasks.filter(function (task) { return task.id !== selectedId; });
         selectedId = null;
+        selectedDisplayGroup = null;
         save();
         render();
       }
 
       function clearDone() {
+        if (!confirm('完了タスクを全て削除してもよろしいですか')) return;
         tasks = tasks.filter(function (task) { return !task.done; });
         if (!tasks.some(function (task) { return task.id === selectedId; })) selectedId = null;
+        if (!selectedId) selectedDisplayGroup = null;
         save();
+        render();
+      }
+
+      function deleteGroup(group) {
+        if (!confirm('グループ「' + group + '」のタスクを全て削除してもよろしいですか')) return;
+        tasks = tasks.filter(function (task) {
+          var displayGroup = task.id === selectedId && selectedDisplayGroup ? selectedDisplayGroup : taskGroup(task);
+          return displayGroup !== group;
+        });
+        if (!tasks.some(function (task) { return task.id === selectedId; })) {
+          selectedId = null;
+          selectedDisplayGroup = null;
+        }
+        save();
+        syncGroupOrder();
         render();
       }
 
@@ -730,7 +766,7 @@
         }
 
         var grouped = tasks.reduce(function (acc, task) {
-          var group = taskGroup(task);
+          var group = task.id === selectedId && selectedDisplayGroup ? selectedDisplayGroup : taskGroup(task);
           if (!acc[group]) acc[group] = [];
           acc[group].push(task);
           return acc;
@@ -743,8 +779,6 @@
           groupLeft.className = 'group-left';
           var groupName = document.createElement('span');
           groupName.textContent = group;
-          var groupCount = document.createElement('span');
-          groupCount.textContent = grouped[group].length;
           var actions = document.createElement('div');
           actions.className = 'group-actions';
           var up = document.createElement('button');
@@ -757,10 +791,14 @@
           down.textContent = '↓';
           down.disabled = groupIndex === groupOrder.length - 1;
           down.addEventListener('click', function () { moveGroup(group, 1); });
+          var remove = document.createElement('button');
+          remove.type = 'button';
+          remove.textContent = '削除';
+          remove.addEventListener('click', function () { deleteGroup(group); });
           groupLeft.appendChild(up);
           groupLeft.appendChild(down);
           groupLeft.appendChild(groupName);
-          actions.appendChild(groupCount);
+          actions.appendChild(remove);
           heading.appendChild(groupLeft);
           heading.appendChild(actions);
           list.appendChild(heading);
@@ -877,6 +915,7 @@
         if (event.target.closest('.task')) return;
         if (!selectedId) return;
         selectedId = null;
+        selectedDisplayGroup = null;
         render();
       });
 
