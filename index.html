@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>とある制御屋の備忘録</title>
-  <meta name="description" content="制御設計エンジニアによるAI活用ツール・アプリ・無料ゲーム公開サイト。PLCツール・WBGT計算・ライフプランシミュレーターなど無料で公開中。">
+  <meta name="description" content="制御設計エンジニアによるAI活用ツール・タスク管理アプリ・無料ゲーム公開サイト。ライフプランシミュレーターなど無料で公開中。">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -54,6 +54,13 @@
     .tag-violet { background: rgba(168,85,247,.08); color: var(--violet); border-color: rgba(168,85,247,.2); }
     .tag-rose   { background: rgba(236,72,153,.08); color: var(--rose);   border-color: rgba(236,72,153,.2); }
     .tag-slate  { background: rgba(100,116,139,.07); color: #64748b;      border-color: rgba(100,116,139,.2); }
+    .access-box { margin-top: 16px; padding: 18px; animation: fadeUp .5s ease .05s both; }
+    .access-title { font-size: .86rem; font-weight: 800; margin-bottom: 10px; }
+    .access-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .access-item { padding: 9px; border-radius: 12px; background: rgba(255,255,255,.48); border: 1px solid rgba(99,102,241,.08); }
+    .access-label { display: block; color: var(--muted); font-size: .66rem; font-weight: 800; }
+    .access-value { display: block; margin-top: 2px; color: var(--text); font-size: 1.05rem; font-weight: 900; }
+    .access-note { margin-top: 8px; color: var(--muted); font-size: .68rem; font-weight: 700; }
 
     /* ── RIGHT COLUMN ── */
     .right-col { display: flex; flex-direction: column; gap: 20px; }
@@ -142,6 +149,28 @@
         <span class="tag tag-rose">副業</span>
       </div>
     </div>
+    <div class="glass access-box">
+      <div class="access-title">アクセス状況</div>
+      <div class="access-grid">
+        <div class="access-item">
+          <span class="access-label">今日</span>
+          <span class="access-value" id="accessToday">0</span>
+        </div>
+        <div class="access-item">
+          <span class="access-label">累計</span>
+          <span class="access-value" id="accessTotal">0</span>
+        </div>
+        <div class="access-item">
+          <span class="access-label">遷移</span>
+          <span class="access-value" id="accessClicks">0</span>
+        </div>
+        <div class="access-item">
+          <span class="access-label">最終</span>
+          <span class="access-value" id="accessLast">--</span>
+        </div>
+      </div>
+      <div class="access-note">この端末での閲覧・クリック数</div>
+    </div>
   </aside>
 
   <!-- ── RIGHT COLUMN ── -->
@@ -151,7 +180,7 @@
     <div class="tools-section" id="tools">
       <div class="sec-header">
         <h2>公開ツール</h2>
-        <span class="sec-chip">5 Tools</span>
+        <span class="sec-chip">2 Tools</span>
       </div>
       <div class="tools-grid">
 
@@ -168,32 +197,6 @@
           </div>
         </a>
 
-        <a class="glass tool-card" href="https://toaruseigyoya.github.io/plc-scaling-tool/" target="_blank" rel="noopener">
-          <div class="tc-top">
-            <div class="tc-icon ic-indigo">⚡</div>
-            <span class="tc-live">公開中</span>
-          </div>
-          <div class="tc-title">PLCアナログスケーリング計算ツール</div>
-          <div class="tc-desc">4-20mA / 0-10V ↔ PLC内部値 ↔ 物理量を相互変換。FA・制御盤設計の現場向け。</div>
-          <div class="tc-footer">
-            <span class="tc-url">plc-scaling-tool/</span>
-            <span class="tc-open">開く →</span>
-          </div>
-        </a>
-
-        <a class="glass tool-card" href="https://toaruseigyoya.github.io/wbgt-heatstroke-tool/" target="_blank" rel="noopener">
-          <div class="tc-top">
-            <div class="tc-icon ic-rose">🌡️</div>
-            <span class="tc-live">公開中</span>
-          </div>
-          <div class="tc-title">職場の熱中症対策 完全ガイド</div>
-          <div class="tc-desc">2025年義務化対応。WBGT推定・罰則解説・対応チェックリストを1ページに集約。</div>
-          <div class="tc-footer">
-            <span class="tc-url">wbgt-heatstroke-tool/</span>
-            <span class="tc-open">開く →</span>
-          </div>
-        </a>
-
         <a class="glass tool-card" href="https://toaruseigyoya.github.io/lifeplan-simulator/" target="_blank" rel="noopener">
           <div class="tc-top">
             <div class="tc-icon ic-violet">📊</div>
@@ -203,19 +206,6 @@
           <div class="tc-desc">年収・ライフイベントから老後資産推移をグラフ表示。年金・住宅ローン・教育費を加味。</div>
           <div class="tc-footer">
             <span class="tc-url">lifeplan-simulator/</span>
-            <span class="tc-open">開く →</span>
-          </div>
-        </a>
-
-        <a class="glass tool-card" href="https://toaruseigyoya.github.io/panel-thermal-tool/" target="_blank" rel="noopener">
-          <div class="tc-top">
-            <div class="tc-icon ic-emerald">🌡️</div>
-            <span class="tc-live">公開中</span>
-          </div>
-          <div class="tc-title">制御盤 内部温度上昇計算ツール</div>
-          <div class="tc-desc">JEM方式で盤内温度を推定。機器の発熱量登録から冷却方式の選定まで。FA・制御設計者向け。</div>
-          <div class="tc-footer">
-            <span class="tc-url">panel-thermal-tool/</span>
             <span class="tc-open">開く →</span>
           </div>
         </a>
@@ -277,6 +267,50 @@
 <footer>
   <p class="footer-text">© 2026 <span>とある制御屋の備忘録</span> — All tools are free to use.</p>
 </footer>
+
+<script>
+  (function () {
+    var key = 'home-access-stats';
+    var now = new Date();
+    var today = now.toISOString().slice(0, 10);
+    function load() {
+      try { return JSON.parse(localStorage.getItem(key) || '{}'); }
+      catch (e) { return {}; }
+    }
+    function save(data) {
+      try { localStorage.setItem(key, JSON.stringify(data)); }
+      catch (e) {}
+    }
+    function render(data) {
+      var todayCount = (data.days || {})[today] || 0;
+      var clickTotal = Object.keys(data.clicks || {}).reduce(function (sum, href) {
+        return sum + ((data.clicks || {})[href] || 0);
+      }, 0);
+      document.getElementById('accessToday').textContent = todayCount;
+      document.getElementById('accessTotal').textContent = data.total || 0;
+      document.getElementById('accessClicks').textContent = clickTotal;
+      document.getElementById('accessLast').textContent = data.lastTime || '--';
+    }
+    var stats = load();
+    stats.total = (stats.total || 0) + 1;
+    stats.days = stats.days || {};
+    stats.days[today] = (stats.days[today] || 0) + 1;
+    stats.lastTime = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    stats.clicks = stats.clicks || {};
+    save(stats);
+    render(stats);
+    Array.prototype.forEach.call(document.querySelectorAll('.tool-card'), function (card) {
+      card.addEventListener('click', function () {
+        var current = load();
+        current.clicks = current.clicks || {};
+        var href = card.getAttribute('href') || 'unknown';
+        current.clicks[href] = (current.clicks[href] || 0) + 1;
+        save(current);
+        render(current);
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>
