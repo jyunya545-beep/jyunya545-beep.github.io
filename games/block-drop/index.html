@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ブロックドロップ | 無料ゲーム</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#fff7ed; --panel:#ffffff; --panel2:#fff1f2; --line:#fed7aa;
+      --text:#3b0764; --muted:#7c3aed; --accent:#22c55e; --danger:#fb7185;
+      --pink:#ec4899; --sky:#0ea5e9; --amber:#f59e0b;
+    }
+    body { min-height:100vh; background:radial-gradient(circle at 18% 12%,#fef3c7,#fff7ed 34%,#dbeafe 100%); color:var(--text); font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif; }
+    header { border-bottom:1px solid rgba(124,58,237,.16); background:rgba(255,255,255,.78); backdrop-filter:blur(12px); }
+    .hdr { max-width:980px; margin:0 auto; padding:16px 20px; }
+    .hdr a { color:#2563eb; text-decoration:none; font-size:.82rem; font-weight:700; }
+    .hdr-title { margin-top:8px; font-size:1.45rem; font-weight:900; }
+    .hdr-sub { margin-top:4px; color:#6d28d9; font-size:.86rem; line-height:1.5; }
+    main { max-width:980px; margin:0 auto; padding:22px 20px 34px; display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:18px; align-items:start; }
+    .game-shell { background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(240,249,255,.9)); border:2px solid rgba(14,165,233,.28); border-radius:18px; padding:14px; box-shadow:0 16px 36px rgba(14,165,233,.16); }
+    .board-wrap { display:grid; place-items:center; }
+    canvas { max-width:100%; height:auto; background:#f8fbff; border:2px solid rgba(124,58,237,.22); border-radius:12px; image-rendering:pixelated; touch-action:none; }
+    .side { display:grid; gap:12px; }
+    .card { background:rgba(255,255,255,.84); border:2px solid rgba(236,72,153,.16); border-radius:14px; padding:14px; box-shadow:0 8px 22px rgba(236,72,153,.08); }
+    .card-title { color:#7c3aed; font-size:.82rem; font-weight:900; margin-bottom:10px; }
+    .stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .stat { background:linear-gradient(135deg,#fdf2f8,#eff6ff); border:1px solid rgba(124,58,237,.14); border-radius:11px; padding:10px; }
+    .stat strong { display:block; font-size:1.35rem; color:#db2777; font-family:Consolas,monospace; }
+    .stat span { color:#7c3aed; font-size:.72rem; font-weight:700; }
+    .next { display:grid; place-items:center; background:#f8fbff; border:1px solid rgba(14,165,233,.2); border-radius:10px; padding:10px; }
+    .controls { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    button { border:none; border-radius:11px; padding:10px 8px; min-height:42px; background:linear-gradient(135deg,#38bdf8,#6366f1); color:#fff; font:inherit; font-size:.82rem; font-weight:900; cursor:pointer; box-shadow:0 5px 14px rgba(99,102,241,.22); white-space:nowrap; }
+    button:hover { filter:brightness(1.06); transform:translateY(-1px); }
+    .primary { background:linear-gradient(135deg,#f97316,#ec4899); }
+    .primary:hover { background:linear-gradient(135deg,#fb923c,#f472b6); }
+    .wide { grid-column:1/-1; }
+    .center { grid-column:2; grid-row:2; }
+    .row3-left { grid-column:1; grid-row:3; }
+    .row3-right { grid-column:2 / 4; grid-row:3; }
+    .keys { display:grid; gap:6px; color:#6d28d9; font-size:.8rem; line-height:1.45; }
+    .status { color:#db2777; min-height:1.4em; font-size:.85rem; font-weight:900; }
+    .board-wrap { position:relative; }
+    .line-flash { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; color:#f59e0b; font-size:2.4rem; font-weight:1000; text-shadow:0 3px 18px rgba(250,204,21,.55); opacity:0; transform:scale(.86); }
+    .line-flash.show { animation:lineFlash .72s ease-out; }
+    @keyframes lineFlash { 0%{opacity:0;transform:scale(.86)} 18%{opacity:1;transform:scale(1.08)} 74%{opacity:.95;transform:scale(1)} 100%{opacity:0;transform:scale(1.16)} }
+    footer { text-align:center; padding:18px; border-top:1px solid rgba(255,255,255,.08); color:var(--muted); font-size:.75rem; }
+    footer a { color:#9ec5ff; text-decoration:none; }
+    @media (max-width:760px) {
+      main { grid-template-columns:1fr; }
+      .side { grid-template-columns:1fr 1fr; }
+      .card:last-child { grid-column:1/-1; }
+    }
+    @media (max-width:520px) {
+      main { padding:14px 12px 26px; }
+      .side { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <a href="../">← 無料ゲーム一覧</a>
+    <div class="hdr-title">ブロックドロップ</div>
+    <div class="hdr-sub">落ちてくる独自ブロックを積み、横列をそろえて消していくブラウザゲームです。</div>
+  </div>
+</header>
+<main>
+  <section class="game-shell" aria-label="ゲーム画面">
+    <div class="board-wrap">
+      <canvas id="board" width="360" height="540" aria-label="ブロックドロップの盤面"></canvas>
+      <div class="line-flash" id="lineFlash" aria-live="polite"></div>
+    </div>
+  </section>
+  <aside class="side">
+    <section class="card">
+      <div class="card-title">スコア</div>
+      <div class="stats">
+        <div class="stat"><strong id="score">0</strong><span>score</span></div>
+        <div class="stat"><strong id="lines">0</strong><span>lines</span></div>
+        <div class="stat"><strong id="level">1</strong><span>level</span></div>
+        <div class="stat"><strong id="best">0</strong><span>best</span></div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-title">次のブロック</div>
+      <div class="next"><canvas id="next" width="120" height="120"></canvas></div>
+    </section>
+    <section class="card">
+      <div class="card-title">操作</div>
+      <div class="controls">
+        <button onclick="move(-1)">←</button>
+        <button onclick="rotatePiece()">回転</button>
+        <button onclick="move(1)">→</button>
+        <button class="center" onclick="softDrop()">↓</button>
+        <button class="row3-left" onclick="hardDrop()">落下</button>
+        <button class="row3-right" onclick="togglePause()">一時停止</button>
+        <button class="primary wide" onclick="newGame()">新規ゲーム</button>
+      </div>
+      <p class="status" id="status"></p>
+    </section>
+    <section class="card">
+      <div class="card-title">キー</div>
+      <div class="keys">
+        <p>← →: 移動</p>
+        <p>↑ / X: 回転</p>
+        <p>↓: 早く落とす</p>
+        <p>Space: 一気に落下</p>
+        <p>P: 一時停止</p>
+      </div>
+    </section>
+  </aside>
+</main>
+<footer>
+  <a href="../">無料ゲーム一覧へ戻る</a>
+</footer>
+<script>
+  const cols = 12;
+  const rows = 20;
+  const visibleRows = 18;
+  const hiddenRows = rows - visibleRows;
+  const cell = 30;
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const nextCanvas = document.getElementById('next');
+  const nctx = nextCanvas.getContext('2d');
+  const colors = ['#0ea5e9','#8b5cf6','#f59e0b','#22c55e','#ec4899','#f97316','#14b8a6'];
+  const shapes = [
+    [[1,1,1],[0,1,0]],
+    [[1,1],[1,1]],
+    [[1,1,0],[0,1,1]],
+    [[0,1,1],[1,1,0]],
+    [[1,0],[1,0],[1,1]],
+    [[0,1],[0,1],[1,1]],
+    [[1,1,1,1]],
+    [[1,1,1],[1,0,0]]
+  ];
+  let board, current, nextPiece, score, lines, level, best, dropMs, last, acc, paused, over, raf, clearingRows, clearFlashUntil;
+
+  function cloneShape(shape) {
+    return shape.map(row => row.slice());
+  }
+  function makePiece() {
+    const index = Math.floor(Math.random() * shapes.length);
+    return { shape: cloneShape(shapes[index]), color: colors[index % colors.length], x: 4, y: 0 };
+  }
+  function resetBoard() {
+    board = Array.from({ length: rows }, () => Array(cols).fill(null));
+  }
+  function newGame() {
+    cancelAnimationFrame(raf);
+    resetBoard();
+    score = 0; lines = 0; level = 1; dropMs = 720; acc = 0; last = performance.now(); paused = false; over = false; clearingRows = []; clearFlashUntil = 0;
+    best = Number(localStorage.getItem('block-drop-best') || '0');
+    current = makePiece();
+    nextPiece = makePiece();
+    document.getElementById('status').textContent = '';
+    updateStats();
+    loop(last);
+  }
+  function updateStats() {
+    document.getElementById('score').textContent = score.toLocaleString();
+    document.getElementById('lines').textContent = lines.toLocaleString();
+    document.getElementById('level').textContent = level.toLocaleString();
+    document.getElementById('best').textContent = best.toLocaleString();
+  }
+  function collide(piece, dx = 0, dy = 0, shape = piece.shape) {
+    for (let y = 0; y < shape.length; y++) {
+      for (let x = 0; x < shape[y].length; x++) {
+        if (!shape[y][x]) continue;
+        const bx = piece.x + x + dx;
+        const by = piece.y + y + dy;
+        if (bx < 0 || bx >= cols || by >= rows) return true;
+        if (by >= 0 && board[by][bx]) return true;
+      }
+    }
+    return false;
+  }
+  function lockPiece() {
+    current.shape.forEach((row, y) => {
+      row.forEach((filled, x) => {
+        if (filled && current.y + y >= 0) board[current.y + y][current.x + x] = current.color;
+      });
+    });
+    clearLines();
+    const spawned = nextPiece;
+    spawned.x = Math.floor(cols / 2) - 1;
+    spawned.y = 0;
+    nextPiece = makePiece();
+    if (collide(spawned)) {
+      over = true;
+      document.getElementById('status').textContent = 'ゲーム終了';
+      if (score > best) {
+        best = score;
+        localStorage.setItem('block-drop-best', String(best));
+      }
+      updateStats();
+      draw();
+      return;
+    }
+    current = spawned;
+  }
+  function clearLines() {
+    const fullRows = [];
+    board.forEach((row, index) => {
+      if (row.every(Boolean)) fullRows.push(index);
+    });
+    let cleared = fullRows.length;
+    if (!cleared) return;
+    clearingRows = fullRows;
+    clearFlashUntil = performance.now() + 420;
+    showLineMessage(cleared);
+    board = board.filter((row, index) => {
+      if (fullRows.includes(index)) return false;
+      return true;
+    });
+    while (board.length < rows) board.unshift(Array(cols).fill(null));
+    lines += cleared;
+    score += [0, 120, 280, 520, 860][cleared] * level;
+    level = Math.floor(lines / 8) + 1;
+    dropMs = Math.max(120, 720 - (level - 1) * 58);
+    updateStats();
+  }
+  function showLineMessage(cleared) {
+    const el = document.getElementById('lineFlash');
+    el.textContent = cleared + 'LINE';
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+    window.setTimeout(() => el.classList.remove('show'), 760);
+  }
+  function rotate(shape) {
+    return shape[0].map((_, x) => shape.map(row => row[x]).reverse());
+  }
+  function rotatePiece() {
+    if (paused || over) return;
+    const rotated = rotate(current.shape);
+    if (!collide(current, 0, 0, rotated)) current.shape = rotated;
+    else if (!collide(current, -1, 0, rotated)) { current.x--; current.shape = rotated; }
+    else if (!collide(current, 1, 0, rotated)) { current.x++; current.shape = rotated; }
+    draw();
+  }
+  function move(dx) {
+    if (paused || over) return;
+    if (!collide(current, dx, 0)) current.x += dx;
+    draw();
+  }
+  function softDrop() {
+    if (paused || over) return;
+    if (!collide(current, 0, 1)) { current.y++; score += 1; }
+    else lockPiece();
+    updateStats();
+    draw();
+  }
+  function hardDrop() {
+    if (paused || over) return;
+    let dropped = 0;
+    while (!collide(current, 0, 1)) { current.y++; dropped++; }
+    score += dropped * 2;
+    lockPiece();
+    updateStats();
+    draw();
+  }
+  function togglePause() {
+    if (over) return;
+    paused = !paused;
+    document.getElementById('status').textContent = paused ? '一時停止中' : '';
+    last = performance.now();
+  }
+  function drawCell(context, x, y, color, size = cell) {
+    context.fillStyle = color;
+    context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
+    context.fillStyle = 'rgba(255,255,255,.16)';
+    context.fillRect(x * size + 3, y * size + 3, size - 6, 4);
+  }
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#f8fbff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = 'rgba(124,58,237,.08)';
+    for (let x = 1; x < cols; x++) { ctx.beginPath(); ctx.moveTo(x * cell, 0); ctx.lineTo(x * cell, visibleRows * cell); ctx.stroke(); }
+    for (let y = 1; y < visibleRows; y++) { ctx.beginPath(); ctx.moveTo(0, y * cell); ctx.lineTo(cols * cell, y * cell); ctx.stroke(); }
+    board.forEach((row, y) => row.forEach((color, x) => color && y >= hiddenRows && drawCell(ctx, x, y - hiddenRows, color)));
+    if (over) {
+      ctx.fillStyle = 'rgba(255,255,255,.72)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#db2777';
+      ctx.font = '900 46px Segoe UI, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(236,72,153,.35)';
+      ctx.shadowBlur = 16;
+      ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+      ctx.shadowBlur = 0;
+    }
+    if (performance.now() < clearFlashUntil) {
+      ctx.fillStyle = 'rgba(250,204,21,.36)';
+      clearingRows.forEach(y => y >= hiddenRows && ctx.fillRect(0, (y - hiddenRows) * cell, cols * cell, cell));
+    }
+    if (!over && current) current.shape.forEach((row, y) => {
+      const drawY = current.y + y - hiddenRows;
+      row.forEach((filled, x) => filled && drawY >= 0 && drawCell(ctx, current.x + x, drawY, current.color));
+    });
+    drawNext();
+  }
+  function drawNext() {
+    nctx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+    nctx.fillStyle = '#f8fbff';
+    nctx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+    const size = 24;
+    const ox = Math.floor((5 - nextPiece.shape[0].length) / 2);
+    const oy = Math.floor((5 - nextPiece.shape.length) / 2);
+    nextPiece.shape.forEach((row, y) => row.forEach((filled, x) => filled && drawCell(nctx, ox + x, oy + y, nextPiece.color, size)));
+  }
+  function loop(time) {
+    const delta = time - last;
+    last = time;
+    if (!paused && !over) {
+      acc += delta;
+      if (acc > dropMs) {
+        softDrop();
+        acc = 0;
+      }
+    }
+    draw();
+    raf = requestAnimationFrame(loop);
+  }
+  document.addEventListener('keydown', event => {
+    if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1); }
+    if (event.key === 'ArrowRight') { event.preventDefault(); move(1); }
+    if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'x') { event.preventDefault(); rotatePiece(); }
+    if (event.key === 'ArrowDown') { event.preventDefault(); softDrop(); }
+    if (event.code === 'Space') { event.preventDefault(); hardDrop(); }
+    if (event.key.toLowerCase() === 'p') togglePause();
+  });
+  canvas.addEventListener('pointerdown', event => {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    if (x < rect.width * .33) move(-1);
+    else if (x > rect.width * .66) move(1);
+    else rotatePiece();
+  });
+  newGame();
+</script>
+</body>
+</html>
