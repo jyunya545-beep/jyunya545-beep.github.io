@@ -118,8 +118,19 @@
     }
     .editor-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .editor-row {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      align-items: center;
       gap: 10px;
+    }
+    .editor-row label { margin-bottom: 0; }
+    .group-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(120px, .8fr);
+      gap: 7px;
     }
     .field {
       min-width: 0;
@@ -133,7 +144,7 @@
       outline: none;
     }
     .field:disabled { opacity: .55; background: rgba(241,245,249,.7); }
-    .color-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .color-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
     .swatch {
       width: 34px;
       height: 34px;
@@ -242,6 +253,15 @@
       justify-content: flex-end;
       white-space: nowrap;
     }
+    .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,.9);
+      box-shadow: 0 1px 4px rgba(15,23,42,.18);
+      display: inline-block;
+      flex: 0 0 auto;
+    }
     .meta-pill {
       padding: 1px 6px;
       border-radius: 999px;
@@ -259,7 +279,7 @@
       text-decoration-thickness: 2px;
     }
     .subtasks {
-      grid-column: 2;
+      grid-column: 2 / -1;
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -528,22 +548,6 @@
         render();
       }
 
-      function sortGroupByPriority(group) {
-        var rank = { '高': 0, '中': 1, '低': 2 };
-        tasks = tasks.slice().sort(function (a, b) {
-          var ag = taskGroup(a);
-          var bg = taskGroup(b);
-          if (ag === group && bg === group) {
-            var ar = Object.prototype.hasOwnProperty.call(rank, a.priority) ? rank[a.priority] : 1;
-            var br = Object.prototype.hasOwnProperty.call(rank, b.priority) ? rank[b.priority] : 1;
-            return ar - br;
-          }
-          return 0;
-        });
-        save();
-        render();
-      }
-
       function setColor(color) {
         if (!selectedId) {
           show('色を変更するタスクを選択してください。');
@@ -581,6 +585,7 @@
 
       function fieldBlock(labelText, field) {
         var wrap = document.createElement('div');
+        wrap.className = 'editor-row';
         var label = document.createElement('label');
         label.textContent = labelText;
         wrap.appendChild(label);
@@ -594,10 +599,9 @@
         editor.addEventListener('click', function (event) { event.stopPropagation(); });
 
         var colorBlock = document.createElement('div');
-        colorBlock.className = 'tool-block';
-        colorBlock.style.marginTop = '0';
+        colorBlock.className = 'editor-row';
         var colorLabel = document.createElement('label');
-        colorLabel.textContent = '選択タスクの色';
+        colorLabel.textContent = 'タスクの色';
         var colorRow = document.createElement('div');
         colorRow.className = 'color-row';
         colorBlock.appendChild(colorLabel);
@@ -610,12 +614,22 @@
         var groupInput = document.createElement('input');
         groupInput.className = 'field';
         groupInput.type = 'text';
-        groupInput.setAttribute('list', 'groupOptions');
         groupInput.value = task.group || '未分類';
-        groupInput.placeholder = '例: 仕事';
+        groupInput.placeholder = '任意入力';
         groupInput.addEventListener('change', function () {
           updateSelected({ group: groupInput.value.trim() || '未分類' });
         });
+
+        var groupSelect = makeSelect(['既存グループ'].concat(groupsFromTasks()), '既存グループ');
+        groupSelect.addEventListener('change', function () {
+          if (groupSelect.value === '既存グループ') return;
+          groupInput.value = groupSelect.value;
+          updateSelected({ group: groupSelect.value });
+        });
+        var groupFields = document.createElement('div');
+        groupFields.className = 'group-fields';
+        groupFields.appendChild(groupInput);
+        groupFields.appendChild(groupSelect);
 
         var dueInput = document.createElement('input');
         dueInput.className = 'field';
@@ -635,7 +649,7 @@
           updateSelected({ progress: progressSelect.value });
         });
 
-        grid.appendChild(fieldBlock('グループ', groupInput));
+        grid.appendChild(fieldBlock('グループ', groupFields));
         grid.appendChild(fieldBlock('期限', dueInput));
         grid.appendChild(fieldBlock('重要度', prioritySelect));
         grid.appendChild(fieldBlock('進捗', progressSelect));
@@ -678,16 +692,7 @@
         itemEditor.appendChild(itemButton);
 
         editor.appendChild(colorBlock);
-        var datalist = document.createElement('datalist');
-        datalist.id = 'groupOptions';
-        groupsFromTasks().forEach(function (group) {
-          var option = document.createElement('option');
-          option.value = group;
-          datalist.appendChild(option);
-        });
-        editor.appendChild(datalist);
         editor.appendChild(grid);
-        if ((task.items || []).length) editor.appendChild(subtasks);
         editor.appendChild(itemEditor);
         return editor;
       }
@@ -752,14 +757,9 @@
           down.textContent = '↓';
           down.disabled = groupIndex === groupOrder.length - 1;
           down.addEventListener('click', function () { moveGroup(group, 1); });
-          var sort = document.createElement('button');
-          sort.type = 'button';
-          sort.textContent = '↕';
-          sort.addEventListener('click', function () { sortGroupByPriority(group); });
-          groupLeft.appendChild(sort);
+          groupLeft.appendChild(up);
+          groupLeft.appendChild(down);
           groupLeft.appendChild(groupName);
-          actions.appendChild(up);
-          actions.appendChild(down);
           actions.appendChild(groupCount);
           heading.appendChild(groupLeft);
           heading.appendChild(actions);
@@ -790,9 +790,34 @@
           meta.className = 'task-meta';
           var priority = task.priority || '中';
           var priorityClass = priority === '高' ? ' meta-high' : priority === '低' ? ' meta-low' : ' meta-medium';
+          var dot = document.createElement('span');
+          dot.className = 'color-dot';
+          dot.style.background = task.color || colors[0];
           meta.innerHTML =
             '<span class="meta-pill' + priorityClass + '">' + priority + '</span>' +
             '<span class="meta-pill">' + (task.progress || '未着手') + '</span>';
+          meta.appendChild(dot);
+
+          var subtasks = document.createElement('div');
+          subtasks.className = 'subtasks';
+          (task.items || []).forEach(function (sub) {
+            var row = document.createElement('label');
+            row.className = 'subtask' + (sub.done ? ' done' : '');
+
+            var subCheck = document.createElement('input');
+            subCheck.type = 'checkbox';
+            subCheck.checked = sub.done;
+            subCheck.addEventListener('click', function (event) {
+              event.stopPropagation();
+              toggleItem(task.id, sub.id, subCheck.checked);
+            });
+
+            var subText = document.createElement('span');
+            subText.textContent = sub.text;
+            row.appendChild(subCheck);
+            row.appendChild(subText);
+            subtasks.appendChild(row);
+          });
 
           item.addEventListener('click', function () { selectTask(task.id); });
           item.addEventListener('keydown', function (event) {
@@ -805,6 +830,7 @@
           item.appendChild(checkbox);
           item.appendChild(text);
           item.appendChild(meta);
+          if ((task.items || []).length) item.appendChild(subtasks);
           if (task.id === selectedId) item.appendChild(renderTaskEditor(task));
           list.appendChild(item);
         });
@@ -846,6 +872,12 @@
       clearDoneButton.addEventListener('click', clearDone);
       input.addEventListener('keydown', function (event) {
         if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') addTask();
+      });
+      document.addEventListener('click', function (event) {
+        if (event.target.closest('.task')) return;
+        if (!selectedId) return;
+        selectedId = null;
+        render();
       });
 
       render();
