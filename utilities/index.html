@@ -3,16 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>便利ツール｜PDF結合・分解ツール</title>
-  <meta name="description" content="PDFをブラウザ内で結合・分割できる無料便利ツールです。複数PDFのドラッグ追加、ファイル選択、ページ範囲指定、並び替えに対応しています。">
+  <title>便利ツール｜PDF結合・分解・文字抽出ツール</title>
+  <meta name="description" content="PDFをブラウザ内で結合・分割できる無料便利ツールです。PDF、PNG、JPEGからの文字抽出にも対応しています。">
   <link rel="canonical" href="https://toaruseigyoya.github.io/utilities/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="とある制御屋の備忘録">
-  <meta property="og:title" content="便利ツール｜PDF結合・分解ツール">
-  <meta property="og:description" content="複数PDFをブラウザ内で結合・分割。ファイルは外部へ送信せず、ページ範囲指定と並び替えに対応。">
+  <meta property="og:title" content="便利ツール｜PDF結合・分解・文字抽出ツール">
+  <meta property="og:description" content="複数PDFをブラウザ内で結合・分割。PDFや画像からの文字抽出にも対応。">
   <meta property="og:url" content="https://toaruseigyoya.github.io/utilities/">
   <meta name="twitter:card" content="summary">
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     :root {
@@ -90,6 +92,7 @@
       font-weight: 850;
     }
     .drop-zone.dragging { border-color: var(--blue); background: rgba(37,99,235,.12); color: var(--blue); }
+    .extract-drop.dragging { border-color: var(--cyan); background: rgba(8,145,178,.12); color: var(--cyan); }
     .actions, .mode-tabs, .range-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     button {
       border: 0;
@@ -152,6 +155,10 @@
     .split-panel.active, .merge-panel.active { display: block; }
     .merge-panel.hidden { display: none; }
     .info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .extract-section { margin-top: 16px; display: grid; grid-template-columns: minmax(300px, 390px) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .extract-results { min-height: 260px; font-family: 'Consolas','Yu Gothic UI',monospace; }
+    .extract-list { display: grid; gap: 8px; margin-top: 10px; }
+    .extract-item { padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.66); font-size: .82rem; font-weight: 850; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .info-card { padding: 14px; border: 1px solid rgba(255,255,255,.9); border-radius: 14px; background: rgba(255,255,255,.62); }
     .info-card h2 { margin-bottom: 8px; }
     .info-card li, .info-card p { color: var(--muted); font-size: .84rem; line-height: 1.75; font-weight: 750; }
@@ -160,7 +167,7 @@
     @media (max-width: 860px) {
       main { padding: 20px 14px 42px; }
       .header-inner { padding: 0 14px; }
-      .app, .info-grid { grid-template-columns: 1fr; }
+      .app, .info-grid, .extract-section { grid-template-columns: 1fr; }
       .file-row { grid-template-columns: 1fr; }
       .file-tools { justify-content: flex-start; }
     }
@@ -176,8 +183,8 @@
 
   <main>
     <section class="hero">
-      <h1>PDF結合・分解ツール</h1>
-      <p>PDFファイルをドラッグ、ファイル選択、またはフォルダ選択で追加し、ページ範囲を指定して結合・分割できます。処理はブラウザ内で行い、ファイルをサーバーへアップロードしません。</p>
+      <h1>PDF結合・分解・文字抽出ツール</h1>
+      <p>PDFファイルをドラッグ、ファイル選択、またはフォルダ選択で追加し、ページ範囲を指定して結合・分割できます。PDF、PNG、JPEGなどからの文字抽出にも対応し、処理はブラウザ内で行います。</p>
     </section>
 
     <div class="app">
@@ -231,6 +238,41 @@
       </section>
     </div>
 
+    <section class="extract-section" aria-label="文字抽出">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>文字抽出</h2>
+          <span class="small" id="extractCount">0件</span>
+        </div>
+        <div class="drop-zone extract-drop" id="extractDrop">
+          <div>
+            <div>PDF / PNG / JPEGをここへドラッグ</div>
+            <div class="small">PDFは埋め込みテキストを抽出、画像はOCRで読み取ります。</div>
+          </div>
+        </div>
+        <input class="hidden-input" id="extractInput" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,.png,.jpg,.jpeg" multiple>
+        <div class="actions">
+          <button type="button" id="pickExtractFiles">ファイルを選択</button>
+          <button type="button" class="primary" id="extractButton">文字抽出</button>
+          <button type="button" class="danger" id="clearExtract">全削除</button>
+        </div>
+        <div class="extract-list" id="extractList"></div>
+        <div class="status" id="extractStatus">文字抽出したいファイルを追加してください。</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>抽出結果</h2>
+        </div>
+        <textarea class="extract-results" id="extractOutput" readonly placeholder="抽出した文字がここに表示されます。"></textarea>
+        <div class="actions">
+          <button type="button" id="copyExtract">コピー</button>
+          <button type="button" id="saveExtract">txt保存</button>
+        </div>
+        <p class="hint">画像OCRは日本語と英語を対象にします。スキャン品質や文字の傾きによって読み取り精度が変わります。</p>
+      </div>
+    </section>
+
     <section class="info-grid" aria-label="使い方">
       <div class="info-card">
         <h2>結合の使い方</h2>
@@ -250,12 +292,22 @@
           <li>大きいPDFは処理に時間がかかる場合があります。</li>
         </ul>
       </div>
+      <div class="info-card">
+        <h2>文字抽出の使い方</h2>
+        <ul>
+          <li>PDF、PNG、JPEGを追加します。</li>
+          <li>PDF内に埋め込まれた文字は直接抽出します。</li>
+          <li>画像はOCRで読み取り、結果欄にまとめて表示します。</li>
+          <li>抽出結果はコピーまたはtxt保存できます。</li>
+        </ul>
+      </div>
     </section>
   </main>
 
   <script>
     (function () {
       var files = [];
+      var extractFiles = [];
       var mode = 'merge';
       var dropZone = document.getElementById('dropZone');
       var fileInput = document.getElementById('fileInput');
@@ -269,10 +321,25 @@
       var splitPanel = document.getElementById('splitPanel');
       var splitSource = document.getElementById('splitSource');
       var splitRanges = document.getElementById('splitRanges');
+      var extractDrop = document.getElementById('extractDrop');
+      var extractInput = document.getElementById('extractInput');
+      var extractList = document.getElementById('extractList');
+      var extractCount = document.getElementById('extractCount');
+      var extractStatus = document.getElementById('extractStatus');
+      var extractOutput = document.getElementById('extractOutput');
+
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
 
       function setStatus(message, kind) {
         status.textContent = message;
         status.className = 'status' + (kind ? ' ' + kind : '');
+      }
+
+      function setExtractStatus(message, kind) {
+        extractStatus.textContent = message;
+        extractStatus.className = 'status' + (kind ? ' ' + kind : '');
       }
 
       function bytes(size) {
@@ -286,6 +353,35 @@
           reader.onload = function () { resolve(reader.result); };
           reader.onerror = reject;
           reader.readAsArrayBuffer(file);
+        });
+      }
+
+      function addExtractFiles(list) {
+        var incoming = Array.prototype.slice.call(list || []).filter(function (file) {
+          return /\.pdf$/i.test(file.name) || /^image\/(png|jpeg)$/.test(file.type) || /\.(png|jpe?g)$/i.test(file.name);
+        });
+        if (!incoming.length) {
+          setExtractStatus('PDF、PNG、JPEGファイルが見つかりませんでした。', 'error');
+          return;
+        }
+        incoming.forEach(function (file) {
+          extractFiles.push({
+            id: String(Date.now()) + Math.random().toString(16).slice(2),
+            file: file
+          });
+        });
+        renderExtractFiles();
+        setExtractStatus(extractFiles.length + '件の文字抽出ファイルを追加しました。', 'ok');
+      }
+
+      function renderExtractFiles() {
+        extractCount.textContent = extractFiles.length + '件';
+        extractList.innerHTML = '';
+        extractFiles.forEach(function (item) {
+          var row = document.createElement('div');
+          row.className = 'extract-item';
+          row.textContent = item.file.name + ' / ' + bytes(item.file.size);
+          extractList.appendChild(row);
         });
       }
 
@@ -472,6 +568,78 @@
         }
       }
 
+      async function extractTextFromPdf(file) {
+        if (!window.pdfjsLib) throw new Error('PDF文字抽出ライブラリを読み込めませんでした。');
+        var data = await readArrayBuffer(file);
+        var pdf = await pdfjsLib.getDocument({ data: data }).promise;
+        var chunks = [];
+        for (var pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
+          var page = await pdf.getPage(pageNo);
+          var content = await page.getTextContent();
+          var text = content.items.map(function (item) { return item.str; }).join(' ').replace(/\s+/g, ' ').trim();
+          chunks.push('--- ' + file.name + ' / page ' + pageNo + ' ---\n' + (text || '[このページから埋め込みテキストを抽出できませんでした]'));
+        }
+        return chunks.join('\n\n');
+      }
+
+      async function extractTextFromImage(file) {
+        if (!window.Tesseract) throw new Error('画像OCRライブラリを読み込めませんでした。');
+        var result = await Tesseract.recognize(file, 'jpn+eng', {
+          logger: function (message) {
+            if (message.status) {
+              var percent = message.progress ? ' ' + Math.round(message.progress * 100) + '%' : '';
+              setExtractStatus(file.name + ': ' + message.status + percent);
+            }
+          }
+        });
+        return '--- ' + file.name + ' / OCR ---\n' + (result.data.text || '[文字を検出できませんでした]');
+      }
+
+      async function extractText() {
+        if (!extractFiles.length) {
+          setExtractStatus('文字抽出するファイルを追加してください。', 'error');
+          return;
+        }
+        extractOutput.value = '';
+        var results = [];
+        for (var i = 0; i < extractFiles.length; i++) {
+          var file = extractFiles[i].file;
+          try {
+            setExtractStatus(file.name + ' から文字を抽出しています...');
+            if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
+              results.push(await extractTextFromPdf(file));
+            } else {
+              results.push(await extractTextFromImage(file));
+            }
+            extractOutput.value = results.join('\n\n');
+          } catch (e) {
+            results.push('--- ' + file.name + ' ---\n抽出できませんでした: ' + e.message);
+            extractOutput.value = results.join('\n\n');
+          }
+        }
+        setExtractStatus('文字抽出が完了しました。', 'ok');
+      }
+
+      async function copyExtractText() {
+        try {
+          await navigator.clipboard.writeText(extractOutput.value);
+          setExtractStatus('抽出結果をコピーしました。', 'ok');
+        } catch (e) {
+          extractOutput.focus();
+          extractOutput.select();
+          document.execCommand('copy');
+        }
+      }
+
+      function saveExtractText() {
+        var blob = new Blob([extractOutput.value], { type: 'text/plain;charset=utf-8' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'extracted-text.txt';
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+
       function switchMode(nextMode) {
         mode = nextMode;
         mergeTab.classList.toggle('active', mode === 'merge');
@@ -490,20 +658,37 @@
         dropZone.classList.remove('dragging');
         addFiles(event.dataTransfer.files);
       });
+      extractDrop.addEventListener('dragover', function (event) {
+        event.preventDefault();
+        extractDrop.classList.add('dragging');
+      });
+      extractDrop.addEventListener('dragleave', function () { extractDrop.classList.remove('dragging'); });
+      extractDrop.addEventListener('drop', function (event) {
+        event.preventDefault();
+        extractDrop.classList.remove('dragging');
+        addExtractFiles(event.dataTransfer.files);
+      });
       document.getElementById('pickFiles').addEventListener('click', function () { fileInput.click(); });
       document.getElementById('pickFolder').addEventListener('click', function () { folderInput.click(); });
+      document.getElementById('pickExtractFiles').addEventListener('click', function () { extractInput.click(); });
       fileInput.addEventListener('change', function () { addFiles(fileInput.files); fileInput.value = ''; });
       folderInput.addEventListener('change', function () { addFiles(folderInput.files); folderInput.value = ''; });
+      extractInput.addEventListener('change', function () { addExtractFiles(extractInput.files); extractInput.value = ''; });
       document.getElementById('clearFiles').addEventListener('click', function () { files = []; render(); setStatus('PDFを追加してください。'); });
+      document.getElementById('clearExtract').addEventListener('click', function () { extractFiles = []; extractOutput.value = ''; renderExtractFiles(); setExtractStatus('文字抽出したいファイルを追加してください。'); });
       mergeTab.addEventListener('click', function () { switchMode('merge'); });
       splitTab.addEventListener('click', function () { switchMode('split'); });
       document.getElementById('mergeButton').addEventListener('click', mergePdf);
       document.getElementById('splitButton').addEventListener('click', splitPdf);
+      document.getElementById('extractButton').addEventListener('click', extractText);
+      document.getElementById('copyExtract').addEventListener('click', copyExtractText);
+      document.getElementById('saveExtract').addEventListener('click', saveExtractText);
       document.getElementById('splitEveryPage').addEventListener('click', function () {
         var source = files.find(function (item) { return item.id === splitSource.value; });
         splitRanges.value = source ? Array.from({ length: source.pages }, function (_, i) { return String(i + 1); }).join('\n') : '';
       });
       render();
+      renderExtractFiles();
     })();
   </script>
 </body>
