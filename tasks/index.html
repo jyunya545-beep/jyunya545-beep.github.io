@@ -5,6 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>タスク管理アプリ | とある制御屋の備忘録</title>
   <meta name="description" content="左側でタスクを入力し、右側の一覧で完了チェック・選択・削除ができる無料タスク管理アプリです。">
+  <link rel="canonical" href="https://toaruseigyoya.github.io/tasks/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="とある制御屋の備忘録">
+  <meta property="og:title" content="タスク管理アプリ | 無料・登録不要">
+  <meta property="og:description" content="改行一括追加、グループ、重要度、進捗、期限、サブ項目、ファイル取り込みに対応した無料タスク管理アプリ。">
+  <meta property="og:url" content="https://toaruseigyoya.github.io/tasks/">
+  <meta name="twitter:card" content="summary">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "タスク管理アプリ",
+    "applicationCategory": "ProductivityApplication",
+    "operatingSystem": "Web browser",
+    "url": "https://toaruseigyoya.github.io/tasks/",
+    "description": "登録不要で使えるブラウザ内処理の無料タスク管理アプリ。",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "JPY"
+    }
+  }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     :root {
@@ -318,7 +341,7 @@
     }
     .list-actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
       margin-top: 14px;
     }
@@ -333,6 +356,10 @@
       background: rgba(255,255,255,.42);
       font-weight: 800;
     }
+    .empty-guide { display: grid; gap: 12px; justify-items: center; padding: 20px; }
+    .empty-guide p { margin: 0; }
+    .empty-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .empty-actions button { padding: 8px 10px; font-size: .78rem; }
     .toast {
       min-height: 28px;
       margin-top: 10px;
@@ -347,6 +374,7 @@
       .task-list { max-height: none; }
       .task { grid-template-columns: 28px minmax(0, 1fr); }
       .task-meta { grid-column: 2; justify-content: flex-start; }
+      .list-actions { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -381,6 +409,8 @@
         </div>
         <div id="taskList" class="task-list" aria-live="polite"></div>
         <div class="list-actions">
+          <button class="subtle" id="exportJsonButton" type="button">JSON保存</button>
+          <button class="subtle" id="exportCsvButton" type="button">CSV保存</button>
           <button class="danger" id="deleteButton" type="button" disabled>選択を削除</button>
           <button class="subtle" id="clearDoneButton" type="button">完了を削除</button>
         </div>
@@ -399,6 +429,8 @@
       var count = document.getElementById('taskCount');
       var deleteButton = document.getElementById('deleteButton');
       var clearDoneButton = document.getElementById('clearDoneButton');
+      var exportJsonButton = document.getElementById('exportJsonButton');
+      var exportCsvButton = document.getElementById('exportCsvButton');
       var toast = document.getElementById('toast');
       var storageKey = 'toaruseigyoya-task-app';
       var groupOrderKey = 'toaruseigyoya-task-groups';
@@ -464,6 +496,56 @@
         show(lines.length + '件追加しました。');
         save();
         render();
+      }
+
+      function addSampleTasks(kind) {
+        var samples = kind === 'work'
+          ? ['見積書を確認する', '部品表を更新する', '制御盤レイアウトを見直す']
+          : ['買い物リストを作る', 'レンタカーを手配する', '旅行の持ち物を確認する'];
+        input.value = samples.join('\n');
+        addTask();
+      }
+
+      function downloadText(filename, text, type) {
+        var blob = new Blob([text], { type: type || 'text/plain;charset=utf-8' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+
+      function csvCell(value) {
+        var text = String(value == null ? '' : value);
+        return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+      }
+
+      function exportJson() {
+        if (!tasks.length) {
+          show('保存するタスクはありません。');
+          return;
+        }
+        downloadText('tasks-backup.json', JSON.stringify(tasks, null, 2), 'application/json;charset=utf-8');
+      }
+
+      function exportCsv() {
+        if (!tasks.length) {
+          show('保存するタスクはありません。');
+          return;
+        }
+        var rows = [['タスク', '完了', 'グループ', '重要度', '進捗', '期限', 'サブ項目']];
+        tasks.forEach(function (task) {
+          rows.push([
+            task.text,
+            task.done ? '完了' : '未完了',
+            taskGroup(task),
+            task.priority || '中',
+            task.progress || '未着手',
+            task.due || '',
+            (task.items || []).map(function (item) { return (item.done ? '[x] ' : '[ ] ') + item.text; }).join(' / ')
+          ]);
+        });
+        downloadText('tasks-backup.csv', rows.map(function (row) { return row.map(csvCell).join(','); }).join('\n'), 'text/csv;charset=utf-8');
       }
 
       function makeId() {
@@ -765,7 +847,27 @@
         if (!tasks.length) {
           var empty = document.createElement('div');
           empty.className = 'empty';
-          empty.textContent = 'タスクはまだありません';
+          var guide = document.createElement('div');
+          guide.className = 'empty-guide';
+          var message = document.createElement('p');
+          message.textContent = 'タスクはまだありません';
+          var actions = document.createElement('div');
+          actions.className = 'empty-actions';
+          var work = document.createElement('button');
+          work.type = 'button';
+          work.className = 'subtle';
+          work.textContent = '仕事サンプルを追加';
+          work.addEventListener('click', function () { addSampleTasks('work'); });
+          var life = document.createElement('button');
+          life.type = 'button';
+          life.className = 'subtle';
+          life.textContent = '生活サンプルを追加';
+          life.addEventListener('click', function () { addSampleTasks('life'); });
+          actions.appendChild(work);
+          actions.appendChild(life);
+          guide.appendChild(message);
+          guide.appendChild(actions);
+          empty.appendChild(guide);
           list.appendChild(empty);
           return;
         }
@@ -924,6 +1026,8 @@
       });
       deleteButton.addEventListener('click', deleteSelected);
       clearDoneButton.addEventListener('click', clearDone);
+      exportJsonButton.addEventListener('click', exportJson);
+      exportCsvButton.addEventListener('click', exportCsv);
       input.addEventListener('keydown', function (event) {
         if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') addTask();
       });

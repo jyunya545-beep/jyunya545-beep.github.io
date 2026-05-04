@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Sitemap: https://toaruseigyoya.github.io/sitemap.xml
+Sitemap: https://toaruseigyoya.github.io/tools/sitemap.xml

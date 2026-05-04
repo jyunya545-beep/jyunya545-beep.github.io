@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>無料ゲーム | とある制御屋の備忘録</title>
   <meta name="description" content="ブラウザで遊べる無料ゲーム一覧。パズル、反射、記憶、推理、アクションなど36本の無料ゲームを登録不要で公開しています。">
+  <link rel="canonical" href="https://toaruseigyoya.github.io/games/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="とある制御屋の備忘録">
+  <meta property="og:title" content="無料ゲーム | 登録不要のブラウザゲーム一覧">
+  <meta property="og:description" content="パズル、反射、記憶、推理、アクションなど36本の無料ブラウザゲームを公開中。">
+  <meta property="og:url" content="https://toaruseigyoya.github.io/games/">
+  <meta name="twitter:card" content="summary">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "無料ゲーム",
+    "url": "https://toaruseigyoya.github.io/games/",
+    "description": "登録不要で遊べる無料ブラウザゲーム一覧。",
+    "inLanguage": "ja",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "とある制御屋の備忘録",
+      "url": "https://toaruseigyoya.github.io/"
+    }
+  }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -33,6 +55,13 @@
     .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
     .section-head h2 { font-size: .98rem; font-weight: 800; }
     .chip { font-size: .68rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: linear-gradient(135deg, var(--indigo), var(--rose)); color: #fff; }
+    .game-controls { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: center; margin-bottom: 16px; }
+    .game-search { width: 100%; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,.82); color: var(--text); font: inherit; font-weight: 700; padding: 10px 12px; }
+    .game-search:focus { outline: 3px solid rgba(236,72,153,.18); border-color: rgba(236,72,153,.42); }
+    .genre-tabs { display: flex; flex-wrap: wrap; gap: 7px; justify-content: flex-end; }
+    .genre-tab { border: 1px solid rgba(99,102,241,.16); border-radius: 999px; background: rgba(255,255,255,.72); color: var(--text2); font: inherit; font-size: .76rem; font-weight: 850; padding: 7px 11px; cursor: pointer; }
+    .genre-tab.active { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--indigo), var(--rose)); }
+    .game-count { color: var(--muted); font-size: .78rem; font-weight: 850; margin-bottom: 10px; }
     .games-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
     .game-card { min-height: 176px; display: flex; flex-direction: column; gap: 12px; padding: 22px; color: var(--text); text-decoration: none; background: var(--card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 22px; box-shadow: 0 8px 32px var(--shadow), inset 0 1px 0 rgba(255,255,255,.9); transition: transform .2s, border-color .2s, box-shadow .2s; }
     .game-card:hover { transform: translateY(-4px); border-color: rgba(236,72,153,.35); box-shadow: 0 16px 48px rgba(236,72,153,.13), inset 0 1px 0 rgba(255,255,255,.9); }
@@ -49,6 +78,8 @@
       .header-nav { display: none; }
       main { padding-top: 28px; }
       .games-grid { grid-template-columns: 1fr; }
+      .game-controls { grid-template-columns: 1fr; }
+      .genre-tabs { justify-content: flex-start; }
     }
   </style>
 </head>
@@ -76,6 +107,11 @@
         <h2>公開中のゲーム</h2>
         <span class="chip">36 Games</span>
       </div>
+      <div class="game-controls">
+        <input class="game-search" id="gameSearch" type="search" placeholder="ゲーム名・説明で検索">
+        <div class="genre-tabs" id="genreTabs" aria-label="ジャンルで絞り込み"></div>
+      </div>
+      <div class="game-count" id="gameCount">36件</div>
       <div class="games-grid">
         <a class="game-card" href="./block-drop/">
           <div class="game-top">
@@ -515,5 +551,53 @@
     </section>
   </main>
   <footer>© 2026 とある制御屋の備忘録</footer>
+  <script>
+    (function () {
+      var cards = Array.from(document.querySelectorAll('.game-card'));
+      var search = document.getElementById('gameSearch');
+      var tabs = document.getElementById('genreTabs');
+      var count = document.getElementById('gameCount');
+      var activeGenre = 'すべて';
+      var genres = ['すべて', 'パズル', '記憶', '反射', '推理', '計算', 'アクション'];
+      function inferGenre(card) {
+        var text = card.textContent;
+        if (/記憶|メモリー|覚え/.test(text)) return '記憶';
+        if (/反射|タイミング|タップ|避け|キャッチ|アクション|ボール|迷路/.test(text)) return '反射';
+        if (/推理|暗号|数字を手がかり|危険|探す|違う/.test(text)) return '推理';
+        if (/計算|数|数字|暗算|釣り合う/.test(text)) return '計算';
+        if (/ブロック|ドロップ|スライド|そろえる|並べ|パズル|箱|線/.test(text)) return 'パズル';
+        return 'アクション';
+      }
+      function render() {
+        var q = (search.value || '').trim().toLowerCase();
+        var shown = 0;
+        cards.forEach(function (card) {
+          var genre = card.getAttribute('data-genre') || inferGenre(card);
+          card.setAttribute('data-genre', genre);
+          var haystack = (card.textContent + ' ' + genre).toLowerCase();
+          var visible = (activeGenre === 'すべて' || genre === activeGenre) && (!q || haystack.indexOf(q) !== -1);
+          card.style.display = visible ? '' : 'none';
+          if (visible) shown++;
+        });
+        count.textContent = shown + '件 / ' + cards.length + '件';
+      }
+      genres.forEach(function (genre) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'genre-tab' + (genre === activeGenre ? ' active' : '');
+        button.textContent = genre;
+        button.addEventListener('click', function () {
+          activeGenre = genre;
+          Array.from(tabs.querySelectorAll('.genre-tab')).forEach(function (tab) {
+            tab.classList.toggle('active', tab === button);
+          });
+          render();
+        });
+        tabs.appendChild(button);
+      });
+      search.addEventListener('input', render);
+      render();
+    })();
+  </script>
 </body>
 </html>
