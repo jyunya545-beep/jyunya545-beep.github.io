@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>タスク管理アプリ | とある制御屋の備忘録</title>
-  <meta name="description" content="左側でタスクを入力し、右側の一覧で完了チェック・選択・削除ができる無料タスク管理アプリです。">
+  <title>無料タスク管理アプリ｜ブラウザで使えるToDoリスト</title>
+  <meta name="description" content="ブラウザだけで使える無料のタスク管理アプリです。会員登録不要で、ToDoリストや作業リストを簡単に作成できます。改行ごとの一括登録やファイル取込にも対応しています。">
   <link rel="canonical" href="https://toaruseigyoya.github.io/tasks/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="とある制御屋の備忘録">
-  <meta property="og:title" content="タスク管理アプリ | 無料・登録不要">
+  <meta property="og:title" content="無料タスク管理アプリ｜ブラウザで使えるToDoリスト">
   <meta property="og:description" content="改行一括追加、グループ、重要度、進捗、期限、サブ項目、ファイル取り込みに対応した無料タスク管理アプリ。">
   <meta property="og:url" content="https://toaruseigyoya.github.io/tasks/">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
     "applicationCategory": "ProductivityApplication",
     "operatingSystem": "Web browser",
     "url": "https://toaruseigyoya.github.io/tasks/",
-    "description": "登録不要で使えるブラウザ内処理の無料タスク管理アプリ。",
+    "description": "ブラウザだけで使える、登録不要・インストール不要の無料タスク管理アプリ。",
     "offers": {
       "@type": "Offer",
       "price": "0",
@@ -76,7 +76,36 @@
       margin: 0 auto;
       padding: 28px 22px 56px;
     }
-    .title-row { display: none; }
+    .hero {
+      margin: 0 0 18px;
+      padding: 16px 18px;
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 16px;
+      background: rgba(255,255,255,.62);
+      box-shadow: 0 14px 36px rgba(37,99,235,.1);
+    }
+    .hero p {
+      max-width: 860px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: .94rem;
+      font-weight: 750;
+      line-height: 1.75;
+    }
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 12px;
+    }
+    .hero-badges span {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: var(--cyan);
+      font-size: .74rem;
+      font-weight: 900;
+    }
     h1 { margin: 0 0 6px; font-size: clamp(1.7rem, 4vw, 2.8rem); line-height: 1.15; }
     .app {
       display: grid;
@@ -129,6 +158,23 @@
       color: var(--muted);
       font-size: .72rem;
       font-weight: 800;
+    }
+    .quick-guide {
+      margin: 10px 0 0;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(224,242,254,.45);
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 750;
+      line-height: 1.65;
+    }
+    .quick-guide strong { color: var(--text); }
+    .quick-guide pre {
+      margin: 6px 0 0;
+      white-space: pre-wrap;
+      font: inherit;
+      color: var(--text);
     }
     .tool-block { margin-top: 14px; }
     .task-editor {
@@ -200,6 +246,13 @@
     }
     .import-drop input { display: none; }
     .import-drop span { color: var(--blue); text-decoration: underline; cursor: pointer; }
+    .import-help {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 800;
+      line-height: 1.55;
+    }
     .add-task-button {
       width: 100%;
       margin-top: 10px;
@@ -345,6 +398,13 @@
       gap: 10px;
       margin-top: 14px;
     }
+    .action-help {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 800;
+      line-height: 1.55;
+    }
     .empty {
       min-height: 220px;
       display: grid;
@@ -358,8 +418,32 @@
     }
     .empty-guide { display: grid; gap: 12px; justify-items: center; padding: 20px; }
     .empty-guide p { margin: 0; }
+    .empty-guide .empty-title { color: var(--text); font-size: .98rem; }
+    .empty-guide .empty-copy { max-width: 420px; line-height: 1.7; font-size: .84rem; font-weight: 750; }
     .empty-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
     .empty-actions button { padding: 8px 10px; font-size: .78rem; }
+    .info-sections {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+    .info-card {
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 16px;
+      background: rgba(255,255,255,.64);
+      box-shadow: 0 12px 30px rgba(37,99,235,.08);
+    }
+    .info-card h2 { font-size: 1.05rem; margin-bottom: 8px; }
+    .info-card p, .info-card li {
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 750;
+      line-height: 1.75;
+    }
+    .info-card p { margin: 0 0 10px; }
+    .info-card ul { margin: 0; padding-left: 1.2em; }
     .toast {
       min-height: 28px;
       margin-top: 10px;
@@ -368,13 +452,24 @@
       font-weight: 900;
     }
     @media (max-width: 860px) {
-      .title-row { align-items: start; flex-direction: column; }
+      main { padding: 20px 14px 42px; }
+      .header-inner { padding: 0 14px; }
+      .hero { padding: 14px; }
       .app { grid-template-columns: 1fr; }
       .panel { min-height: auto; }
       .task-list { max-height: none; }
       .task { grid-template-columns: 28px minmax(0, 1fr); }
       .task-meta { grid-column: 2; justify-content: flex-start; }
       .list-actions { grid-template-columns: 1fr 1fr; }
+      .info-sections { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .panel { padding: 12px; border-radius: 14px; }
+      textarea { min-height: 104px; }
+      .list-actions { grid-template-columns: 1fr; }
+      button { min-height: 42px; }
+      .task { padding: 7px 8px; }
+      .task-meta { gap: 5px; }
     }
   </style>
 </head>
@@ -386,6 +481,16 @@
     </div>
   </header>
   <main>
+    <section class="hero" aria-labelledby="pageTitle">
+      <h1 id="pageTitle">タスク管理アプリ</h1>
+      <p>ブラウザだけで使える無料の簡易タスク管理アプリです。改行ごとの一括登録、タスクの整理、完了管理、ファイル取込に対応しています。会員登録やインストールは不要で、日々のToDo管理や作業リスト作成に利用できます。</p>
+      <div class="hero-badges" aria-label="特徴">
+        <span>無料</span>
+        <span>ブラウザで使える</span>
+        <span>会員登録不要</span>
+        <span>一括登録対応</span>
+      </div>
+    </section>
     <div class="app">
       <section class="panel input-panel">
         <div class="panel-head">
@@ -394,10 +499,18 @@
         <label for="taskInput">タスク内容</label>
         <textarea id="taskInput" placeholder="例: 見積書を確認する&#10;部品表を更新する"></textarea>
         <p class="input-note">※ 改行ごとに別タスクとして登録できます。</p>
+        <div class="quick-guide">
+          <strong>使い方：</strong>1行に1件ずつタスクを入力してください。複数行入力すると、まとめて複数タスクを追加できます。
+          <pre>入力例:
+資料作成
+メール返信
+現地作業の準備</pre>
+        </div>
         <div class="import-drop" id="dropZone">
           <input id="fileInput" type="file" multiple accept=".txt,.md,.csv,.tsv,text/plain,text/markdown,text/csv">
           <span id="filePick">ファイルを選択</span>、またはここへドラッグ
         </div>
+        <p class="import-help">ファイル取込：.txt / .md / .csv / .tsv を読み込めます。ファイル内の1行を1タスクとして入力欄へ取り込みます。</p>
         <button class="add-task-button" id="taskButton" type="button">タスク追加</button>
         <div class="toast" id="toast" aria-live="polite"></div>
       </section>
@@ -411,11 +524,30 @@
         <div class="list-actions">
           <button class="subtle" id="exportJsonButton" type="button">JSON保存</button>
           <button class="subtle" id="exportCsvButton" type="button">CSV保存</button>
-          <button class="danger" id="deleteButton" type="button" disabled>選択を削除</button>
-          <button class="subtle" id="clearDoneButton" type="button">完了を削除</button>
+          <button class="danger" id="deleteButton" type="button" disabled title="選択中のタスクを削除します。">選択を削除</button>
+          <button class="subtle" id="clearDoneButton" type="button" title="完了済みのタスクをまとめて削除します。">完了を削除</button>
         </div>
+        <p class="action-help">選択を削除：選択中のタスクを削除します。完了を削除：完了済みのタスクをまとめて削除します。</p>
       </section>
     </div>
+
+    <section class="info-sections" aria-label="タスク管理ツールの説明">
+      <div class="info-card">
+        <h2>このタスク管理ツールについて</h2>
+        <p>このページは、ブラウザでそのまま使える無料のタスク管理ツールです。インストールや会員登録は不要で、日々のToDoリスト、作業メモ、買い物リスト、現場作業のチェックリストなどを簡単に作成できます。</p>
+        <p>改行ごとの一括登録に対応しているため、メモ帳やExcelからコピーした作業リストもまとめて登録できます。ファイル取込機能を使うことで、テキストファイルやCSVファイルからタスクを追加できます。</p>
+      </div>
+      <div class="info-card">
+        <h2>おすすめの使い方</h2>
+        <ul>
+          <li>今日やることの整理</li>
+          <li>仕事の作業リスト作成</li>
+          <li>家事や買い物リストの管理</li>
+          <li>現場作業や確認項目のチェックリスト化</li>
+          <li>メモ帳やExcelで作ったリストの取り込み</li>
+        </ul>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -850,7 +982,11 @@
           var guide = document.createElement('div');
           guide.className = 'empty-guide';
           var message = document.createElement('p');
-          message.textContent = 'タスクはまだありません';
+          message.className = 'empty-title';
+          message.textContent = 'まだタスクはありません。';
+          var copy = document.createElement('p');
+          copy.className = 'empty-copy';
+          copy.textContent = '上の入力欄にタスクを入力して「タスク追加」を押してください。複数行を入力すると、まとめてToDoリストや作業リストを作成できます。';
           var actions = document.createElement('div');
           actions.className = 'empty-actions';
           var work = document.createElement('button');
@@ -866,6 +1002,7 @@
           actions.appendChild(work);
           actions.appendChild(life);
           guide.appendChild(message);
+          guide.appendChild(copy);
           guide.appendChild(actions);
           empty.appendChild(guide);
           list.appendChild(empty);
