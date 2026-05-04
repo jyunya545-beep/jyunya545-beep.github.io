@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF・画像文字抽出ツール｜便利ツール集</title>
+  <meta name="description" content="PDF、PNG、JPEGから文字を抽出できる無料ツールです。PDF内テキスト抽出と画像OCRに対応しています。">
+  <link rel="canonical" href="https://toaruseigyoya.github.io/utilities/text-extract/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="とある制御屋の備忘録">
+  <meta property="og:title" content="PDF・画像文字抽出ツール｜便利ツール集">
+  <meta property="og:description" content="PDF内テキスト抽出とPNG/JPEG画像OCRに対応。結果はコピー・txt保存できます。">
+  <meta property="og:url" content="https://toaruseigyoya.github.io/utilities/text-extract/">
+  <meta name="twitter:card" content="summary">
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg: #eef6ff;
+      --panel: rgba(255,255,255,.9);
+      --line: rgba(37,99,235,.16);
+      --text: #172554;
+      --muted: #64748b;
+      --blue: #2563eb;
+      --cyan: #0891b2;
+      --green: #16a34a;
+      --rose: #e11d48;
+      --amber: #b45309;
+      --shadow: rgba(37,99,235,.13);
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Segoe UI','Hiragino Sans','Yu Gothic UI',sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, #eff6ff, #ecfeff 45%, #f8fafc);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(238,246,255,.86);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,.8);
+    }
+    .header-inner {
+      max-width: 1180px;
+      height: 56px;
+      margin: 0 auto;
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    a { color: var(--blue); text-decoration: none; font-weight: 800; }
+    .brand { font-weight: 900; letter-spacing: 0; }
+    main { max-width: 1180px; margin: 0 auto; padding: 26px 22px 56px; }
+    .hero {
+      margin-bottom: 16px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 16px;
+      background: rgba(255,255,255,.62);
+      box-shadow: 0 14px 36px rgba(37,99,235,.1);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(1.55rem, 4vw, 2.4rem); line-height: 1.2; }
+    h2 { margin: 0; font-size: 1rem; }
+    .hero p, .hint, .small { color: var(--muted); line-height: 1.75; font-weight: 750; }
+    .hero p { max-width: 860px; margin: 0; font-size: .94rem; }
+    .app { display: grid; grid-template-columns: minmax(300px, 390px) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.92);
+      border-radius: 16px;
+      box-shadow: 0 18px 46px var(--shadow), inset 0 1px 0 rgba(255,255,255,.95);
+      padding: 14px;
+    }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .drop-zone {
+      display: grid;
+      place-items: center;
+      min-height: 156px;
+      padding: 18px;
+      border: 2px dashed rgba(37,99,235,.32);
+      border-radius: 14px;
+      background: rgba(224,242,254,.45);
+      text-align: center;
+      color: var(--muted);
+      font-weight: 850;
+    }
+    .drop-zone.dragging { border-color: var(--blue); background: rgba(37,99,235,.12); color: var(--blue); }
+    .extract-drop.dragging { border-color: var(--cyan); background: rgba(8,145,178,.12); color: var(--cyan); }
+    .actions, .mode-tabs, .range-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 12px;
+      color: var(--text);
+      background: #e0f2fe;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    button.primary { color: #fff; background: linear-gradient(135deg, var(--blue), var(--cyan)); box-shadow: 0 10px 26px rgba(37,99,235,.18); }
+    button.danger { color: var(--rose); background: #ffe4e6; }
+    button.active { color: #fff; background: linear-gradient(135deg, var(--blue), var(--cyan)); }
+    button:disabled { opacity: .45; cursor: default; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: rgba(255,255,255,.86);
+      color: var(--text);
+      font: inherit;
+      font-weight: 750;
+      outline: none;
+    }
+    textarea { min-height: 112px; resize: vertical; line-height: 1.55; }
+    input:focus, select:focus, textarea:focus { border-color: rgba(37,99,235,.6); box-shadow: 0 0 0 4px rgba(37,99,235,.09); }
+    .file-list { display: grid; gap: 8px; }
+    .file-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 112px;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.66);
+    }
+    .file-name { min-width: 0; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-meta { color: var(--muted); font-size: .76rem; font-weight: 800; margin-top: 2px; }
+    .file-tools { display: flex; gap: 4px; justify-content: flex-end; }
+    .file-tools button { padding: 5px 7px; border-radius: 8px; min-width: 30px; }
+    .range-field { grid-column: 1 / -1; display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 8px; align-items: center; }
+    .range-field label { color: var(--muted); font-size: .78rem; font-weight: 900; }
+    .status {
+      min-height: 34px;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(224,242,254,.45);
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 850;
+      line-height: 1.6;
+    }
+    .status.error { background: #fff1f2; color: var(--rose); }
+    .status.ok { background: #ecfdf5; color: #047857; }
+    .split-panel { display: none; }
+    .split-panel.active, .merge-panel.active { display: block; }
+    .merge-panel.hidden { display: none; }
+    .info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .extract-section { margin-top: 16px; display: grid; grid-template-columns: minmax(300px, 390px) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .extract-results { min-height: 260px; font-family: 'Consolas','Yu Gothic UI',monospace; }
+    .extract-list { display: grid; gap: 8px; margin-top: 10px; }
+    .extract-item { padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.66); font-size: .82rem; font-weight: 850; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .info-card { padding: 14px; border: 1px solid rgba(255,255,255,.9); border-radius: 14px; background: rgba(255,255,255,.62); }
+    .info-card h2 { margin-bottom: 8px; }
+    .info-card li, .info-card p { color: var(--muted); font-size: .84rem; line-height: 1.75; font-weight: 750; }
+    .info-card ul { margin: 0; padding-left: 1.2em; }
+    .hidden-input { display: none; }
+    body.text-extract-tool .app,
+    body.text-extract-tool .info-card:nth-child(1),
+    body.text-extract-tool .info-card:nth-child(2) { display: none; }
+    body.text-extract-tool .extract-section { margin-top: 0; }
+    body.text-extract-tool .info-grid { grid-template-columns: 1fr; }
+    @media (max-width: 860px) {
+      main { padding: 20px 14px 42px; }
+      .header-inner { padding: 0 14px; }
+      .app, .info-grid, .extract-section { grid-template-columns: 1fr; }
+      .file-row { grid-template-columns: 1fr; }
+      .file-tools { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body class="text-extract-tool">
+  <header>
+    <div class="header-inner">
+      <span class="brand">便利ツール</span>
+      <a href="../">便利ツール集へ戻る</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>PDF・画像文字抽出ツール</h1>
+      <p>PDF、PNG、JPEGなどから文字を抽出できます。PDFは埋め込みテキストを直接抽出し、画像は日本語・英語OCRで読み取ります。処理はブラウザ内で行います。</p>
+    </section>
+
+    <div class="app">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>PDFを追加</h2>
+          <span class="small" id="fileCount">0件</span>
+        </div>
+        <div class="drop-zone" id="dropZone">
+          <div>
+            <div>PDFをここへドラッグ</div>
+            <div class="small">または下のボタンから選択</div>
+          </div>
+        </div>
+        <input class="hidden-input" id="fileInput" type="file" accept="application/pdf,.pdf" multiple>
+        <input class="hidden-input" id="folderInput" type="file" accept="application/pdf,.pdf" webkitdirectory directory multiple>
+        <div class="actions">
+          <button type="button" id="pickFiles">ファイルを選択</button>
+          <button type="button" id="pickFolder">フォルダから選択</button>
+          <button type="button" class="danger" id="clearFiles">全削除</button>
+        </div>
+        <div class="status" id="status">PDFを追加してください。</div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>結合・分割</h2>
+        </div>
+        <div class="mode-tabs">
+          <button type="button" class="active" id="mergeTab">結合</button>
+          <button type="button" id="splitTab">分割</button>
+        </div>
+
+        <div class="merge-panel active" id="mergePanel">
+          <p class="hint">上から順に結合します。各PDFの「範囲」に `all`、`1-3`、`2,5-7` のように入力できます。</p>
+          <div class="file-list" id="fileList"></div>
+          <div class="actions">
+            <button type="button" class="primary" id="mergeButton">指定順でPDF結合</button>
+          </div>
+        </div>
+
+        <div class="split-panel" id="splitPanel">
+          <p class="hint">分割するPDFを選び、1行に1つずつ出力範囲を入力してください。例: `1`、`2-4`、`5-`。</p>
+          <select id="splitSource"></select>
+          <textarea id="splitRanges" placeholder="1&#10;2-3&#10;4-"></textarea>
+          <div class="range-actions">
+            <button type="button" id="splitEveryPage">全ページを1ページずつ</button>
+            <button type="button" class="primary" id="splitButton">範囲ごとにPDF分割</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="extract-section" aria-label="文字抽出">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>文字抽出</h2>
+          <span class="small" id="extractCount">0件</span>
+        </div>
+        <div class="drop-zone extract-drop" id="extractDrop">
+          <div>
+            <div>PDF / PNG / JPEGをここへドラッグ</div>
+            <div class="small">PDFは埋め込みテキストを抽出、画像はOCRで読み取ります。</div>
+          </div>
+        </div>
+        <input class="hidden-input" id="extractInput" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,.png,.jpg,.jpeg" multiple>
+        <div class="actions">
+          <button type="button" id="pickExtractFiles">ファイルを選択</button>
+          <button type="button" class="primary" id="extractButton">文字抽出</button>
+          <button type="button" class="danger" id="clearExtract">全削除</button>
+        </div>
+        <div class="extract-list" id="extractList"></div>
+        <div class="status" id="extractStatus">文字抽出したいファイルを追加してください。</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>抽出結果</h2>
+        </div>
+        <textarea class="extract-results" id="extractOutput" readonly placeholder="抽出した文字がここに表示されます。"></textarea>
+        <div class="actions">
+          <button type="button" id="copyExtract">コピー</button>
+          <button type="button" id="saveExtract">txt保存</button>
+        </div>
+        <p class="hint">画像OCRは日本語と英語を対象にします。スキャン品質や文字の傾きによって読み取り精度が変わります。</p>
+      </div>
+    </section>
+
+    <section class="info-grid" aria-label="使い方">
+      <div class="info-card">
+        <h2>結合の使い方</h2>
+        <ul>
+          <li>複数PDFを追加します。</li>
+          <li>矢印で順番を入れ替えます。</li>
+          <li>必要ならファイルごとにページ範囲を指定します。</li>
+          <li>「指定順でPDF結合」を押すと1つのPDFとして保存します。</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h2>分割の使い方</h2>
+        <ul>
+          <li>分割元PDFを選択します。</li>
+          <li>出力したいページ範囲を1行ずつ入力します。</li>
+          <li>各行ごとにPDFを作成して保存します。</li>
+          <li>大きいPDFは処理に時間がかかる場合があります。</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h2>文字抽出の使い方</h2>
+        <ul>
+          <li>PDF、PNG、JPEGを追加します。</li>
+          <li>PDF内に埋め込まれた文字は直接抽出します。</li>
+          <li>画像はOCRで読み取り、結果欄にまとめて表示します。</li>
+          <li>抽出結果はコピーまたはtxt保存できます。</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var files = [];
+      var extractFiles = [];
+      var mode = 'merge';
+      var dropZone = document.getElementById('dropZone');
+      var fileInput = document.getElementById('fileInput');
+      var folderInput = document.getElementById('folderInput');
+      var fileList = document.getElementById('fileList');
+      var fileCount = document.getElementById('fileCount');
+      var status = document.getElementById('status');
+      var mergeTab = document.getElementById('mergeTab');
+      var splitTab = document.getElementById('splitTab');
+      var mergePanel = document.getElementById('mergePanel');
+      var splitPanel = document.getElementById('splitPanel');
+      var splitSource = document.getElementById('splitSource');
+      var splitRanges = document.getElementById('splitRanges');
+      var extractDrop = document.getElementById('extractDrop');
+      var extractInput = document.getElementById('extractInput');
+      var extractList = document.getElementById('extractList');
+      var extractCount = document.getElementById('extractCount');
+      var extractStatus = document.getElementById('extractStatus');
+      var extractOutput = document.getElementById('extractOutput');
+
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+
+      function setStatus(message, kind) {
+        status.textContent = message;
+        status.className = 'status' + (kind ? ' ' + kind : '');
+      }
+
+      function setExtractStatus(message, kind) {
+        extractStatus.textContent = message;
+        extractStatus.className = 'status' + (kind ? ' ' + kind : '');
+      }
+
+      function bytes(size) {
+        if (size > 1024 * 1024) return (size / 1024 / 1024).toFixed(1) + ' MB';
+        return Math.ceil(size / 1024) + ' KB';
+      }
+
+      function readArrayBuffer(file) {
+        return new Promise(function (resolve, reject) {
+          var reader = new FileReader();
+          reader.onload = function () { resolve(reader.result); };
+          reader.onerror = reject;
+          reader.readAsArrayBuffer(file);
+        });
+      }
+
+      function addExtractFiles(list) {
+        var incoming = Array.prototype.slice.call(list || []).filter(function (file) {
+          return /\.pdf$/i.test(file.name) || /^image\/(png|jpeg)$/.test(file.type) || /\.(png|jpe?g)$/i.test(file.name);
+        });
+        if (!incoming.length) {
+          setExtractStatus('PDF、PNG、JPEGファイルが見つかりませんでした。', 'error');
+          return;
+        }
+        incoming.forEach(function (file) {
+          extractFiles.push({
+            id: String(Date.now()) + Math.random().toString(16).slice(2),
+            file: file
+          });
+        });
+        renderExtractFiles();
+        setExtractStatus(extractFiles.length + '件の文字抽出ファイルを追加しました。', 'ok');
+      }
+
+      function renderExtractFiles() {
+        extractCount.textContent = extractFiles.length + '件';
+        extractList.innerHTML = '';
+        extractFiles.forEach(function (item) {
+          var row = document.createElement('div');
+          row.className = 'extract-item';
+          row.textContent = item.file.name + ' / ' + bytes(item.file.size);
+          extractList.appendChild(row);
+        });
+      }
+
+      async function addFiles(list) {
+        if (!window.PDFLib) {
+          setStatus('PDF処理ライブラリを読み込めませんでした。通信状態を確認して再読み込みしてください。', 'error');
+          return;
+        }
+        var incoming = Array.prototype.slice.call(list || []).filter(function (file) {
+          return /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
+        });
+        if (!incoming.length) {
+          setStatus('PDFファイルが見つかりませんでした。', 'error');
+          return;
+        }
+        setStatus('PDFを読み込んでいます...');
+        for (var i = 0; i < incoming.length; i++) {
+          var file = incoming[i];
+          try {
+            var bytesData = await readArrayBuffer(file);
+            var doc = await PDFLib.PDFDocument.load(bytesData, { ignoreEncryption: true });
+            files.push({
+              id: String(Date.now()) + Math.random().toString(16).slice(2),
+              file: file,
+              bytes: bytesData,
+              pages: doc.getPageCount(),
+              range: 'all'
+            });
+          } catch (e) {
+            setStatus(file.name + ' を読み込めませんでした。暗号化PDFや破損PDFの可能性があります。', 'error');
+          }
+        }
+        render();
+        setStatus(files.length + '件のPDFを追加しました。', 'ok');
+      }
+
+      function parseRange(text, pageCount) {
+        text = String(text || 'all').trim().toLowerCase();
+        if (!text || text === 'all' || text === 'すべて') {
+          return Array.from({ length: pageCount }, function (_, i) { return i; });
+        }
+        var result = [];
+        text.split(',').map(function (part) { return part.trim(); }).filter(Boolean).forEach(function (part) {
+          var match = part.match(/^(\d*)\s*-\s*(\d*)$/);
+          if (match) {
+            var start = match[1] ? Number(match[1]) : 1;
+            var end = match[2] ? Number(match[2]) : pageCount;
+            for (var p = start; p <= end; p++) result.push(p - 1);
+          } else {
+            result.push(Number(part) - 1);
+          }
+        });
+        result = Array.from(new Set(result)).filter(function (index) {
+          return Number.isInteger(index) && index >= 0 && index < pageCount;
+        });
+        if (!result.length) throw new Error('ページ範囲が正しくありません。1-' + pageCount + ' の範囲で指定してください。');
+        return result;
+      }
+
+      function downloadBlob(name, bytesData) {
+        var blob = new Blob([bytesData], { type: 'application/pdf' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = name;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+
+      function render() {
+        fileCount.textContent = files.length + '件';
+        fileList.innerHTML = '';
+        splitSource.innerHTML = '';
+        files.forEach(function (item, index) {
+          var row = document.createElement('div');
+          row.className = 'file-row';
+          var info = document.createElement('div');
+          var name = document.createElement('div');
+          name.className = 'file-name';
+          name.textContent = item.file.name;
+          var meta = document.createElement('div');
+          meta.className = 'file-meta';
+          meta.textContent = item.pages + 'ページ / ' + bytes(item.file.size);
+          info.appendChild(name);
+          info.appendChild(meta);
+          var tools = document.createElement('div');
+          tools.className = 'file-tools';
+          [['↑', -1], ['↓', 1]].forEach(function (pair) {
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = pair[0];
+            button.disabled = index + pair[1] < 0 || index + pair[1] >= files.length;
+            button.addEventListener('click', function () { moveFile(index, pair[1]); });
+            tools.appendChild(button);
+          });
+          var remove = document.createElement('button');
+          remove.type = 'button';
+          remove.textContent = '削除';
+          remove.className = 'danger';
+          remove.addEventListener('click', function () {
+            files = files.filter(function (f) { return f.id !== item.id; });
+            render();
+          });
+          tools.appendChild(remove);
+          var range = document.createElement('div');
+          range.className = 'range-field';
+          var label = document.createElement('label');
+          label.textContent = '範囲';
+          var input = document.createElement('input');
+          input.value = item.range;
+          input.placeholder = 'all / 1-3 / 2,5-7';
+          input.addEventListener('change', function () { item.range = input.value; });
+          range.appendChild(label);
+          range.appendChild(input);
+          row.appendChild(info);
+          row.appendChild(tools);
+          row.appendChild(range);
+          fileList.appendChild(row);
+
+          var option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = item.file.name + '（' + item.pages + 'ページ）';
+          splitSource.appendChild(option);
+        });
+      }
+
+      function moveFile(index, direction) {
+        var next = index + direction;
+        if (next < 0 || next >= files.length) return;
+        var temp = files[index];
+        files[index] = files[next];
+        files[next] = temp;
+        render();
+      }
+
+      async function mergePdf() {
+        if (!files.length) {
+          setStatus('結合するPDFを追加してください。', 'error');
+          return;
+        }
+        try {
+          setStatus('PDFを結合しています...');
+          var out = await PDFLib.PDFDocument.create();
+          var copiedPages = 0;
+          for (var i = 0; i < files.length; i++) {
+            var item = files[i];
+            var src = await PDFLib.PDFDocument.load(item.bytes, { ignoreEncryption: true });
+            var indices = parseRange(item.range, src.getPageCount());
+            var pages = await out.copyPages(src, indices);
+            pages.forEach(function (page) { out.addPage(page); copiedPages++; });
+          }
+          var merged = await out.save();
+          downloadBlob('merged.pdf', merged);
+          setStatus('結合完了: ' + copiedPages + 'ページを merged.pdf として保存しました。', 'ok');
+        } catch (e) {
+          setStatus('結合できませんでした: ' + e.message, 'error');
+        }
+      }
+
+      async function splitPdf() {
+        var source = files.find(function (item) { return item.id === splitSource.value; });
+        if (!source) {
+          setStatus('分割するPDFを選択してください。', 'error');
+          return;
+        }
+        var ranges = splitRanges.value.split(/\r?\n/).map(function (line) { return line.trim(); }).filter(Boolean);
+        if (!ranges.length) {
+          setStatus('分割範囲を入力してください。', 'error');
+          return;
+        }
+        try {
+          setStatus('PDFを分割しています...');
+          var src = await PDFLib.PDFDocument.load(source.bytes, { ignoreEncryption: true });
+          for (var i = 0; i < ranges.length; i++) {
+            var out = await PDFLib.PDFDocument.create();
+            var indices = parseRange(ranges[i], src.getPageCount());
+            var pages = await out.copyPages(src, indices);
+            pages.forEach(function (page) { out.addPage(page); });
+            var bytesData = await out.save();
+            downloadBlob(source.file.name.replace(/\.pdf$/i, '') + '_split_' + (i + 1) + '.pdf', bytesData);
+          }
+          setStatus('分割完了: ' + ranges.length + '件のPDFを保存しました。', 'ok');
+        } catch (e) {
+          setStatus('分割できませんでした: ' + e.message, 'error');
+        }
+      }
+
+      async function extractTextFromPdf(file) {
+        if (!window.pdfjsLib) throw new Error('PDF文字抽出ライブラリを読み込めませんでした。');
+        var data = await readArrayBuffer(file);
+        var pdf = await pdfjsLib.getDocument({ data: data }).promise;
+        var chunks = [];
+        for (var pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
+          var page = await pdf.getPage(pageNo);
+          var content = await page.getTextContent();
+          var text = content.items.map(function (item) { return item.str; }).join(' ').replace(/\s+/g, ' ').trim();
+          chunks.push('--- ' + file.name + ' / page ' + pageNo + ' ---\n' + (text || '[このページから埋め込みテキストを抽出できませんでした]'));
+        }
+        return chunks.join('\n\n');
+      }
+
+      async function extractTextFromImage(file) {
+        if (!window.Tesseract) throw new Error('画像OCRライブラリを読み込めませんでした。');
+        var result = await Tesseract.recognize(file, 'jpn+eng', {
+          logger: function (message) {
+            if (message.status) {
+              var percent = message.progress ? ' ' + Math.round(message.progress * 100) + '%' : '';
+              setExtractStatus(file.name + ': ' + message.status + percent);
+            }
+          }
+        });
+        return '--- ' + file.name + ' / OCR ---\n' + (result.data.text || '[文字を検出できませんでした]');
+      }
+
+      async function extractText() {
+        if (!extractFiles.length) {
+          setExtractStatus('文字抽出するファイルを追加してください。', 'error');
+          return;
+        }
+        extractOutput.value = '';
+        var results = [];
+        for (var i = 0; i < extractFiles.length; i++) {
+          var file = extractFiles[i].file;
+          try {
+            setExtractStatus(file.name + ' から文字を抽出しています...');
+            if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
+              results.push(await extractTextFromPdf(file));
+            } else {
+              results.push(await extractTextFromImage(file));
+            }
+            extractOutput.value = results.join('\n\n');
+          } catch (e) {
+            results.push('--- ' + file.name + ' ---\n抽出できませんでした: ' + e.message);
+            extractOutput.value = results.join('\n\n');
+          }
+        }
+        setExtractStatus('文字抽出が完了しました。', 'ok');
+      }
+
+      async function copyExtractText() {
+        try {
+          await navigator.clipboard.writeText(extractOutput.value);
+          setExtractStatus('抽出結果をコピーしました。', 'ok');
+        } catch (e) {
+          extractOutput.focus();
+          extractOutput.select();
+          document.execCommand('copy');
+        }
+      }
+
+      function saveExtractText() {
+        var blob = new Blob([extractOutput.value], { type: 'text/plain;charset=utf-8' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'extracted-text.txt';
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+
+      function switchMode(nextMode) {
+        mode = nextMode;
+        mergeTab.classList.toggle('active', mode === 'merge');
+        splitTab.classList.toggle('active', mode === 'split');
+        mergePanel.classList.toggle('hidden', mode !== 'merge');
+        splitPanel.classList.toggle('active', mode === 'split');
+      }
+
+      dropZone.addEventListener('dragover', function (event) {
+        event.preventDefault();
+        dropZone.classList.add('dragging');
+      });
+      dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('dragging'); });
+      dropZone.addEventListener('drop', function (event) {
+        event.preventDefault();
+        dropZone.classList.remove('dragging');
+        addFiles(event.dataTransfer.files);
+      });
+      extractDrop.addEventListener('dragover', function (event) {
+        event.preventDefault();
+        extractDrop.classList.add('dragging');
+      });
+      extractDrop.addEventListener('dragleave', function () { extractDrop.classList.remove('dragging'); });
+      extractDrop.addEventListener('drop', function (event) {
+        event.preventDefault();
+        extractDrop.classList.remove('dragging');
+        addExtractFiles(event.dataTransfer.files);
+      });
+      document.getElementById('pickFiles').addEventListener('click', function () { fileInput.click(); });
+      document.getElementById('pickFolder').addEventListener('click', function () { folderInput.click(); });
+      document.getElementById('pickExtractFiles').addEventListener('click', function () { extractInput.click(); });
+      fileInput.addEventListener('change', function () { addFiles(fileInput.files); fileInput.value = ''; });
+      folderInput.addEventListener('change', function () { addFiles(folderInput.files); folderInput.value = ''; });
+      extractInput.addEventListener('change', function () { addExtractFiles(extractInput.files); extractInput.value = ''; });
+      document.getElementById('clearFiles').addEventListener('click', function () { files = []; render(); setStatus('PDFを追加してください。'); });
+      document.getElementById('clearExtract').addEventListener('click', function () { extractFiles = []; extractOutput.value = ''; renderExtractFiles(); setExtractStatus('文字抽出したいファイルを追加してください。'); });
+      mergeTab.addEventListener('click', function () { switchMode('merge'); });
+      splitTab.addEventListener('click', function () { switchMode('split'); });
+      document.getElementById('mergeButton').addEventListener('click', mergePdf);
+      document.getElementById('splitButton').addEventListener('click', splitPdf);
+      document.getElementById('extractButton').addEventListener('click', extractText);
+      document.getElementById('copyExtract').addEventListener('click', copyExtractText);
+      document.getElementById('saveExtract').addEventListener('click', saveExtractText);
+      document.getElementById('splitEveryPage').addEventListener('click', function () {
+        var source = files.find(function (item) { return item.id === splitSource.value; });
+        splitRanges.value = source ? Array.from({ length: source.pages }, function (_, i) { return String(i + 1); }).join('\n') : '';
+      });
+      render();
+      renderExtractFiles();
+    })();
+  </script>
+</body>
+</html>
