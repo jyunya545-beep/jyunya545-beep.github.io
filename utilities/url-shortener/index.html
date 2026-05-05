@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL短縮 | 便利ツール集</title>
+  <meta name="description" content="長いURLを短縮URLに変換する無料ツールです。任意の短縮文字列、アクセス統計、コピーに対応しています。">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --indigo:#4f46e5; --violet:#7c3aed; --emerald:#059669; --rose:#e11d48; --amber:#b45309; --bg:#f5f6ff; --surf:#fff; --border:#e0e7ff; --text:#1e1b4b; --text2:#4c4980; --muted:#8b87c0; }
+    body { font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+    header { background:linear-gradient(135deg,#1e1b4b,#312e81); color:#fff; }
+    .hdr { max-width:980px; margin:0 auto; padding:18px 24px; }
+    .hdr-back { display:inline-flex; color:rgba(255,255,255,.68); text-decoration:none; font-size:.8rem; font-weight:800; margin-bottom:8px; }
+    .hdr-title { font-size:1.45rem; font-weight:900; }
+    .hdr-sub { margin-top:4px; color:rgba(255,255,255,.72); font-size:.84rem; line-height:1.7; }
+    main { max-width:980px; margin:0 auto; padding:24px; }
+    .notice { margin-bottom:14px; padding:11px 13px; border:1px solid #c7d2fe; border-radius:12px; background:#eef2ff; color:#3730a3; font-size:.82rem; font-weight:800; line-height:1.6; }
+    .app { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); gap:16px; align-items:start; }
+    .card { background:var(--surf); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow:0 2px 12px rgba(79,70,229,.07); }
+    .card-title { font-size:.9rem; font-weight:900; color:#3730a3; margin-bottom:12px; }
+    label { display:block; color:var(--text2); font-size:.76rem; font-weight:900; margin:10px 0 5px; }
+    input, textarea { width:100%; border:1.5px solid var(--border); border-radius:9px; background:#fbfcff; color:var(--text); font:inherit; font-size:.86rem; font-weight:700; padding:9px 10px; }
+    textarea { resize:vertical; min-height:116px; line-height:1.55; }
+    input:focus, textarea:focus { outline:3px solid rgba(79,70,229,.16); border-color:#818cf8; }
+    .checks { display:grid; gap:9px; margin-top:10px; }
+    .checkline { display:flex; align-items:center; gap:8px; color:var(--text2); font-size:.82rem; font-weight:800; }
+    .checkline input { width:auto; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    button { border:0; border-radius:9px; padding:9px 13px; font:inherit; font-size:.84rem; font-weight:900; cursor:pointer; }
+    .btn-primary { color:#fff; background:linear-gradient(135deg,var(--indigo),var(--violet)); box-shadow:0 5px 14px rgba(79,70,229,.22); }
+    .btn-outline { color:var(--text2); background:#eef2ff; border:1px solid var(--border); }
+    .btn-danger { color:var(--rose); background:#ffe4e6; }
+    .status { min-height:38px; margin-bottom:12px; padding:10px 12px; border-radius:10px; background:#eef2ff; color:#3730a3; font-size:.82rem; font-weight:850; line-height:1.55; }
+    .status.ok { background:#ecfdf5; color:#047857; border:1px solid #bbf7d0; }
+    .status.error { background:#fff1f2; color:#be123c; border:1px solid #fecdd3; }
+    .result-box { border:1px solid var(--border); border-radius:14px; background:#fff; overflow:hidden; }
+    .result-head { display:flex; justify-content:space-between; gap:10px; align-items:center; padding:10px 12px; background:#f8fafc; border-bottom:1px solid var(--border); }
+    .result-head strong { font-size:.86rem; }
+    .short-url { display:block; padding:16px 12px; color:var(--indigo); font-size:1.05rem; font-weight:900; word-break:break-all; text-decoration:none; }
+    .meta-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:12px; }
+    .meta { padding:10px; border:1px solid var(--border); border-radius:10px; background:#fbfcff; color:var(--text2); font-size:.78rem; font-weight:800; line-height:1.5; }
+    .history { display:grid; gap:8px; margin-top:12px; }
+    .history-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; border:1px solid var(--border); border-radius:10px; padding:9px; background:#fff; }
+    .history-row a { min-width:0; color:var(--indigo); font-weight:850; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .small { color:var(--muted); font-size:.75rem; font-weight:750; line-height:1.55; margin-top:8px; }
+    footer { text-align:center; padding:22px; color:var(--muted); font-size:.76rem; }
+    @media (max-width:820px) { main { padding:18px 14px; } .hdr { padding:16px 14px; } .app, .meta-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <a href="../" class="hdr-back">← 便利ツール集</a>
+    <div class="hdr-title">URL短縮</div>
+    <div class="hdr-sub">長いURLを短縮し、コピーしやすいリンクに変換します。</div>
+  </div>
+</header>
+<main>
+  <div class="notice">短縮URLの作成には is.gd の無料APIを使用します。URLは短縮サービス側へ送信されます。社外秘URLや個人情報を含むURLには使用しないでください。</div>
+  <div class="app">
+    <section class="card">
+      <div class="card-title">入力</div>
+      <label for="longUrl">短縮したいURL</label>
+      <textarea id="longUrl" placeholder="https://example.com/very/long/url?utm_source=..."></textarea>
+      <label for="customSlug">任意の短縮文字列</label>
+      <input id="customSlug" placeholder="例：my_tool_2026（5〜30文字、英数字と_）">
+      <div class="checks">
+        <label class="checkline"><input id="stripUtm" type="checkbox" checked> UTMなどの計測パラメータを外してから短縮</label>
+        <label class="checkline"><input id="logStats" type="checkbox"> is.gd側のアクセス統計を有効にする</label>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="shortenBtn" type="button">URL短縮</button>
+        <button class="btn-outline" id="copyCleanBtn" type="button">整形URLコピー</button>
+        <button class="btn-danger" id="clearBtn" type="button">クリア</button>
+      </div>
+      <p class="small">任意の短縮文字列は既に使われている場合があります。その場合は空欄にするか別名を指定してください。</p>
+    </section>
+
+    <section>
+      <div class="status" id="status">URLを入力して「URL短縮」を押してください。</div>
+      <div class="result-box" id="resultBox" hidden>
+        <div class="result-head">
+          <strong>短縮結果</strong>
+          <button class="btn-outline" id="copyShortBtn" type="button">コピー</button>
+        </div>
+        <a class="short-url" id="shortUrl" href="#" target="_blank" rel="noopener"></a>
+      </div>
+      <div class="meta-grid">
+        <div class="meta"><strong>整形後URL</strong><br><span id="cleanUrl">未生成</span></div>
+        <div class="meta"><strong>短縮方式</strong><br>is.gd API / JSONP</div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">履歴</div>
+        <div class="history" id="history"></div>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>© 2026 とある制御屋の備忘録</footer>
+<script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var currentShortUrl = '';
+    var utmParams = ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','utm_id','fbclid','gclid','yclid','mc_cid','mc_eid'];
+    function setStatus(message, kind) {
+      $('status').textContent = message;
+      $('status').className = 'status' + (kind ? ' ' + kind : '');
+    }
+    function normalizeUrl(raw) {
+      raw = String(raw || '').trim();
+      if (!raw) throw new Error('URLを入力してください。');
+      if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+      var url = new URL(raw);
+      if ($('stripUtm').checked) {
+        utmParams.forEach(function (key) { url.searchParams.delete(key); });
+      }
+      url.hash = url.hash || '';
+      return url.toString();
+    }
+    function validateSlug(slug) {
+      if (!slug) return '';
+      if (!/^[A-Za-z0-9_]{5,30}$/.test(slug)) throw new Error('任意の短縮文字列は5〜30文字の英数字と_のみ使えます。');
+      return slug;
+    }
+    function jsonp(url) {
+      return new Promise(function (resolve, reject) {
+        var callback = 'urlShortenerCallback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        var script = document.createElement('script');
+        var timer = setTimeout(function () {
+          cleanup();
+          reject(new Error('短縮サービスから応答がありませんでした。'));
+        }, 12000);
+        function cleanup() {
+          clearTimeout(timer);
+          delete window[callback];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+        window[callback] = function (data) {
+          cleanup();
+          resolve(data);
+        };
+        script.onerror = function () {
+          cleanup();
+          reject(new Error('短縮サービスへ接続できませんでした。'));
+        };
+        script.src = url + '&callback=' + encodeURIComponent(callback);
+        document.body.appendChild(script);
+      });
+    }
+    async function shorten() {
+      try {
+        setStatus('短縮URLを作成しています...');
+        var clean = normalizeUrl($('longUrl').value);
+        var slug = validateSlug($('customSlug').value.trim());
+        $('cleanUrl').textContent = clean;
+        var api = 'https://is.gd/create.php?format=json&url=' + encodeURIComponent(clean);
+        if (slug) api += '&shorturl=' + encodeURIComponent(slug);
+        if ($('logStats').checked) api += '&logstats=1';
+        var data = await jsonp(api);
+        if (!data || data.errormessage) throw new Error(data && data.errormessage ? data.errormessage : '短縮URLを取得できませんでした。');
+        currentShortUrl = data.shorturl;
+        $('shortUrl').textContent = currentShortUrl;
+        $('shortUrl').href = currentShortUrl;
+        $('resultBox').hidden = false;
+        saveHistory(clean, currentShortUrl);
+        renderHistory();
+        setStatus('短縮URLを作成しました。', 'ok');
+      } catch (e) {
+        setStatus(e.message, 'error');
+      }
+    }
+    function copy(text) {
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus('コピーしました。', 'ok');
+      }, function () {
+        setStatus('コピーできませんでした。手動で選択してください。', 'error');
+      });
+    }
+    function saveHistory(longUrl, shortUrl) {
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem('url-shortener-history') || '[]'); } catch (e) { list = []; }
+      list = list.filter(function (item) { return item.shortUrl !== shortUrl; });
+      list.unshift({ longUrl: longUrl, shortUrl: shortUrl, at: new Date().toLocaleString('ja-JP') });
+      try { localStorage.setItem('url-shortener-history', JSON.stringify(list.slice(0, 8))); } catch (e) {}
+    }
+    function renderHistory() {
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem('url-shortener-history') || '[]'); } catch (e) { list = []; }
+      $('history').innerHTML = list.length ? list.map(function (item, index) {
+        return '<div class="history-row"><a href="' + esc(item.shortUrl) + '" target="_blank" rel="noopener">' + esc(item.shortUrl) + '</a><button class="btn-outline" type="button" data-copy-history="' + index + '">コピー</button><div class="small">' + esc(item.at) + ' / ' + esc(item.longUrl) + '</div></div>';
+      }).join('') : '<p class="small">まだ履歴はありません。</p>';
+    }
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
+    }
+    $('shortenBtn').addEventListener('click', shorten);
+    $('copyShortBtn').addEventListener('click', function () { copy(currentShortUrl); });
+    $('copyCleanBtn').addEventListener('click', function () {
+      try {
+        var clean = normalizeUrl($('longUrl').value);
+        $('cleanUrl').textContent = clean;
+        copy(clean);
+      } catch (e) {
+        setStatus(e.message, 'error');
+      }
+    });
+    $('clearBtn').addEventListener('click', function () {
+      $('longUrl').value = '';
+      $('customSlug').value = '';
+      $('cleanUrl').textContent = '未生成';
+      $('resultBox').hidden = true;
+      currentShortUrl = '';
+      setStatus('URLを入力して「URL短縮」を押してください。');
+    });
+    document.addEventListener('click', function (event) {
+      var btn = event.target.closest('[data-copy-history]');
+      if (!btn) return;
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem('url-shortener-history') || '[]'); } catch (e) { list = []; }
+      var item = list[Number(btn.getAttribute('data-copy-history'))];
+      if (item) copy(item.shortUrl);
+    });
+    $('longUrl').value = 'https://toaruseigyoya.github.io/utilities/?utm_source=sample&utm_medium=mail';
+    renderHistory();
+  })();
+</script>
+</body>
+</html>
