@@ -3,299 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>メール文面自動作成 | 便利ツール集</title>
-  <meta name="description" content="用途・相手・トーン・要点から、件名とビジネスメール本文をAI風に自動作成する無料ツールです。APIは使わずブラウザ内で動作します。">
+  <title>メール文面自動作成｜便利ツール集</title>
+  <meta name="description" content="メモ書きからビジネスメールの件名案と本文テンプレートを作成します。">
+  <link rel="canonical" href="https://toaruseigyoya.github.io/utilities/mail-generator/">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --indigo:#4f46e5; --violet:#7c3aed; --emerald:#059669; --rose:#e11d48; --amber:#b45309; --bg:#f5f6ff; --surf:#fff; --border:#e0e7ff; --text:#1e1b4b; --text2:#4c4980; --muted:#8b87c0; }
-    body { font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-    header { background:linear-gradient(135deg,#1e1b4b,#312e81); color:#fff; }
-    .hdr { max-width:1120px; margin:0 auto; padding:18px 24px; }
-    .hdr-back { display:inline-flex; color:rgba(255,255,255,.68); text-decoration:none; font-size:.8rem; font-weight:800; margin-bottom:8px; }
-    .hdr-title { font-size:1.45rem; font-weight:900; }
-    .hdr-sub { margin-top:4px; color:rgba(255,255,255,.72); font-size:.84rem; line-height:1.7; }
-    main { max-width:1120px; margin:0 auto; padding:24px; }
-    .notice { margin-bottom:14px; padding:11px 13px; border:1px solid #c7d2fe; border-radius:12px; background:#eef2ff; color:#3730a3; font-size:.82rem; font-weight:800; line-height:1.6; }
-    .app { display:grid; grid-template-columns:minmax(300px,390px) minmax(0,1fr); gap:16px; align-items:start; }
-    .card { background:var(--surf); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow:0 2px 12px rgba(79,70,229,.07); }
-    .card + .card { margin-top:12px; }
-    .card-title { font-size:.9rem; font-weight:900; color:#3730a3; margin-bottom:12px; }
-    label { display:block; color:var(--text2); font-size:.76rem; font-weight:900; margin:10px 0 5px; }
-    input, select, textarea { width:100%; border:1.5px solid var(--border); border-radius:9px; background:#fbfcff; color:var(--text); font:inherit; font-size:.86rem; font-weight:700; padding:9px 10px; }
-    textarea { resize:vertical; min-height:94px; line-height:1.6; }
-    input:focus, select:focus, textarea:focus { outline:3px solid rgba(79,70,229,.16); border-color:#818cf8; }
-    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-    button { border:0; border-radius:9px; padding:9px 13px; font:inherit; font-size:.84rem; font-weight:900; cursor:pointer; }
-    .btn-primary { color:#fff; background:linear-gradient(135deg,var(--indigo),var(--violet)); box-shadow:0 5px 14px rgba(79,70,229,.22); }
-    .btn-outline { color:var(--text2); background:#eef2ff; border:1px solid var(--border); }
-    .btn-danger { color:var(--rose); background:#ffe4e6; }
-    .status { min-height:36px; margin-bottom:12px; padding:10px 12px; border-radius:10px; background:#eef2ff; color:#3730a3; font-size:.82rem; font-weight:850; line-height:1.55; }
-    .status.loading { color:#6d28d9; background:#f3e8ff; }
-    .result-grid { display:grid; gap:12px; }
-    .result-card { border:1px solid var(--border); border-radius:12px; background:#fbfcff; overflow:hidden; }
-    .result-head { display:flex; justify-content:space-between; gap:10px; align-items:center; padding:10px 12px; border-bottom:1px solid var(--border); background:#f8fafc; }
-    .result-head strong { font-size:.84rem; }
-    .mini-btn { padding:6px 9px; font-size:.74rem; color:var(--indigo); background:#eef2ff; border:1px solid #c7d2fe; }
-    .mail-text { padding:12px; white-space:pre-wrap; line-height:1.75; color:var(--text); font-size:.88rem; }
-    .subject-list { display:grid; gap:7px; padding:12px; }
-    .subject-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; border:1px solid #e8ecff; border-radius:9px; padding:8px 9px; background:#fff; }
-    .subject-row span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.84rem; font-weight:800; }
-    .check-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-    .check { padding:10px; border-radius:10px; background:#f8fafc; border:1px solid var(--border); font-size:.8rem; line-height:1.55; color:var(--text2); font-weight:750; }
-    .check.ok { border-color:#bbf7d0; background:#ecfdf5; color:#047857; }
-    .check.warn { border-color:#fed7aa; background:#fff7ed; color:#9a3412; }
-    .analysis-list { display:grid; gap:6px; padding:12px; color:var(--text2); font-size:.8rem; line-height:1.55; }
-    .analysis-list div { padding:8px 9px; border:1px solid var(--border); border-radius:9px; background:#fff; }
-    footer { text-align:center; padding:22px; color:var(--muted); font-size:.76rem; }
-    @media (max-width:860px) { main { padding:18px 14px; } .hdr { padding:16px 14px; } .app { grid-template-columns:1fr; } .grid2, .check-grid { grid-template-columns:1fr; } }
+    *,*::before,*::after{box-sizing:border-box}body{margin:0;font-family:"Yu Gothic UI","Meiryo",system-ui,sans-serif;background:#f5f6ff;color:#1e1b4b}header,main{width:min(1120px,calc(100% - 24px));margin:auto}header{padding:20px 0 12px}a{color:#4f46e5;font-weight:800;text-decoration:none}h1{font-size:clamp(1.55rem,4vw,2.3rem);margin:12px 0 6px}.lead,.small{color:#64748b;line-height:1.6}.app{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:16px;margin:18px 0 30px}.card,.result-card{background:#fff;border:1px solid #e0e7ff;border-radius:12px;padding:16px;box-shadow:0 10px 24px rgba(79,70,229,.08)}label{display:block;font-size:.78rem;font-weight:900;color:#4c4980;margin:10px 0 5px}input,select,textarea{width:100%;border:1.5px solid #e0e7ff;border-radius:9px;padding:9px 10px;font:inherit}textarea{min-height:110px;resize:vertical;line-height:1.6}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:9px;padding:9px 13px;font:inherit;font-size:.84rem;font-weight:900;cursor:pointer;background:#eef2ff;color:#312e81}.primary{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}.danger{background:#ffe4e6;color:#be123c}button:disabled{opacity:.5}.status{padding:10px 12px;border-radius:10px;background:#eef2ff;color:#3730a3;font-weight:850;line-height:1.5;margin-bottom:12px}.status.ok{background:#ecfdf5;color:#047857}.status.error{background:#fff1f2;color:#be123c}.results{display:grid;gap:12px}.head{display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid #e0e7ff;padding-bottom:8px;margin-bottom:10px}.mail{white-space:pre-wrap;line-height:1.75}.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.check{border:1px solid #e0e7ff;border-radius:10px;padding:9px;background:#fbfcff;font-size:.8rem;font-weight:800;color:#4c4980}.check.ok{background:#ecfdf5;color:#047857;border-color:#bbf7d0}@media(max-width:860px){header,main{width:min(100% - 16px,1120px)}.app,.grid2,.checks{grid-template-columns:1fr}button{min-height:38px}}
   </style>
 </head>
 <body>
-<header>
-  <div class="hdr">
-    <a href="../" class="hdr-back">← 便利ツール集</a>
-    <div class="hdr-title">メール文面自動作成</div>
-    <div class="hdr-sub">用途・相手・トーン・要点から、件名と本文候補をAIアシスト風に整えます。</div>
-  </div>
-</header>
-<main>
-  <div class="notice">このツールはAI APIを使わないテンプレート生成です。入力内容はブラウザ内で処理され、サーバーへ送信しません。</div>
-  <div class="app">
-    <section>
-      <div class="card">
-        <div class="card-title">入力</div>
+  <header>
+    <a href="../">← 便利ツール集</a>
+    <h1>メール文面自動作成</h1>
+    <p class="lead">メモ書きを、そのままではなく自然なビジネスメールのテンプレートに整えます。AI APIは使わずブラウザ内で作成します。</p>
+  </header>
+  <main>
+    <div class="app">
+      <section class="card">
         <div class="grid2">
-          <div><label for="type">作りたい文面</label><select id="type"><option>依頼</option><option>催促</option><option>お礼</option><option>謝罪</option><option>報告</option><option>日程調整</option><option>確認</option><option>送付</option><option>断り</option></select></div>
-          <div><label for="target">相手</label><select id="target"><option>社外</option><option>客先</option><option>社内</option><option>上司</option><option>同僚</option><option>部下</option></select></div>
+          <div><label for="type">用途</label><select id="type"><option>依頼</option><option>催促</option><option>お礼</option><option>謝罪</option><option>報告</option><option>日程調整</option><option>確認</option><option>送付</option><option>断り</option></select></div>
+          <div><label for="target">相手</label><select id="target"><option>社外</option><option>客先</option><option>社内</option><option>上司</option><option>同僚</option></select></div>
         </div>
         <div class="grid2">
-          <div><label for="tone">トーン</label><select id="tone"><option>普通</option><option>やわらかめ</option><option>丁寧</option><option>短め</option></select></div>
-          <div><label for="deadline">期限・希望日</label><input id="deadline" placeholder="例：5月10日まで、今週中"></div>
+          <div><label for="tone">トーン</label><select id="tone"><option>普通</option><option>丁寧</option><option>やわらかめ</option><option>短め</option></select></div>
+          <div><label for="deadline">期限・希望日</label><input id="deadline" placeholder="例: 5月10日まで、今週中"></div>
         </div>
         <div class="grid2">
-          <div><label for="toName">相手名</label><input id="toName" placeholder="例：山田様"></div>
-          <div><label for="fromName">自分の名前/会社</label><input id="fromName" placeholder="例：佐藤 / ○○株式会社"></div>
+          <div><label for="toName">相手名</label><input id="toName" placeholder="例: 山田様"></div>
+          <div><label for="fromName">自分名</label><input id="fromName" placeholder="例: 佐藤"></div>
         </div>
         <label for="mainText">メモ書き</label>
-        <textarea id="mainText" placeholder="例：&#10;5/11 現地作業&#10;入場時間を確認したい&#10;立会者も確認&#10;作業前ミーティングあるか確認"></textarea>
+        <textarea id="mainText" placeholder="例:&#10;5/11 現地作業&#10;入場時間を確認したい&#10;立会者も確認&#10;作業前ミーティングあるか確認"></textarea>
         <label for="note">補足</label>
         <textarea id="note" placeholder="背景、添付資料、注意点など。空欄でも生成できます。"></textarea>
-        <div class="btn-row">
-          <button class="btn-primary" type="button" id="generateBtn">文面を生成</button>
-          <button class="btn-outline" type="button" id="sampleBtn">サンプル投入</button>
-          <button class="btn-outline" type="button" id="regenBtn">再生成</button>
-          <button class="btn-danger" type="button" id="clearBtn">クリア</button>
+        <div class="row">
+          <button class="primary" id="generateBtn" type="button">文面を生成</button>
+          <button id="sampleBtn" type="button">サンプル投入</button>
+          <button id="regenBtn" type="button">再生成</button>
+          <button class="danger" id="clearBtn" type="button">クリア</button>
         </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="status" id="status">入力後、「文面を生成」を押してください。</div>
-      <div class="result-grid" id="results"></div>
-      <div class="card">
-        <div class="card-title">確認ポイント</div>
-        <div class="check-grid" id="checks"></div>
-      </div>
-    </section>
-  </div>
-</main>
-<footer>© 2026 とある制御屋の備忘録</footer>
-<script>
-  (function () {
-    var $ = function (id) { return document.getElementById(id); };
-    var variants = 0;
-    var phrases = {
-      soft: ['恐れ入りますが', 'お手数をおかけしますが', '差し支えなければ'],
-      polite: ['ご多忙のところ恐縮ですが', 'お忙しいところ恐れ入りますが', '何卒よろしくお願い申し上げます'],
-      close: ['ご確認のほど、よろしくお願いいたします。', '引き続きよろしくお願いいたします。', 'ご検討のほど、よろしくお願いいたします。']
-    };
-    var subjectPrefix = { '依頼':'ご対応のお願い', '催促':'ご確認のお願い', 'お礼':'御礼', '謝罪':'お詫び', '報告':'ご報告', '日程調整':'日程調整のお願い', '確認':'ご確認のお願い', '送付':'資料送付のご連絡', '断り':'ご回答の件' };
-    function val(id) { return $(id).value.trim(); }
-    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-    function normalize(text) {
-      return String(text || '')
-        .replace(/下さい/g, 'ください')
-        .replace(/してください/g, 'お願いいたします')
-        .replace(/すみません/g, '申し訳ありません')
-        .replace(/了解しました/g, '承知いたしました')
-        .replace(/確認したい/g, '確認させていただきたい')
-        .replace(/教えて/g, 'ご教示')
-        .replace(/送って/g, 'ご送付')
-        .trim();
-    }
-    function splitMemo(text) {
-      return String(text || '')
-        .split(/\r?\n|。|；|;/)
-        .map(function (line) {
-          return line.replace(/^[\s・\-*＊●○\d.）)]+/, '').trim();
-        })
-        .filter(Boolean);
-    }
-    function politePhrase(line, type) {
-      var s = normalize(line).replace(/[。,.、\s]+$/, '');
-      if (!s) return '';
-      if (/確認|教示|教えて|知りたい|ありますか|有無/.test(s)) {
-        s = s
-          .replace(/(?:を|も|について)?確認させていただきたい$/, '')
-          .replace(/(?:を|も|について)?確認$/, '')
-          .replace(/あるか$/, 'の有無')
-          .replace(/ありますか$/, 'の有無')
-          .trim();
-        return s + 'について、ご確認いただけますでしょうか。';
-      }
-      if (/送付|送って|共有|資料|添付/.test(s)) {
-        s = s.replace(/送って$/, '').replace(/送付$/, '');
-        return s + 'をご送付いただけますでしょうか。';
-      }
-      if (/対応|依頼|お願い|やって|してほしい|して欲しい/.test(s)) {
-        s = s.replace(/してほしい|して欲しい|やって|お願い|依頼/g, '').trim();
-        return s ? s + 'について、ご対応をお願いいたします。' : 'ご対応をお願いいたします。';
-      }
-      if (type === '報告') return s + 'です。';
-      if (type === 'お礼') return s + 'の件、誠にありがとうございました。';
-      if (type === '謝罪') return s + 'につきまして、ご迷惑をおかけし申し訳ありません。';
-      if (type === '断り') return s + 'のため、今回は見送らせていただけますと幸いです。';
-      return s + 'について、確認をお願いいたします。';
-    }
-    function analyzeMemo(content, note, deadline) {
-      var lines = splitMemo(content);
-      var noteLines = splitMemo(note);
-      var all = lines.concat(noteLines);
-      var result = { raw: lines, date: '', subject: '', requests: [], background: [], attachments: [], notes: [] };
-      all.forEach(function (line, index) {
-        if (!result.date && /(\d{1,2}[\/月]\d{1,2}|今週|来週|本日|明日|明後日|午前|午後)/.test(line)) result.date = line;
-        if (!result.subject && (index === 0 || /件|作業|資料|見積|打合せ|ミーティング|納期|不具合|確認/.test(line))) result.subject = line;
-        if (/確認|教えて|知りたい|ありますか|有無|依頼|お願い|対応|送付|共有|調整|返信/.test(line)) result.requests.push(line);
-        else if (/背景|理由|目的|ため|なので|から|影響|状況/.test(line)) result.background.push(line);
-        else if (/添付|資料|ファイル|図面|見積|仕様書/.test(line)) result.attachments.push(line);
-        else result.notes.push(line);
-      });
-      if (!result.subject) result.subject = result.date || lines[0] || 'ご確認事項';
-      if (!result.requests.length && lines.length) result.requests = lines.slice(0, 3);
-      if (deadline && !result.date) result.date = deadline;
-      return result;
-    }
-    function greeting(target, name) {
-      var to = name || (target === '社内' || target === '同僚' || target === '部下' ? '関係者各位' : 'ご担当者様');
-      if (target === '同僚' || target === '部下') return to + '\nお疲れさまです。';
-      return to + '\nお世話になっております。';
-    }
-    function closing(fromName, short) {
-      return (short ? 'よろしくお願いいたします。' : phrases.close[(variants + 1) % phrases.close.length]) + (fromName ? '\n\n' + fromName : '');
-    }
-    function composeBody(type, memo, deadline, tone, level) {
-      var cushion = tone === '丁寧' ? phrases.polite[variants % phrases.polite.length] : tone === 'やわらかめ' ? phrases.soft[variants % phrases.soft.length] : '';
-      var leadMap = {
-        '依頼': '下記の件について、お願いがありご連絡いたしました。',
-        '催促': '先日ご相談している件について、状況を確認したくご連絡いたしました。',
-        'お礼': 'このたびはご対応いただき、誠にありがとうございました。',
-        '謝罪': 'このたびはご迷惑をおかけし、誠に申し訳ありません。',
-        '報告': '下記の通り、ご報告いたします。',
-        '日程調整': '日程調整について、ご相談がありご連絡いたしました。',
-        '確認': '下記の内容について、確認したくご連絡いたしました。',
-        '送付': '下記の資料を送付いたします。',
-        '断り': 'ご相談いただいた件について、回答いたします。'
-      };
-      var lines = [];
-      if (cushion && level !== 'short') lines.push(cushion + '、');
-      lines.push(leadMap[type] || leadMap['確認']);
-      if (memo.background.length && level !== 'short') lines.push('\n背景として、' + memo.background.map(normalize).join('、') + '。');
-      if (memo.subject && level !== 'short') lines.push('\n対象は「' + normalize(memo.subject) + '」です。');
-      if (memo.requests.length) {
-        if (level === 'short') {
-          lines.push('\n' + memo.requests.slice(0, 2).map(function (line) { return politePhrase(line, type); }).join('\n'));
-        } else {
-          lines.push('\nお手数ですが、以下についてご確認をお願いいたします。');
-          memo.requests.slice(0, 6).forEach(function (line) {
-            lines.push('・' + politePhrase(line, type));
-          });
-        }
-      }
-      if (memo.notes.length && level !== 'short') {
-        lines.push('\n補足として、' + memo.notes.slice(0, 3).map(normalize).join('、') + '。');
-      }
-      if (memo.attachments.length && level !== 'short') {
-        lines.push('\n関連資料については、' + memo.attachments.map(normalize).join('、') + 'を確認いただけますと幸いです。');
-      }
-      if (deadline) lines.push('\n可能でしたら、' + deadline + 'までにご回答いただけますでしょうか。');
-      return lines.join('\n').replace(/\n{3,}/g, '\n\n');
-    }
-    function makeShort(type, memo, deadline) {
-      var lines = ['お疲れさまです。'];
-      lines.push((memo.subject ? memo.subject + 'について、' : '') + (type === '日程調整' ? '日程調整をお願いいたします。' : '確認をお願いいたします。'));
-      memo.requests.slice(0, 3).forEach(function (line) { lines.push('・' + politePhrase(line, type)); });
-      if (deadline) lines.push('可能でしたら、' + deadline + 'までにご回答ください。');
-      lines.push(type === '催促' ? '状況をご確認ください。' : 'よろしくお願いいたします。');
-      return lines.join('\n');
-    }
-    function subjectIdeas(type, memo, deadline) {
-      var core = normalize(memo.subject || memo.requests[0] || '').replace(/\s+/g, ' ').slice(0, 24) || subjectPrefix[type];
-      var due = deadline ? '（' + deadline.replace(/\s+/g, '') + '）' : '';
-      return [
-        '【' + subjectPrefix[type] + '】' + core,
-        core + 'の件' + due,
-        subjectPrefix[type] + '：' + core
-      ];
-    }
-    function checks(data) {
-      var list = [];
-      list.push([data.memo.raw.length >= 2, data.memo.raw.length >= 2 ? 'メモを複数項目として整理しました。' : 'メモを複数行で書くと、よりメール文らしく整理できます。']);
-      list.push([!!data.deadline || !/依頼|催促|日程調整|確認/.test(data.type), data.deadline ? '期限・希望日が入っています。' : '期限が必要な文面なら追記推奨です。']);
-      list.push([!!data.toName, data.toName ? '宛名が入っています。' : '相手名が空欄のため汎用宛名で作成しています。']);
-      list.push([data.memo.requests.length > 0, data.memo.requests.length > 0 ? '確認・依頼事項をメール用表現に変換しました。' : '依頼事項が少ないため、確認したい内容を追記すると安定します。']);
-      return list;
-    }
-    function renderAnalysis(memo) {
-      var rows = [
-        ['件名の中心', memo.subject],
-        ['確認・依頼事項', memo.requests.join(' / ')],
-        ['背景・補足', memo.background.concat(memo.notes).join(' / ')],
-        ['資料・添付', memo.attachments.join(' / ')]
-      ].filter(function (row) { return row[1]; });
-      if (!rows.length) return '';
-      return '<div class="result-card"><div class="result-head"><strong>メモ解析</strong></div><div class="analysis-list">' + rows.map(function (row) { return '<div><strong>' + esc(row[0]) + ':</strong> ' + esc(row[1]) + '</div>'; }).join('') + '</div></div>';
-    }
-    function renderResult(title, text) {
-      return '<div class="result-card"><div class="result-head"><strong>' + esc(title) + '</strong><button class="mini-btn" type="button" data-copy="' + esc(text) + '">コピー</button></div><div class="mail-text">' + esc(text) + '</div></div>';
-    }
-    function generate() {
-      var data = { type: val('type'), target: val('target'), tone: val('tone'), deadline: val('deadline'), toName: val('toName'), fromName: val('fromName'), content: val('mainText'), note: val('note') };
-      data.memo = analyzeMemo(data.content, data.note, data.deadline);
-      $('status').className = 'status loading';
-      $('status').textContent = '文面を生成中...';
-      setTimeout(function () {
-        var intro = greeting(data.target, data.toName);
-        var normal = intro + '\n\n' + composeBody(data.type, data.memo, data.deadline, data.tone, 'normal') + '\n\n' + closing(data.fromName);
-        var polite = intro + '\n\n' + composeBody(data.type, data.memo, data.deadline, '丁寧', 'polite') + '\n\n何卒よろしくお願い申し上げます。' + (data.fromName ? '\n\n' + data.fromName : '');
-        var short = makeShort(data.type, data.memo, data.deadline) + (data.fromName ? '\n' + data.fromName : '');
-        var subjects = subjectIdeas(data.type, data.memo, data.deadline);
-        $('results').innerHTML = renderAnalysis(data.memo) + '<div class="result-card"><div class="result-head"><strong>件名案</strong></div><div class="subject-list">' + subjects.map(function (s) { return '<div class="subject-row"><span>' + esc(s) + '</span><button class="mini-btn" type="button" data-copy="' + esc(s) + '">コピー</button></div>'; }).join('') + '</div></div>' + renderResult('本文：通常版', normal) + renderResult('本文：丁寧版', polite) + renderResult('本文：短め版', short);
-        $('checks').innerHTML = checks(data).map(function (c) { return '<div class="check ' + (c[0] ? 'ok' : 'warn') + '">' + esc(c[1]) + '</div>'; }).join('');
-        $('status').className = 'status';
-        $('status').textContent = '生成しました。必要に応じてコピーまたは再生成してください。';
-      }, 450);
-    }
-    document.addEventListener('click', function (e) {
-      var btn = e.target.closest('[data-copy]');
-      if (!btn) return;
-      navigator.clipboard.writeText(btn.getAttribute('data-copy')).then(function () {
-        $('status').textContent = 'コピーしました。';
-      });
-    });
-    $('generateBtn').addEventListener('click', generate);
-    $('regenBtn').addEventListener('click', function () { variants++; generate(); });
-    $('sampleBtn').addEventListener('click', function () {
-      $('type').value = '依頼'; $('target').value = '客先'; $('tone').value = '丁寧'; $('deadline').value = '5月10日まで'; $('toName').value = '山田様'; $('fromName').value = 'とある制御屋';
-      $('mainText').value = '5/11 現地作業\n入場時間を確認したい\n立会者も確認\n作業前ミーティングあるか確認\n資料は別途送付予定';
-      $('note').value = '作業内容：制御盤内の配線確認とI/Oチェック\n客先に事前確認しておきたい';
-      generate();
-    });
-    $('clearBtn').addEventListener('click', function () {
-      ['deadline','toName','fromName','mainText','note'].forEach(function (id) { $(id).value = ''; });
-      $('results').innerHTML = ''; $('checks').innerHTML = ''; $('status').textContent = '入力後、「文面を生成」を押してください。';
-    });
-  })();
-</script>
+      </section>
+      <section>
+        <div class="status" id="status">メモを入力して「文面を生成」を押してください。</div>
+        <div class="results" id="results"></div>
+        <div class="checks" id="checks"></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    (function(){
+      var $=function(id){return document.getElementById(id)}, variant=0;
+      function val(id){return $(id).value.trim()} function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+      function lines(){return (val('mainText')+'\n'+val('note')).split(/\r?\n/).map(function(x){return x.trim().replace(/^[-・\s]+/,'')}).filter(Boolean)}
+      function subject(type,items,deadline){var key=items[0]||'ご対応'; var map={依頼:'ご対応のお願い',催促:'ご確認のお願い',お礼:'御礼',謝罪:'お詫び',報告:'ご報告',日程調整:'日程調整のお願い',確認:'ご確認のお願い',送付:'資料送付のご連絡',断り:'ご回答の件'}; return '【'+map[type]+'】'+key.slice(0,24)+(deadline?'（'+deadline+'）':'')}
+      function sentence(line,type){var s=line.replace(/したい$/,'').replace(/確認$/,'確認').replace(/必要$/,'必要'); if(/確認|教えて|知りたい/.test(line)) return s+'について、ご確認いただけますでしょうか。'; if(/送付|添付/.test(line)) return s+'について、送付いたします。'; if(type==='お礼') return s+'について、誠にありがとうございました。'; if(type==='謝罪') return s+'について、ご迷惑をおかけし申し訳ございません。'; return s+'について、お願いいたします。'}
+      function body(level){var type=val('type'), target=val('target'), tone=val('tone'), to=val('toName')|| (target==='社内'?'関係者各位':'ご担当者様'), from=val('fromName'), deadline=val('deadline'), items=lines(); var formal=(target==='社外'||target==='客先'||tone==='丁寧'), short=tone==='短め'||level==='short'; var out=[to,'']; if(formal) out.push('いつもお世話になっております。'); if(type==='報告') out.push('下記の件についてご報告いたします。'); else if(type==='お礼') out.push('下記の件について御礼申し上げます。'); else if(type==='謝罪') out.push('下記の件についてお詫び申し上げます。'); else out.push('下記の件についてご連絡いたします。'); out.push(''); items.slice(0, short?4:8).forEach(function(x){out.push('・'+sentence(x,type))}); if(deadline){out.push(''); out.push('恐れ入りますが、'+deadline+'にご対応いただけますと幸いです。')} out.push(''); out.push(formal?'ご確認のほど、よろしくお願いいたします。':'よろしくお願いします。'); if(from) out.push('\n'+from); return out.join('\n')}
+      function card(title,text){return '<div class="result-card"><div class="head"><strong>'+esc(title)+'</strong><button type="button" data-copy="'+esc(text)+'">コピー</button></div><div class="mail">'+esc(text)+'</div></div>'}
+      function generate(){var items=lines(); if(!items.length){$('status').textContent='メモ書きを入力してください。';$('status').className='status error';return} $('status').textContent='文面を生成しました。';$('status').className='status ok'; var subj=subject(val('type'),items,val('deadline')); $('results').innerHTML=card('件名案',subj)+card('本文: 通常版',body('normal'))+card('本文: 丁寧版',body('polite'))+card('本文: 短め版',body('short')); $('checks').innerHTML='<div class="check ok">用途: '+esc(val('type'))+'</div><div class="check ok">相手: '+esc(val('target'))+'</div><div class="check ok">反映メモ: '+items.length+'件</div><div class="check ok">テンプレート生成</div>'}
+      document.addEventListener('click',function(e){var b=e.target.closest('[data-copy]'); if(!b)return; navigator.clipboard.writeText(b.getAttribute('data-copy')).then(function(){$('status').textContent='コピーしました。';$('status').className='status ok'},function(){$('status').textContent='コピーできませんでした。';$('status').className='status error'})});
+      $('generateBtn').addEventListener('click',generate); $('regenBtn').addEventListener('click',function(){variant++;generate()}); $('sampleBtn').addEventListener('click',function(){$('type').value='確認';$('target').value='客先';$('tone').value='丁寧';$('deadline').value='今週中';$('toName').value='山田様';$('fromName').value='佐藤';$('mainText').value='5/11 現地作業\n入場時間を確認したい\n立会者も確認\n作業前ミーティングあるか確認';generate()}); $('clearBtn').addEventListener('click',function(){['deadline','toName','fromName','mainText','note'].forEach(function(id){$(id).value=''});$('results').innerHTML='';$('checks').innerHTML='';$('status').textContent='メモを入力してください。';$('status').className='status'});
+    })();
+  </script>
 </body>
 </html>

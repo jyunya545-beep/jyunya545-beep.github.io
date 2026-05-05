@@ -3,278 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>名前メーカー | 便利ツール集</title>
-  <meta name="description" content="ハンドルネーム、ブログ名、サービス名、キャラクター名などを、目的別の語彙組み合わせで生成する無料名前メーカーです。">
+  <title>名前メーカー｜便利ツール集</title>
+  <meta name="description" content="用途、雰囲気、文字種、文字数、入れたい語句、NGワードを反映して名前候補を生成します。">
+  <link rel="canonical" href="https://toaruseigyoya.github.io/utilities/name-maker/">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --indigo:#4f46e5; --violet:#7c3aed; --emerald:#059669; --rose:#e11d48; --amber:#b45309; --bg:#f5f6ff; --surf:#fff; --border:#e0e7ff; --text:#1e1b4b; --text2:#4c4980; --muted:#8b87c0; }
-    body { font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-    header { background:linear-gradient(135deg,#1e1b4b,#312e81); color:#fff; }
-    .hdr { max-width:1120px; margin:0 auto; padding:18px 24px; }
-    .hdr-back { display:inline-flex; color:rgba(255,255,255,.68); text-decoration:none; font-size:.8rem; font-weight:800; margin-bottom:8px; }
-    .hdr-title { font-size:1.45rem; font-weight:900; }
-    .hdr-sub { margin-top:4px; color:rgba(255,255,255,.72); font-size:.84rem; line-height:1.7; }
-    main { max-width:1120px; margin:0 auto; padding:24px; }
-    .app { display:grid; grid-template-columns:minmax(300px,360px) minmax(0,1fr); gap:16px; align-items:start; }
-    .card { background:var(--surf); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow:0 2px 12px rgba(79,70,229,.07); }
-    .card-title { font-size:.9rem; font-weight:900; color:#3730a3; margin-bottom:12px; }
-    label { display:block; color:var(--text2); font-size:.76rem; font-weight:900; margin:10px 0 5px; }
-    select, input { width:100%; border:1.5px solid var(--border); border-radius:9px; background:#fbfcff; color:var(--text); font:inherit; font-size:.86rem; font-weight:700; padding:9px 10px; }
-    select:focus, input:focus { outline:3px solid rgba(79,70,229,.16); border-color:#818cf8; }
-    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .checks { display:grid; gap:9px; margin-top:10px; }
-    .checkline { display:flex; align-items:center; gap:8px; color:var(--text2); font-size:.82rem; font-weight:800; }
-    .checkline input { width:auto; }
-    .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-    button { border:0; border-radius:9px; padding:9px 13px; font:inherit; font-size:.84rem; font-weight:900; cursor:pointer; }
-    .btn-primary { color:#fff; background:linear-gradient(135deg,var(--indigo),var(--violet)); box-shadow:0 5px 14px rgba(79,70,229,.22); }
-    .btn-outline { color:var(--text2); background:#eef2ff; border:1px solid var(--border); }
-    .status { min-height:38px; margin-bottom:12px; padding:10px 12px; border-radius:10px; background:#eef2ff; color:#3730a3; font-size:.82rem; font-weight:850; line-height:1.55; }
-    .summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
-    .summary div { background:#fff; border:1px solid var(--border); border-radius:10px; padding:9px; color:var(--text2); font-size:.75rem; font-weight:850; }
-    .summary strong { display:block; color:var(--indigo); font-size:1.08rem; }
-    .result-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
-    .name-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; border:1px solid var(--border); border-radius:11px; background:#fff; padding:10px; }
-    .name-main { min-width:0; font-size:.96rem; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .name-sub { grid-column:1/-1; color:var(--muted); font-size:.72rem; font-weight:800; line-height:1.45; }
-    .mini-btn { padding:6px 9px; font-size:.72rem; color:var(--indigo); background:#eef2ff; border:1px solid #c7d2fe; }
-    .guide { margin-top:14px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-    .guide-item { border:1px solid var(--border); border-radius:11px; background:#fbfcff; padding:10px; color:var(--text2); font-size:.78rem; line-height:1.6; font-weight:750; }
-    .guide-item strong { display:block; color:var(--text); margin-bottom:3px; }
-    footer { text-align:center; padding:22px; color:var(--muted); font-size:.76rem; }
-    @media (max-width:860px) { main { padding:18px 14px; } .hdr { padding:16px 14px; } .app, .summary, .result-list, .guide { grid-template-columns:1fr; } .grid2 { grid-template-columns:1fr; } }
+    *,*::before,*::after{box-sizing:border-box}body{margin:0;font-family:"Yu Gothic UI","Meiryo",system-ui,sans-serif;background:#f5f6ff;color:#1e1b4b}header,main{width:min(1120px,calc(100% - 24px));margin:auto}header{padding:20px 0 12px}a{color:#4f46e5;font-weight:800;text-decoration:none}h1{font-size:clamp(1.55rem,4vw,2.3rem);margin:12px 0 6px}.lead{color:#64748b;line-height:1.6}.app{display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:16px;margin:18px 0 30px}.card{background:#fff;border:1px solid #e0e7ff;border-radius:12px;padding:16px;box-shadow:0 10px 24px rgba(79,70,229,.08)}label{display:block;font-size:.78rem;font-weight:900;color:#4c4980;margin:10px 0 5px}input,select{width:100%;border:1.5px solid #e0e7ff;border-radius:9px;padding:9px 10px;font:inherit}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.checkline{display:flex;gap:8px;align-items:center;font-weight:800;color:#4c4980}.checkline input{width:auto}button{border:0;border-radius:9px;padding:9px 13px;font:inherit;font-size:.84rem;font-weight:900;cursor:pointer;background:#eef2ff;color:#312e81}.primary{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}.status{padding:10px 12px;border-radius:10px;background:#eef2ff;color:#3730a3;font-weight:850;line-height:1.5;margin-bottom:12px}.status.ok{background:#ecfdf5;color:#047857}.status.error{background:#fff1f2;color:#be123c}.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}.summary div{background:#fff;border:1px solid #e0e7ff;border-radius:10px;padding:9px;font-size:.78rem;color:#4c4980;font-weight:800}.summary strong{display:block;color:#4f46e5;font-size:1.05rem}.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.name{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;border:1px solid #e0e7ff;border-radius:11px;background:#fff;padding:10px}.main{font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sub{grid-column:1/-1;color:#64748b;font-size:.78rem;font-weight:800}@media(max-width:860px){header,main{width:min(100% - 16px,1120px)}.app,.grid2,.summary,.results{grid-template-columns:1fr}button{min-height:38px}}
   </style>
 </head>
 <body>
-<header>
-  <div class="hdr">
-    <a href="../" class="hdr-back">← 便利ツール集</a>
-    <div class="hdr-title">名前メーカー</div>
-    <div class="hdr-sub">目的別の語彙を組み合わせて、ハンドルネーム・ブログ名・サービス名・キャラクター名などを生成します。</div>
-  </div>
-</header>
-<main>
-  <div class="app">
-    <section class="card">
-      <div class="card-title">生成条件</div>
-      <label for="purpose">使用目的</label>
-      <select id="purpose"></select>
-      <div class="grid2">
-        <div><label for="mood">雰囲気</label><select id="mood"><option value="auto">自動</option><option value="cute">かわいい</option><option value="cool">かっこいい</option><option value="jp">和風</option><option value="ai">AI風</option><option value="simple">シンプル</option></select></div>
-        <div><label for="scriptType">文字種</label><select id="scriptType"><option value="auto">自動</option><option value="kana">ひらがな・カタカナ</option><option value="kanji">漢字</option><option value="en">英語</option><option value="mixed">混合</option></select></div>
-      </div>
-      <div class="grid2">
-        <div><label for="count">生成数</label><select id="count"><option>5</option><option selected>10</option><option>20</option><option>50</option></select></div>
-        <div><label for="lengthType">文字数目安</label><select id="lengthType"><option value="short">短め</option><option value="normal" selected>普通</option><option value="long">長め</option></select></div>
-      </div>
-      <label for="keyword">入れたい語句</label>
-      <input id="keyword" placeholder="例：AI、現場、ねこ、仕事など。空欄可">
-      <div class="checks">
-        <label class="checkline"><input type="checkbox" id="ngCheck" checked> NGワード・不自然語を除外</label>
-        <label class="checkline"><input type="checkbox" id="uniqueCheck" checked> 重複候補を除外</label>
-      </div>
-      <div class="btn-row">
-        <button class="btn-primary" type="button" id="generateBtn">名前を生成</button>
-        <button class="btn-outline" type="button" id="regenBtn">再生成</button>
-        <button class="btn-outline" type="button" id="copyAllBtn">一括コピー</button>
-        <button class="btn-outline" type="button" id="csvBtn">CSV保存</button>
-      </div>
-      <div class="guide">
-        <div class="guide-item"><strong>方式</strong>prefix / core / suffix などの語彙を目的別に組み合わせます。</div>
-        <div class="guide-item"><strong>注意</strong>商標・既存サービス名との重複は公開前に別途確認してください。</div>
-      </div>
-    </section>
-
-    <section>
-      <div class="status" id="status">条件を選んで「名前を生成」を押してください。</div>
-      <div class="summary" id="summary"></div>
-      <div class="result-list" id="results"></div>
-    </section>
-  </div>
-</main>
-<footer>© 2026 とある制御屋の備忘録</footer>
-<script>
-  (function () {
-    var $ = function (id) { return document.getElementById(id); };
-    var lastResults = [];
-    var purposes = {
-      handle_name: ['ハンドルネーム', 'SNS、ゲーム、配信用の個人名'],
-      blog_name: ['ブログ名', 'ブログ、個人サイト、雑記サイト名'],
-      service_name: ['サービス名・アプリ名', 'Webサービス、簡易ツール、アプリ名'],
-      project_name: ['プロジェクト名', '開発、業務改善、社内活動名'],
-      character_name: ['キャラクター名', '漫画、小説、ゲーム向け'],
-      comic_character_name: ['4コマ漫画キャラ名', 'ゆるい漫画、仕事・子育て系キャラ'],
-      pet_name: ['ペット名', '犬、猫、小動物向け'],
-      fantasy_name: ['ファンタジー名', '異世界、RPG、魔法、創作用'],
-      japanese_style_name: ['和風名', '和風、古風、雅な印象'],
-      ai_tool_name: ['AIツール名', 'AI風、SaaS風、生成ツール名'],
-      team_name: ['チーム名', 'チーム、サークル、グループ名'],
-      shop_name: ['店名', 'カフェ、雑貨、ハンドメイド、工房名']
-    };
-    var patterns = {
-      handle_name: ['P001','P002','P003'], blog_name: ['P004','P005','P007'], service_name: ['P004','P005','P006'], project_name: ['P004','P005','P007'],
-      character_name: ['P001','P002','P003','P008'], comic_character_name: ['P001','P002','P003'], pet_name: ['P001','P002'], fantasy_name: ['P003','P008'],
-      japanese_style_name: ['P002','P003','P008'], ai_tool_name: ['P004','P005','P006'], team_name: ['P004','P007'], shop_name: ['P004','P007']
-    };
-    var table = {
-      handle_name: {
-        prefix:['ふわ','もち','まる','ころ','ぷに','ぴこ','きら','ぽよ','うる','ちょこ','みる','ここ','りり','のの','もこ','しろ','ゆる','ほわ','にこ','すや','こま','ひよ','るる','らら','ぽか','さら','ゆめ','てく','あお','みず'],
-        core:['ねこ','うさ','くま','りす','とり','まめ','そら','はな','ゆめ','ほし','みず','つき','ここあ','みるく','いちご','ぷりん','しゅがー','らて','こっとん','ましゅ','みかん','こむぎ','きなこ','しずく','ひなた'],
-        suffix:['りん','たん','ぽん','まる','ちゃん','すけ','ぴ','ぴょん','にゃ','るん','みん','もん','ちー','こ','らん','ろん','てぃ','ふぃ','ぽ','ぷ','る','み','ぬ','りあ','ぴあ']
-      },
-      blog_name: {
-        prefix:['くらし','まいにち','ひと息','ゆる','ここち','ちいさな','ふつうの','ほどよい','のんびり','ささやか','仕事','学び','実務','効率化','自動化','改善','現場','技術','制御','AI','子育て','家事','時短','週末','朝時間'],
-        core:['ノート','手帳','記録','日和','便り','メモ','らぼ','部屋','時間','引き出し','研究所','実験室','道具箱','まとめ','知恵袋','作業場','書斎','机','小部屋','箱庭'],
-        suffix:['ブログ','ログ','ダイアリー','ジャーナル','メモ帳','日記','ラボ','スタイル','ライフ','ベース','ハック','スタディ','ワークス','メソッド','ナビ','ガイド','マップ','レシピ']
-      },
-      service_name: {
-        prefix:['Smart','Next','Cloud','Task','Note','Flow','Link','Quick','Auto','Sync','Data','Work','Clear','Simple','Easy','Boost','Shift','Core','Plus','One','Light','Fast','Mini','Daily','Open','Craft','Clip','Text','File','Web'],
-        core:['Task','Note','Flow','Link','Base','Board','Desk','Hub','Studio','Works','Mate','Pilot','Kit','Map','Stack','Gate','Box','Port','Lane','Space','List','Pad','Dock','Panel','Manager','Helper','Tools'],
-        suffix:['AI','Hub','Base','Flow','Link','Works','Studio','Cloud','Kit','Mate','Board','Desk','Lab','Core','Sync','Plus','One','Pro','Go','App','Tools','Manager','Pilot','Helper','Box','Gate'],
-        connector:['','-','_']
-      },
-      project_name: {
-        prefix:['Project','Operation','Mission','Plan','Build','Launch','Shift','Core','Next','Future','Zero','Alpha','Beta','Delta','Nova','Clear','Bridge','Rapid','Solid','Bright','Open','Craft','Growth','Field'],
-        core:['Aurora','Orion','Atlas','Sirius','Polaris','Phoenix','Mercury','Vega','Nexus','Bridge','Horizon','Compass','Beacon','Summit','River','Orbit','Garden','Factory','Tower'],
-        suffix:['Phase','Drive','Works','Lab','Core','Link','Gate','Base','Plan','Mission','System','Code','Route','Stack','Engine','Road','Team','Trial','Sprint','Cycle','Program']
-      },
-      character_name: {
-        prefix:['あお','しろ','くろ','みどり','ひなた','こはる','なぎ','つむぎ','そら','りく','かなた','みなと','はる','ゆず','すみれ','もち','ふわ','ころ','ぷに','まる','ぽよ','ぴよ','もこ','にこ','ちび'],
-        core:['アオイ','ハル','レン','ソラ','ミナト','ユイ','リン','ナギ','カナ','ツキ','ノア','ミオ','セナ','リオ','ユラ','ねこ','うさ','くま','いぬ','りす','ぱんだ','とり','まめ'],
-        suffix:['太','介','乃','香','音','美','斗','人','羽','花','月','空','葉','里','奈','たろう','すけ','ぽん','まる','ちゃん','どん','ぴー','りん']
-      },
-      comic_character_name: {
-        prefix:['もち','ふわ','ぽん','まる','ぴよ','ぷに','ころ','ちび','てく','ばた','どた','すや','へと','きら','ほわ','うっかり','ちゃっかり','ばたばた','ねむねむ','ぷんすか'],
-        core:['パパ','ママ','ベビ','ロボ','ネコ','うさ','くま','社長','係長','先輩','後輩','先生','たぬき','きつね','ひよこ','新人','現場','AI','ねこ社員','ロボ係長'],
-        suffix:['ちゃん','くん','さん','まる','ぽん','たろう','すけ','りん','どん','ぼう','ロボ','にゃん','ぴよ','先生','係長','先輩','部長','号','まん','っち']
-      },
-      pet_name: {
-        prefix:['まる','もこ','しろ','くろ','ちゃ','みけ','ふく','こむ','ぽん','ぷく','ちょこ','みる','きな','むぎ','そら','こは','ぷり','たま','もち','ふわ','ころ','りん'],
-        core:['ねこ','いぬ','まめ','もち','たま','くり','こめ','らて','ぷりん','ここあ','みるく','あん','きなこ','しらたま','こんぶ','ごま','うに','こむぎ','だいず','ぽてと'],
-        suffix:['ちゃん','くん','まる','すけ','たろう','ぽん','りん','たん','にゃん','わん','ぼう','ぷー','ち','ぴ','もん','ぬ','こ','み','る']
-      },
-      fantasy_name: {
-        prefix:['アル','エル','ルナ','セレ','ノア','リア','フィ','ミラ','レイ','シル','ヴァ','オル','リュ','ティア','フェル','ラグ','アスト','イリ','セフィ','クロ','ゼノ','リノ'],
-        core:['ディア','フィナ','リス','レイン','シア','ミリア','フェリア','ルシア','アリア','ノヴァ','セレス','エリス','ラティア','ヴェル','リオン','グラン','ティス','ミオン','ランス','クロア'],
-        suffix:['ス','ア','ル','ン','リア','ティア','シア','レイン','リス','ディア','フィス','ミア','リオン','フェル','ノア','ゼル','ラス','オン','ール','ーナ']
-      },
-      japanese_style_name: {
-        prefix:['桜','月','雪','風','花','星','蒼','茜','紅','白','千','小','若','藤','朝','夜','雫','葵','椿','凛','琴','雅','紫','灯','霞'],
-        core:['こはる','あおい','つむぎ','ひなた','みこと','なぎ','しおん','すず','かえで','さくら','ほのか','いろは','みやび','ことは','ゆづき','しずく','ちとせ','あかり','すみれ'],
-        suffix:['丸','乃','香','音','花','月','雫','葉','里','美','介','太','之','姫','丞','斎','庵','守','衛','朗']
-      },
-      ai_tool_name: {
-        prefix:['AI','Auto','Smart','Prompt','Agent','Bot','Neural','Synth','Flow','Task','Note','Vision','Text','Data','Logic','Code','Work','Cloud','Brain','Assist','Gen','Deep','Rapid','Quick','Clear','Nano','Mini','Local','File','Doc'],
-        core:['Maker','Builder','Writer','Drawer','Studio','Lab','Agent','Helper','Pilot','Copilot','Engine','Generator','Designer','Planner','Analyzer','Converter','Manager','Finder','Cleaner','Checker','Summarizer','Extractor','Merger','Splitter'],
-        suffix:['AI','Pro','Studio','Hub','Lab','Flow','Bot','Agent','Works','Tools','Kit','Base','Cloud','Mate','Plus','Go','Link','Core','One','Next','Lite','Mini','Desk','Box','Dock'],
-        connector:['','-','_']
-      },
-      team_name: {
-        prefix:['Blue','Red','Green','Silver','Golden','Brave','Smart','Rapid','Future','Next','Creative','Active','Rising','United','Happy','Bright','Solid','Open','Field','Craft','Alpha','Delta','Nova'],
-        core:['Team','Crew','Squad','Circle','Club','Lab','Works','Project','Force','Group','Guild','Unit','Base','Studio','League','Factory','Garage','Room','Camp','Office'],
-        suffix:['One','Plus','Works','Lab','Crew','Force','Link','Stars','Rise','Drive','Core','Connect','Studio','Union','Mission','Club','Squad','Base','Camp']
-      },
-      shop_name: {
-        prefix:['まちの','小さな','ひだまり','こもれび','月の','星の','森の','海辺の','くらしの','手作り','休日の','夕暮れ','朝焼け','風の','花の','ことりの','ねこの','白い','青い','古い'],
-        core:['カフェ','雑貨店','工房','店','研究所','アトリエ','スタジオ','どうぐ屋','ことり','ひつじ','キッチン','パン屋','文具店','本棚','テーブル','箱庭','小屋','市場'],
-        suffix:['日和','便り','時間','しごと','らぼ','の部屋','ノート','テーブル','キッチン','マルシェ','商店','横丁','休日','散歩','手帖','物語','小径']
-      }
-    };
-    var ngWords = ['死','殺','詐欺','差別','暴力','アダルト','ばか','くそ','AIAI','ねこねこ'];
-    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-    function purposeKey() { return $('purpose').value; }
-    function lenOf(name) { return Array.from(name).length; }
-    function targetLength(type) {
-      if (type === 'short') return [2, 9];
-      if (type === 'long') return [5, 26];
-      return [3, 18];
-    }
-    function matchScript(name, type) {
-      if (type === 'auto' || type === 'mixed') return true;
-      if (type === 'en') return /^[A-Za-z0-9_-]+$/.test(name);
-      if (type === 'kanji') return /[\u4e00-\u9fff]/.test(name);
-      if (type === 'kana') return /[\u3040-\u30ffー]/.test(name) && !/[A-Za-z]/.test(name);
-      return true;
-    }
-    function containsNg(name) {
-      return ngWords.some(function (w) { return name.includes(w); }) || /(.)\1\1\1/.test(name);
-    }
-    function buildName(key) {
-      var t = table[key], p = pick(patterns[key] || ['P002']);
-      var connector = pick(t.connector || ['']);
-      if (p === 'P001') return pick(t.prefix) + pick(t.suffix);
-      if (p === 'P002') return pick(t.prefix) + pick(t.core);
-      if (p === 'P003') return pick(t.prefix) + pick(t.core) + pick(t.suffix);
-      if (p === 'P004') return pick(t.prefix) + pick(t.core);
-      if (p === 'P005') return pick(t.core) + pick(t.suffix);
-      if (p === 'P006') return pick(t.prefix) + connector + pick(t.core);
-      if (p === 'P007') return pick(t.prefix) + pick(t.core) + (Math.random() > .55 ? pick(t.suffix) : '');
-      if (p === 'P008') return pick(t.core) + pick(t.suffix);
-      return pick(t.prefix) + pick(t.core);
-    }
-    function withKeyword(name, keyword, scriptType) {
-      keyword = keyword.trim();
-      if (!keyword) return name;
-      if (Math.random() > .45) return name;
-      if (scriptType === 'en') return keyword.replace(/\s+/g, '') + name;
-      return Math.random() > .5 ? keyword + name : name + keyword;
-    }
-    function impression(name, key) {
-      var p = purposes[key][0];
-      var len = lenOf(name);
-      var tone = /AI|Smart|Cloud|Task|Flow|Pro|Lab|Studio/.test(name) ? 'SaaS風' : /[ぁ-ん]/.test(name) ? 'やわらかい' : /[\u4e00-\u9fff]/.test(name) ? '和風' : '覚えやすい';
-      return p + '向け / ' + tone + ' / ' + len + '文字';
-    }
-    function generate() {
-      var key = purposeKey(), count = Number($('count').value), lengthType = $('lengthType').value, scriptType = $('scriptType').value, keyword = $('keyword').value;
-      var range = targetLength(lengthType), unique = $('uniqueCheck').checked, ng = $('ngCheck').checked;
-      var results = [], tries = 0, max = count * 220;
-      while (results.length < count && tries++ < max) {
-        var name = withKeyword(buildName(key), keyword, scriptType);
-        var l = lenOf(name);
-        if (l < range[0] || l > range[1]) continue;
-        if (!matchScript(name, scriptType)) continue;
-        if (ng && containsNg(name)) continue;
-        if (unique && results.some(function (r) { return r.name === name; })) continue;
-        results.push({ name: name, info: impression(name, key) });
-      }
-      lastResults = results;
-      render();
-    }
-    function render() {
-      var key = purposeKey(), totalWords = Object.keys(table[key]).reduce(function (sum, k) { return sum + table[key][k].length; }, 0);
-      $('status').textContent = lastResults.length ? lastResults.length + '件生成しました。気に入った候補をコピーしてください。' : '条件に合う候補が不足しました。文字種や長さを緩めてください。';
-      $('summary').innerHTML = '<div><strong>' + purposes[key][0] + '</strong>使用目的</div><div><strong>' + totalWords + '</strong>語彙数</div><div><strong>' + (patterns[key] || []).length + '</strong>パターン</div><div><strong>' + lastResults.length + '</strong>生成件数</div>';
-      $('results').innerHTML = lastResults.map(function (r) {
-        return '<div class="name-row"><div class="name-main">' + esc(r.name) + '</div><button class="mini-btn" type="button" data-copy="' + esc(r.name) + '">コピー</button><div class="name-sub">' + esc(r.info) + '</div></div>';
-      }).join('');
-    }
-    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-    function copy(text) {
-      navigator.clipboard.writeText(text).then(function () { $('status').textContent = 'コピーしました。'; });
-    }
-    function downloadCsv() {
-      var csv = 'name,info\n' + lastResults.map(function (r) { return '"' + r.name.replace(/"/g, '""') + '","' + r.info.replace(/"/g, '""') + '"'; }).join('\n');
-      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = 'name-maker.csv'; a.click(); URL.revokeObjectURL(a.href);
-    }
-    Object.keys(purposes).forEach(function (key) {
-      var opt = document.createElement('option');
-      opt.value = key; opt.textContent = purposes[key][0] + ' - ' + purposes[key][1];
-      $('purpose').appendChild(opt);
-    });
-    $('generateBtn').addEventListener('click', generate);
-    $('regenBtn').addEventListener('click', generate);
-    $('copyAllBtn').addEventListener('click', function () { copy(lastResults.map(function (r) { return r.name; }).join('\n')); });
-    $('csvBtn').addEventListener('click', downloadCsv);
-    document.addEventListener('click', function (e) {
-      var btn = e.target.closest('[data-copy]');
-      if (btn) copy(btn.getAttribute('data-copy'));
-    });
-    ['purpose','mood','scriptType','count','lengthType','ngCheck','uniqueCheck'].forEach(function (id) { $(id).addEventListener('change', generate); });
-    generate();
-  })();
-</script>
+  <header>
+    <a href="../">← 便利ツール集</a>
+    <h1>名前メーカー</h1>
+    <p class="lead">ハンドルネーム、ブログ名、サービス名、キャラクター名などを目的別の語彙から生成します。</p>
+  </header>
+  <main>
+    <div class="app">
+      <section class="card">
+        <label for="purpose">使用目的</label><select id="purpose"></select>
+        <div class="grid2">
+          <div><label for="mood">雰囲気</label><select id="mood"><option value="auto">自動</option><option value="cute">かわいい</option><option value="cool">かっこいい</option><option value="jp">和風</option><option value="ai">AI風</option><option value="simple">シンプル</option></select></div>
+          <div><label for="scriptType">文字種</label><select id="scriptType"><option value="auto">自動</option><option value="kana">かな・カナ</option><option value="kanji">漢字</option><option value="en">英語</option><option value="mixed">混合</option></select></div>
+        </div>
+        <div class="grid2">
+          <div><label for="count">生成数</label><select id="count"><option>5</option><option selected>10</option><option>20</option><option>50</option></select></div>
+          <div><label for="lengthType">文字数目安</label><select id="lengthType"><option value="short">短め</option><option value="normal" selected>普通</option><option value="long">長め</option></select></div>
+        </div>
+        <label for="keyword">入れたい語句</label><input id="keyword" placeholder="例: AI、現場、空、ねこ">
+        <label for="ngWords">NGワード</label><input id="ngWords" placeholder="例: 古い,危険,社名">
+        <div style="display:grid;gap:8px;margin-top:10px">
+          <label class="checkline"><input type="checkbox" id="ngCheck" checked> NGワードを除外</label>
+          <label class="checkline"><input type="checkbox" id="uniqueCheck" checked> 重複候補を除外</label>
+        </div>
+        <div class="row">
+          <button class="primary" type="button" id="generateBtn">名前を生成</button>
+          <button type="button" id="copyAllBtn">一括コピー</button>
+          <button type="button" id="csvBtn">CSV保存</button>
+        </div>
+      </section>
+      <section>
+        <div class="status" id="status">条件を選んで名前を生成してください。</div>
+        <div class="summary" id="summary"></div>
+        <div class="results" id="results"></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    (function(){
+      var $=function(id){return document.getElementById(id)}, last=[];
+      var purposes={handle:['ハンドルネーム','SNSやゲーム用'],blog:['ブログ名','個人サイト・記録用'],service:['サービス名','Webサービス・アプリ用'],project:['プロジェクト名','開発・業務改善用'],character:['キャラクター名','創作用'],shop:['店名','店舗・工房用'],ai:['AIツール名','AI風ツール用']};
+      var table={cute:{a:['ふわ','もち','ころ','ぴこ','みる','こは','ゆる','ぽぽ'],b:['ねこ','そら','はな','まる','りす','くま','こと','みず'],c:['りん','たん','ぽん','まる','ちゃん','ラボ']},cool:{a:['Nova','Core','Blue','Rapid','Solid','Next','Clear','Shift'],b:['Flow','Link','Gate','Works','Studio','Deck','Pilot','Base'],c:['Hub','One','Pro','Lab','Sync','Drive']},jp:{a:['月','風','雪','花','蒼','白','千','灯','森'],b:['こよみ','しずく','あかり','ひより','かなた','つむぎ','みなと'],c:['庵','堂','録','日和','工房','帳']},ai:{a:['AI','Prompt','Agent','Auto','Smart','Neural','Text','Data'],b:['Maker','Builder','Writer','Studio','Pilot','Engine','Helper'],c:['AI','Hub','Lab','Flow','Bot','Kit']},simple:{a:['Task','Note','File','Work','Web','Link','Daily'],b:['Box','Board','List','Pad','Tools','Desk'],c:['App','Kit','Hub','One','Go']}};
+      function pick(a){return a[Math.floor(Math.random()*a.length)]} function len(s){return Array.from(s).length} function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+      function moodKey(){var m=$('mood').value;if(m==='auto')m=purposeKey()==='ai'?'ai':purposeKey()==='shop'?'jp':Math.random()>.5?'cool':'cute';return m}
+      function purposeKey(){return $('purpose').value}
+      function range(){var t=$('lengthType').value;return t==='short'?[2,10]:t==='long'?[5,28]:[3,18]}
+      function scriptOk(n){var t=$('scriptType').value;if(t==='auto'||t==='mixed')return true;if(t==='en')return /^[A-Za-z0-9_-]+$/.test(n);if(t==='kanji')return /[\u4e00-\u9fff]/.test(n);if(t==='kana')return /^[ぁ-んァ-ヶー]+$/.test(n);return true}
+      function build(){var t=table[moodKey()]||table.cool, join=/^[A-Za-z]/.test(t.a[0])?pick(['','-','_']):''; var n=pick(t.a)+join+pick(t.b)+(Math.random()>.45?join+pick(t.c):''); var kw=$('keyword').value.trim(); if(kw&&Math.random()>.45)n=Math.random()>.5?kw+n:n+kw; return n}
+      function bad(n){var ng=$('ngWords').value.split(/[,\s、]+/).filter(Boolean);return ng.some(function(w){return n.includes(w)})||/(.)\1\1\1/.test(n)}
+      function generate(){var count=Number($('count').value), r=range(), uniq=$('uniqueCheck').checked, ng=$('ngCheck').checked, out=[], tries=0; while(out.length<count&&tries++<count*200){var n=build();if(len(n)<r[0]||len(n)>r[1])continue;if(!scriptOk(n))continue;if(ng&&bad(n))continue;if(uniq&&out.some(function(x){return x.name===n}))continue;out.push({name:n,info:purposes[purposeKey()][0]+'向け / '+moodKey()+' / '+len(n)+'文字'})} last=out; render()}
+      function render(){var p=purposes[purposeKey()];$('status').textContent=last.length?last.length+'件生成しました。':'条件に合う候補がありません。条件をゆるめてください。';$('status').className='status '+(last.length?'ok':'error');$('summary').innerHTML='<div><strong>'+esc(p[0])+'</strong>目的</div><div><strong>'+esc($('mood').selectedOptions[0].textContent)+'</strong>雰囲気</div><div><strong>'+esc($('scriptType').selectedOptions[0].textContent)+'</strong>文字種</div><div><strong>'+last.length+'</strong>件数</div>';$('results').innerHTML=last.map(function(x){return '<div class="name"><div class="main">'+esc(x.name)+'</div><button data-copy="'+esc(x.name)+'" type="button">コピー</button><div class="sub">'+esc(x.info)+'</div></div>'}).join('')}
+      function copy(t){if(!t)return;$('status').textContent='コピー中...';navigator.clipboard.writeText(t).then(function(){$('status').textContent='コピーしました。';$('status').className='status ok'},function(){$('status').textContent='コピーできませんでした。';$('status').className='status error'})}
+      function csv(){if(!last.length)return $('status').textContent='保存する候補がありません。';var body='\uFEFFname,info\n'+last.map(function(x){return '"'+x.name.replace(/"/g,'""')+'","'+x.info.replace(/"/g,'""')+'"'}).join('\n');var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download='name-maker.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
+      Object.keys(purposes).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=purposes[k][0]+' - '+purposes[k][1];$('purpose').appendChild(o)});$('generateBtn').addEventListener('click',generate);$('copyAllBtn').addEventListener('click',function(){copy(last.map(function(x){return x.name}).join('\n'))});$('csvBtn').addEventListener('click',csv);document.addEventListener('click',function(e){var b=e.target.closest('[data-copy]');if(b)copy(b.getAttribute('data-copy'))});['purpose','mood','scriptType','count','lengthType','ngCheck','uniqueCheck'].forEach(function(id){$(id).addEventListener('change',generate)});generate();
+    })();
+  </script>
 </body>
 </html>
