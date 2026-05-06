@@ -65,20 +65,7 @@
     .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
     .profile-name { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
     .profile-handle { font-size: .75rem; color: var(--muted); margin-bottom: 12px; }
-    .profile-bio { font-size: .8rem; color: var(--text2); line-height: 1.75; margin-bottom: 16px; }
-    .skill-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-    .tag { font-size: .68rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; border: 1px solid; }
-    .tag-indigo { background: rgba(99,102,241,.08); color: var(--indigo); border-color: rgba(99,102,241,.2); }
-    .tag-violet { background: rgba(168,85,247,.08); color: var(--violet); border-color: rgba(168,85,247,.2); }
-    .tag-rose   { background: rgba(236,72,153,.08); color: var(--rose);   border-color: rgba(236,72,153,.2); }
-    .tag-slate  { background: rgba(100,116,139,.07); color: #64748b;      border-color: rgba(100,116,139,.2); }
-    .access-box { margin-top: 16px; padding: 18px; animation: fadeUp .5s ease .05s both; }
-    .access-title { font-size: .86rem; font-weight: 800; margin-bottom: 10px; }
-    .access-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .access-item { padding: 9px; border-radius: 12px; background: rgba(255,255,255,.48); border: 1px solid rgba(99,102,241,.08); }
-    .access-label { display: block; color: var(--muted); font-size: .66rem; font-weight: 800; }
-    .access-value { display: block; margin-top: 2px; color: var(--text); font-size: 1.05rem; font-weight: 900; }
-    .access-note { margin-top: 8px; color: var(--muted); font-size: .68rem; font-weight: 700; }
+    .profile-bio { font-size: .8rem; color: var(--text2); line-height: 1.85; margin-bottom: 0; }
 
     /* ── RIGHT COLUMN ── */
     .right-col { display: flex; flex-direction: column; gap: 20px; }
@@ -157,39 +144,8 @@
     <div class="glass profile">
       <div class="avatar"><img src="assets/images/games-icon.png" alt="あいネコ"></div>
       <div class="profile-name">あいネコ</div>
-      <div class="profile-handle">AIねこ＝あいネコ</div>
-      <p class="profile-bio">仕事と子育てに奮闘中。AIで毎日をちょっとラクに。4歳＆1歳に癒される日々。完璧じゃなくていい。</p>
-      <div class="skill-tags">
-        <span class="tag tag-indigo">PLC</span>
-        <span class="tag tag-indigo">FA / 制御設計</span>
-        <span class="tag tag-violet">Claude Code</span>
-        <span class="tag tag-violet">AI開発</span>
-        <span class="tag tag-slate">基本情報技術者</span>
-        <span class="tag tag-slate">FP3級</span>
-        <span class="tag tag-rose">副業</span>
-      </div>
-    </div>
-    <div class="glass access-box">
-      <div class="access-title">端末内アクセスメモ</div>
-      <div class="access-grid">
-        <div class="access-item">
-          <span class="access-label">今日</span>
-          <span class="access-value" id="accessToday">0</span>
-        </div>
-        <div class="access-item">
-          <span class="access-label">累計</span>
-          <span class="access-value" id="accessTotal">0</span>
-        </div>
-        <div class="access-item">
-          <span class="access-label">遷移</span>
-          <span class="access-value" id="accessClicks">0</span>
-        </div>
-        <div class="access-item">
-          <span class="access-label">最終</span>
-          <span class="access-value" id="accessLast">--</span>
-        </div>
-      </div>
-      <div class="access-note">この端末だけの閲覧・クリック数です。実アクセス解析ではありません。</div>
+      <div class="profile-handle">AI×ネコ＝あいネコ</div>
+      <p class="profile-bio">AI×ネコで、あいネコ。<br>仕事と子育てに奮闘中。<br>AIで毎日をちょっとラクに。<br>4歳＆1歳に癒される日々。<br>完璧じゃなくていい。</p>
     </div>
   </aside>
 
@@ -311,50 +267,6 @@
 <footer>
   <p class="footer-text">© 2026 <span>とある制御屋の備忘録</span> — All tools are free to use.</p>
 </footer>
-
-<script>
-  (function () {
-    var key = 'home-access-stats';
-    var now = new Date();
-    var today = now.toISOString().slice(0, 10);
-    function load() {
-      try { return JSON.parse(localStorage.getItem(key) || '{}'); }
-      catch (e) { return {}; }
-    }
-    function save(data) {
-      try { localStorage.setItem(key, JSON.stringify(data)); }
-      catch (e) {}
-    }
-    function render(data) {
-      var todayCount = (data.days || {})[today] || 0;
-      var clickTotal = Object.keys(data.clicks || {}).reduce(function (sum, href) {
-        return sum + ((data.clicks || {})[href] || 0);
-      }, 0);
-      document.getElementById('accessToday').textContent = todayCount;
-      document.getElementById('accessTotal').textContent = data.total || 0;
-      document.getElementById('accessClicks').textContent = clickTotal;
-      document.getElementById('accessLast').textContent = data.lastTime || '--';
-    }
-    var stats = load();
-    stats.total = (stats.total || 0) + 1;
-    stats.days = stats.days || {};
-    stats.days[today] = (stats.days[today] || 0) + 1;
-    stats.lastTime = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-    stats.clicks = stats.clicks || {};
-    save(stats);
-    render(stats);
-    Array.prototype.forEach.call(document.querySelectorAll('.tool-card'), function (card) {
-      card.addEventListener('click', function () {
-        var current = load();
-        current.clicks = current.clicks || {};
-        var href = card.getAttribute('href') || 'unknown';
-        current.clicks[href] = (current.clicks[href] || 0) + 1;
-        save(current);
-        render(current);
-      });
-    });
-  })();
-</script>
 
 </body>
 </html>
