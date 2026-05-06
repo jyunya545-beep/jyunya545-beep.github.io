@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ツールダッシュ | 無料ゲーム</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 18% 10%,#fef08a,#fef3c7 20%,transparent 42%),radial-gradient(circle at 88% 4%,#93c5fd,#dbeafe 26%,transparent 48%),linear-gradient(135deg,#ecfeff,#fff7ed 58%,#fdf2f8);color:#172033;font-family:"Yu Gothic UI","Meiryo",system-ui,sans-serif}.app{width:min(1000px,calc(100% - 20px));margin:auto;padding:22px 0 34px}a{color:#2563eb;text-decoration:none;font-weight:850}.head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:14px}h1{margin:8px 0 4px;font-size:clamp(1.7rem,4vw,2.6rem);background:linear-gradient(135deg,#0ea5e9,#7c3aed,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent}.lead{margin:0;color:#526179;line-height:1.6}.shell{display:grid;grid-template-columns:minmax(0,1fr)240px;gap:14px}.stage{position:relative;background:linear-gradient(180deg,#e0f2fe,#f8fafc);border:2px solid rgba(14,165,233,.24);border-radius:20px;padding:12px;box-shadow:0 18px 42px rgba(14,165,233,.14);overflow:hidden}canvas{display:block;width:100%;height:auto;border-radius:14px;background:linear-gradient(180deg,#bae6fd 0,#eff6ff 62%,#bbf7d0 63%,#86efac 100%);touch-action:none}.overlay{position:absolute;inset:12px;display:grid;place-items:center;pointer-events:none}.banner{display:none;text-align:center;padding:18px 22px;border-radius:18px;background:rgba(15,23,42,.72);color:#fff;box-shadow:0 12px 34px rgba(15,23,42,.24)}.banner.show{display:block}.banner strong{display:block;font-size:clamp(1.6rem,5vw,3.2rem);letter-spacing:.06em}.side{display:grid;gap:12px}.card{background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.9);border-radius:16px;padding:14px;box-shadow:0 12px 26px rgba(37,99,235,.08)}.label{font-size:.78rem;font-weight:900;color:#64748b}.num{font-size:1.8rem;font-weight:1000;color:#db2777}.actions{display:grid;gap:8px}button{border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(135deg,#0ea5e9,#7c3aed);color:#fff;font:inherit;font-weight:1000;cursor:pointer;box-shadow:0 8px 18px rgba(124,58,237,.18)}.ghost{background:#eaf1ff;color:#1e3a8a;box-shadow:none}.keys{font-size:.82rem;color:#526179;line-height:1.7;font-weight:750}@media(max-width:760px){.shell{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}.card:last-child{grid-column:1/-1}}@media(max-width:520px){.side{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <a href="../">← 無料ゲーム一覧</a>
+  <div class="head">
+    <div>
+      <h1>ツールダッシュ</h1>
+      <p class="lead">走り続けるキャラをジャンプ・スライディングで操作し、工具やブロックを避けて距離を伸ばします。</p>
+    </div>
+  </div>
+  <div class="shell">
+    <section class="stage">
+      <canvas id="cv" width="720" height="420" aria-label="ツールダッシュのゲーム画面"></canvas>
+      <div class="overlay"><div class="banner show" id="banner"><strong>READY</strong><span>スタートで開始</span></div></div>
+    </section>
+    <aside class="side">
+      <div class="card"><div class="label">SCORE</div><div class="num" id="score">0</div></div>
+      <div class="card"><div class="label">BEST</div><div class="num" id="best">0</div></div>
+      <div class="card actions"><button id="start">スタート</button><button id="pause" class="ghost">一時停止</button></div>
+      <div class="card keys">操作<br>Space / ↑: ジャンプ<br>↓: スライディング<br>スマホ: タップでジャンプ、下方向スワイプでスライディング</div>
+    </aside>
+  </div>
+</main>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),banner=document.getElementById('banner');
+let player,obs,parts,clouds,frame,score,best=Number(localStorage.getItem('dashRunnerBest')||0),speed,running=false,paused=false,last=0;
+function reset(){player={x:92,y:306,w:42,h:54,vy:0,on:true,slide:0};obs=[];parts=[];clouds=Array.from({length:5},(_,i)=>({x:i*170+40,y:40+Math.random()*90,s:18+Math.random()*16}));frame=0;score=0;speed=5.4;running=false;paused=false;draw();scoreEl.textContent='0';bestEl.textContent=best;show('READY','スタートで開始')}
+function show(a,b){banner.classList.add('show');banner.innerHTML='<strong>'+a+'</strong><span>'+b+'</span>'}
+function hide(){banner.classList.remove('show')}
+function startGame(){reset();running=true;hide();last=performance.now();requestAnimationFrame(loop)}
+function jump(){if(!running){startGame();return}if(paused)return;if(player.on){player.vy=-15.5;player.on=false;burst(player.x+18,player.y+player.h,'#38bdf8')}}
+function slide(){if(!running||paused||!player.on)return;player.slide=28;burst(player.x+player.w,player.y+player.h,'#f59e0b')}
+function loop(t){if(!running)return;if(paused){last=t;requestAnimationFrame(loop);return}const dt=Math.min(32,t-last)/16.67;last=t;update(dt);draw();requestAnimationFrame(loop)}
+function update(dt){frame+=dt;speed+=0.0025*dt;score+=Math.floor(speed*dt);scoreEl.textContent=score;if(frame%55<dt)spawn();player.vy+=0.82*dt;player.y+=player.vy*dt;if(player.y>=306){player.y=306;player.vy=0;player.on=true}if(player.slide>0)player.slide-=dt;obs.forEach(o=>o.x-=speed*dt);obs=obs.filter(o=>o.x>-80);clouds.forEach(c=>{c.x-=speed*.18*dt;if(c.x<-80){c.x=760;c.y=35+Math.random()*95}});parts=parts.map(p=>({x:p.x+p.vx*dt,y:p.y+p.vy*dt,vy:p.vy+.18*dt,life:p.life-dt,c:p.c})).filter(p=>p.life>0);for(const o of obs)if(hit(o))gameOver()}
+function spawn(){const air=Math.random()<.28;obs.push({x:750,y:air?248:318,w:34+Math.random()*18,h:air?34:42,type:air?'gear':'block',c:air?'#a855f7':'#ef4444'})}
+function hit(o){const ph=player.slide>0?30:player.h,py=player.slide>0?330:player.y;return player.x<o.x+o.w&&player.x+player.w>o.x&&py<o.y+o.h&&py+ph>o.y}
+function gameOver(){running=false;best=Math.max(best,score);localStorage.setItem('dashRunnerBest',best);bestEl.textContent=best;burst(player.x+20,player.y+20,'#ef4444',28);draw();show('GAME OVER','スタートで再挑戦')}
+function burst(x,y,c,n=12){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*8,vy:(Math.random()-.8)*8,life:24+Math.random()*12,c})}
+function draw(){ctx.clearRect(0,0,720,420);clouds.forEach(c=>{ctx.fillStyle='rgba(255,255,255,.75)';ctx.beginPath();ctx.arc(c.x,c.y,c.s,0,7);ctx.arc(c.x+c.s,c.y+4,c.s*.72,0,7);ctx.arc(c.x-c.s*.8,c.y+5,c.s*.65,0,7);ctx.fill()});ctx.fillStyle='#22c55e';ctx.fillRect(0,360,720,60);ctx.fillStyle='rgba(255,255,255,.35)';for(let x=-(frame*speed%44);x<720;x+=44)ctx.fillRect(x,360,24,5);obs.forEach(o=>{ctx.fillStyle=o.c;if(o.type==='gear'){ctx.save();ctx.translate(o.x+o.w/2,o.y+o.h/2);ctx.rotate(frame/12);ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);ctx.restore()}else{round(o.x,o.y,o.w,o.h,8)}});parts.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life/32);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,4,0,7);ctx.fill();ctx.globalAlpha=1});const ph=player.slide>0?30:player.h,py=player.slide>0?330:player.y;ctx.fillStyle='#0ea5e9';round(player.x,py,player.w,ph,12);ctx.fillStyle='#fff';ctx.fillRect(player.x+27,py+10,7,7);ctx.fillStyle='#facc15';ctx.fillRect(player.x+8,py+ph-6,28,6)}
+function round(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+document.addEventListener('keydown',e=>{if(e.code==='Space'||e.key==='ArrowUp'){e.preventDefault();jump()}if(e.key==='ArrowDown'){e.preventDefault();slide()}});
+let sy=0;cv.onpointerdown=e=>{sy=e.clientY};cv.onpointerup=e=>{if(e.clientY-sy>24)slide();else jump()};document.getElementById('start').onclick=startGame;document.getElementById('pause').onclick=()=>{if(!running)return;paused=!paused;if(paused)show('PAUSE','一時停止中');else hide()};reset();
+</script>
+</body>
+</html>
