@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>オセロ | 無料ゲーム</title>
+  <link rel="stylesheet" href="../classic-board.css">
+</head>
+<body>
+  <main class="app">
+    <header><a href="../">← 無料ゲーム一覧</a><h1 id="title">オセロ</h1><p id="subtitle"></p></header>
+    <section class="panel">
+      <div class="toolbar"><strong id="turn"></strong><span id="score"></span><button id="pass">パス</button><button id="undoSelect">選択解除</button><button id="reset">新規</button></div>
+      <div id="board" class="board reversi"></div>
+      <p id="message" class="message"></p>
+    </section>
+    <section class="hands"><div><b>黒の持ち駒</b><div id="blackHand"></div></div><div><b>白の持ち駒</b><div id="whiteHand"></div></div></section>
+  </main>
+  <script>window.CLASSIC_GAME={type:'reversi',title:'オセロ',desc:'相手の石をはさんで裏返す、定番の盤面ゲームです。'};</script>
+  <script src="../classic-board-game.js"></script>
+</body>
+</html>

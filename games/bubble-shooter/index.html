@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>バブルシューター | 無料ゲーム</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(180deg,#e0f2fe,#fff7ed);color:#172033;font-family:"Yu Gothic UI","Meiryo",system-ui,sans-serif}.app{width:min(980px,calc(100% - 20px));margin:auto;padding:22px 0 34px}a{color:#2563eb;text-decoration:none;font-weight:800}h1{margin:8px 0 4px;font-size:clamp(1.6rem,4vw,2.4rem)}p{color:#526179;line-height:1.6}.wrap{display:grid;grid-template-columns:minmax(0,1fr)240px;gap:14px}.stage{background:#fff;border:1px solid #bae6fd;border-radius:16px;padding:12px;box-shadow:0 12px 28px rgba(14,165,233,.12)}canvas{display:block;width:100%;height:auto;background:#f8fbff;border-radius:12px;border:2px solid #7dd3fc;touch-action:none}.side{display:grid;gap:12px}.card{background:#fff;border:1px solid #bae6fd;border-radius:14px;padding:14px;box-shadow:0 10px 24px rgba(14,165,233,.08)}.num{font-size:1.6rem;font-weight:1000;color:#db2777}button{border:0;border-radius:10px;padding:10px 12px;background:#0ea5e9;color:#fff;font:inherit;font-weight:900;cursor:pointer}@media(max-width:760px){.wrap{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <a href="../">← 無料ゲーム一覧</a>
+  <h1>バブルシューター</h1>
+  <p>同じ色を3つ以上つなげて消す、シンプルなバブルシューティングです。</p>
+  <div class="wrap">
+    <section class="stage"><canvas id="cv" width="560" height="700"></canvas></section>
+    <aside class="side"><div class="card">スコア<div id="score" class="num">0</div></div><div class="card">次の色<div id="next" class="num">●</div></div><div class="card"><p id="msg">クリックした方向へ発射します。</p><button id="reset">新規ゲーム</button></div></aside>
+  </div>
+</main>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),R=18,C=12,colors=['#ef4444','#3b82f6','#22c55e','#f59e0b','#a855f7'];let grid=[],shot=null,cur=0,score=0,gameOver=false;
+function start(){grid=Array.from({length:10},(_,r)=>Array.from({length:C},(_,c)=>r<5?Math.floor(Math.random()*colors.length):null));shot=null;cur=rand();score=0;gameOver=false;draw();msg.textContent='クリックした方向へ発射します。'}
+function rand(){return Math.floor(Math.random()*colors.length)}
+function pos(r,c){return{x:38+c*42+(r%2)*21,y:36+r*36}}
+function cellAt(x,y){let best=null,d=1e9;for(let r=0;r<grid.length;r++)for(let c=0;c<C;c++){let p=pos(r,c),dd=(p.x-x)**2+(p.y-y)**2;if(dd<d){d=dd;best={r,c}}}return best}
+function draw(){ctx.clearRect(0,0,cv.width,cv.height);for(let r=0;r<grid.length;r++)for(let c=0;c<C;c++)if(grid[r][c]!=null)bubble(pos(r,c).x,pos(r,c).y,colors[grid[r][c]]);bubble(280,650,colors[cur]);ctx.fillStyle='#334155';ctx.font='14px sans-serif';ctx.fillText('クリック/タップで発射',205,690);if(shot)bubble(shot.x,shot.y,colors[shot.color]);scoreEl.textContent=score;next.textContent='●';next.style.color=colors[cur]}
+function bubble(x,y,col){ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=4;ctx.stroke()}
+function fire(e){if(shot||gameOver)return;const rect=cv.getBoundingClientRect(),x=(e.clientX-rect.left)*cv.width/rect.width,y=(e.clientY-rect.top)*cv.height/rect.height;let dx=x-280,dy=y-650,len=Math.hypot(dx,dy)||1;shot={x:280,y:650,vx:dx/len*9,vy:dy/len*9,color:cur};cur=rand();tick()}
+function tick(){if(!shot)return;shot.x+=shot.vx;shot.y+=shot.vy;if(shot.x<R||shot.x>cv.width-R)shot.vx*=-1;if(shot.y<25||hit()){land();return}draw();requestAnimationFrame(tick)}
+function hit(){for(let r=0;r<grid.length;r++)for(let c=0;c<C;c++)if(grid[r][c]!=null){let p=pos(r,c);if(Math.hypot(p.x-shot.x,p.y-shot.y)<R*2-2)return true}return false}
+function land(){let t=cellAt(shot.x,shot.y);while(t.r>=grid.length)grid.push(Array(C).fill(null));if(grid[t.r][t.c]!=null){let ns=neigh(t.r,t.c).find(n=>grid[n.r]&&grid[n.r][n.c]==null);if(ns)t=ns}grid[t.r][t.c]=shot.color;let group=same(t.r,t.c);if(group.length>=3){group.forEach(n=>grid[n.r][n.c]=null);score+=group.length*10;msg.textContent=group.length+'個消えました。'}else msg.textContent='3つ以上つなげると消えます。';shot=null;draw()}
+function neigh(r,c){const off=r%2?[[0,-1],[0,1],[-1,0],[-1,1],[1,0],[1,1]]:[[0,-1],[0,1],[-1,-1],[-1,0],[1,-1],[1,0]];return off.map(([dr,dc])=>({r:r+dr,c:c+dc})).filter(n=>n.r>=0&&n.c>=0&&n.c<C)}
+function same(r,c){const col=grid[r][c],out=[],seen=new Set(),st=[{r,c}];while(st.length){let n=st.pop(),k=n.r+','+n.c;if(seen.has(k)||!grid[n.r]||grid[n.r][n.c]!==col)continue;seen.add(k);out.push(n);neigh(n.r,n.c).forEach(x=>st.push(x))}return out}
+const scoreEl=document.getElementById('score');cv.addEventListener('click',fire);reset.onclick=start;start();
+</script>
+</body>
+</html>
