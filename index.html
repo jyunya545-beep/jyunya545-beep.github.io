@@ -36,9 +36,13 @@
     .i-tools{background:linear-gradient(135deg,var(--mint),#75dfc5)} .i-check{background:linear-gradient(135deg,#9aa6b2,#c8d0d7)}
     .i-util{background:linear-gradient(135deg,var(--sky),#9ed2ff)} .i-task{background:linear-gradient(135deg,#7c83ff,#b5b8ff)}
     .i-game{background:linear-gradient(135deg,var(--pink),#ffc1d6)} .i-fortune{background:linear-gradient(135deg,var(--lemon),#ffb84d)}
+    .i-article{background:linear-gradient(135deg,#ffb86b,#f06f8f)}
     .link-title { font-size:1rem; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .link-desc { color:var(--sub); font-size:.84rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     footer { text-align:center; color:#8a7890; font-size:.78rem; padding:24px; }
+    .footer-links { display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-bottom:8px; }
+    .footer-links a { color:#65708a; text-decoration:none; font-weight:700; }
+    .footer-links a:hover { color:#273044; text-decoration:underline; }
     @media (max-width:780px) {
       .page { grid-template-columns:1fr; padding-inline:14px; }
       .profile { position:static; }
@@ -74,8 +78,19 @@
       <a class="link-card" href="https://toaruseigyoya.github.io/fortune/">
         <span class="link-icon i-fortune">占</span><span class="link-title">占い</span><span class="link-desc">今日の運勢や相性を気軽にチェック</span>
       </a>
+      <a class="link-card" href="https://toaruseigyoya.github.io/articles/">
+        <span class="link-icon i-article">文</span><span class="link-title">読みもの</span><span class="link-desc">AI活用・子育て・ツールの使い方メモ</span>
+      </a>
     </section>
   </main>
-  <footer>© 2026 今日もあいネコ</footer>
+  <footer>
+    <nav class="footer-links" aria-label="サイト情報">
+      <a href="https://toaruseigyoya.github.io/about/">プロフィール</a>
+      <a href="https://toaruseigyoya.github.io/contact/">お問い合わせ</a>
+      <a href="https://toaruseigyoya.github.io/privacy/">プライバシーポリシー</a>
+      <a href="https://toaruseigyoya.github.io/disclaimer/">免責事項</a>
+    </nav>
+    © 2026 今日もあいネコ
+  </footer>
 </body>
 </html>
