@@ -4,14 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>今日もあいネコ | 子育てとAI活用のメモ</title>
-  <meta name="description" content="AI×ネコで、あいネコ。仕事と子育てに奮闘中。子育ての日常とAI関連を中心に発信予定。">
+  <meta name="description" content="忙しい育児中の親向けに、AI活用・便利ツール・時短アイデアを実体験ベースで紹介するメモ置き場です。">
   <link rel="canonical" href="https://toaruseigyoya.github.io/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="今日もあいネコ">
   <meta property="og:title" content="今日もあいネコ">
-  <meta property="og:description" content="子育ての日常と、最近話題のAI関連を中心に発信予定。">
+  <meta property="og:description" content="忙しい育児中の親向けに、AI活用・便利ツール・時短アイデアを実体験ベースで紹介します。">
   <meta property="og:url" content="https://toaruseigyoya.github.io/">
+  <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
   <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "今日もあいネコ",
+      "url": "https://toaruseigyoya.github.io/",
+      "description": "忙しい育児中の親向けに、AI活用・便利ツール・時短アイデアを実体験ベースで紹介するメモ置き場です。",
+      "publisher": {
+        "@type": "Person",
+        "name": "あいネコ"
+      }
+    }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -30,6 +44,14 @@
     .profile-name { font-size:1.35rem; font-weight:900; letter-spacing:.02em; margin-bottom:12px; }
     .profile-bio { color:var(--sub); font-size:.92rem; line-height:1.95; }
     .links { padding:16px; display:grid; gap:10px; }
+    .value-box, .featured-box { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; }
+    .value-box h2, .featured-box h2 { font-size:1.05rem; line-height:1.45; margin-bottom:6px; }
+    .value-box p, .featured-box p { color:var(--sub); font-size:.9rem; }
+    .quick-links { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .quick-links a { color:#0f7f68; background:#eaf8f3; border:1px solid #c8efe3; border-radius:999px; padding:6px 10px; font-size:.82rem; font-weight:900; text-decoration:none; }
+    .featured-list { display:grid; gap:8px; margin-top:10px; }
+    .featured-list a { display:flex; justify-content:space-between; gap:10px; color:var(--ink); text-decoration:none; font-weight:900; border-top:1px solid #f4e6d9; padding-top:8px; }
+    .featured-list span { color:#8a7890; font-size:.78rem; font-weight:800; white-space:nowrap; }
     .link-card { display:grid; grid-template-columns:54px minmax(0,170px) minmax(0,1fr); gap:14px; align-items:center; min-height:74px; padding:12px 14px; border-radius:14px; background:#fff; border:1px solid var(--line); color:var(--ink); text-decoration:none; transition:transform .15s, box-shadow .15s, border-color .15s; }
     .link-card:hover { transform:translateY(-2px); border-color:rgba(54,196,159,.45); box-shadow:0 10px 24px rgba(54,196,159,.12); }
     .link-icon { width:48px; height:48px; border-radius:15px; display:grid; place-items:center; font-size:1.45rem; font-weight:900; color:#fff; }
@@ -57,14 +79,20 @@
     <aside class="profile">
       <div class="avatar"><img src="assets/images/aineko-profile.png" alt="今日もあいネコ"></div>
       <h1 class="profile-name">今日もあいネコ</h1>
-      <p class="profile-bio">AI×ネコで、あいネコ。<br>仕事と子育てに奮闘中。<br>4歳＆1歳に癒される日々。<br>子育ての日常と、最近話題のAI関連を中心に発信予定。</p>
+      <p class="profile-bio">AI×ネコで、あいネコ。<br>仕事と子育てに奮闘中。<br>4歳＆1歳に癒される日々。<br>AIと子育てのコツを、実体験から発信するメモ置き場です。</p>
     </aside>
     <section class="links" aria-label="コンテンツ一覧">
+      <div class="value-box">
+        <h2>忙しい育児中の親向けに、AI活用・便利ツール・時短アイデアを紹介しています。</h2>
+        <p>仕事、家事、子育ての合間に使いやすいツールと、AIを無理なく取り入れるための読みものをまとめています。</p>
+        <div class="quick-links">
+          <a href="https://toaruseigyoya.github.io/articles/#parenting-ai">子育て中のAI活用</a>
+          <a href="https://toaruseigyoya.github.io/articles/#tools-guide">便利ツールの選び方</a>
+          <a href="https://toaruseigyoya.github.io/tasks/">タスク管理を使う</a>
+        </div>
+      </div>
       <a class="link-card" href="https://toaruseigyoya.github.io/tools/">
         <span class="link-icon i-tools">🔧</span><span class="link-title">汎用ツール集</span><span class="link-desc">Word編集などの便利ツールを無料公開</span>
-      </a>
-      <a class="link-card" href="https://toaruseigyoya.github.io/tools/checking/">
-        <span class="link-icon i-check">🧪</span><span class="link-title">汎用ツール集(動作確認中)</span><span class="link-desc">旧ツール群の動作確認用ページ</span>
       </a>
       <a class="link-card" href="https://toaruseigyoya.github.io/utilities/">
         <span class="link-icon i-util">📄</span><span class="link-title">便利ツール集</span><span class="link-desc">PDF・画像・文章作成などの実用ツール</span>
@@ -81,6 +109,16 @@
       <a class="link-card" href="https://toaruseigyoya.github.io/articles/">
         <span class="link-icon i-article">文</span><span class="link-title">読みもの</span><span class="link-desc">AI活用・子育て・ツールの使い方メモ</span>
       </a>
+      <div class="featured-box">
+        <h2>まず読む・使うならここ</h2>
+        <p>初めて来た人向けの注目コンテンツです。</p>
+        <div class="featured-list">
+          <a href="https://toaruseigyoya.github.io/articles/#ai-work">AIを仕事に取り入れる考え方 <span>読みもの</span></a>
+          <a href="https://toaruseigyoya.github.io/articles/#task-guide">タスク管理の整え方 <span>読みもの</span></a>
+          <a href="https://toaruseigyoya.github.io/utilities/">PDF・文章の便利ツール <span>ツール</span></a>
+          <a href="https://toaruseigyoya.github.io/games/">短時間で遊べる無料ゲーム <span>休憩</span></a>
+        </div>
+      </div>
     </section>
   </main>
   <footer>
@@ -89,6 +127,7 @@
       <a href="https://toaruseigyoya.github.io/contact/">お問い合わせ</a>
       <a href="https://toaruseigyoya.github.io/privacy/">プライバシーポリシー</a>
       <a href="https://toaruseigyoya.github.io/disclaimer/">免責事項</a>
+      <a href="https://toaruseigyoya.github.io/tools/checking/">旧ツール確認</a>
     </nav>
     © 2026 今日もあいネコ
   </footer>
