@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF・画像文字抽出ツール｜便利ツール集</title>
-  <meta name="description" content="PDF、PNG、JPEGから文字を抽出できる無料ツールです。PDF内テキスト抽出と日本語・英語OCRに対応しています。">
+  <title>文字抽出ツール｜便利ツール集</title>
+  <meta name="description" content="PDF、PNG、JPG、JPEG、WebPから文字を抽出できる無料ツールです。PDF内テキスト抽出、日本語・英語OCR、範囲指定OCRに対応しています。">
   <link rel="canonical" href="https://toaruseigyoya.github.io/utilities/text-extract/">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -39,7 +39,18 @@
     .file-name { font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .file-meta { color:var(--muted); font-size:.8rem; margin-top:2px; }
     .result-head { display:flex; justify-content:space-between; gap:8px; align-items:center; margin-bottom:8px; }
+    .result-card.active { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
     .result-text { white-space:pre-wrap; color:#0f172a; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:9px; max-height:220px; overflow:auto; }
+    select,input[type="text"],input[type="range"] { width:100%; border:1px solid var(--line); border-radius:9px; padding:8px 10px; font:inherit; background:#fff; color:var(--text); }
+    label { display:block; margin:10px 0 5px; color:var(--muted); font-size:.82rem; font-weight:900; }
+    .preview-panel { margin-bottom:14px; }
+    .preview-tools,.edit-tools { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:10px 0; }
+    .checks { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+    .checks label { display:flex; gap:5px; align-items:center; margin:0; background:#f0fdfa; border:1px solid #ccfbf1; border-radius:999px; padding:5px 8px; }
+    .canvas-wrap { position:relative; overflow:auto; min-height:260px; max-height:520px; border:1px solid var(--line); border-radius:12px; background:#f8fafc; padding:10px; }
+    #previewCanvas { display:block; max-width:100%; height:auto; margin:auto; background:#fff; box-shadow:0 8px 18px rgba(15,23,42,.12); }
+    .selection { position:absolute; border:2px solid #e11d48; background:rgba(225,29,72,.12); pointer-events:none; display:none; }
+    .pagebar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0; }
     @media (max-width:760px) {
       header, main { width:min(100% - 16px, 1180px); }
       .layout { grid-template-columns:1fr; }
@@ -51,18 +62,25 @@
 <body>
   <header>
     <a href="../">← 便利ツール集</a>
-    <h1>PDF・画像文字抽出ツール</h1>
-    <p class="lead">PDFの埋め込みテキスト、PNG/JPEG画像内の日本語・英語文字を抽出します。処理はブラウザ内で行います。</p>
+    <h1>文字抽出ツール</h1>
+    <p class="lead">PDF、PNG、JPG、JPEG、WebPから文字を抽出します。このツールはブラウザ内で処理します。ファイルはサーバーへ送信されません。</p>
   </header>
   <main>
     <div class="layout">
       <section class="panel">
         <h2>ファイル追加</h2>
         <div class="drop" id="dropZone">
-          <strong>PDF・PNG・JPEGをドラッグ＆ドロップ</strong>
-          <div class="small">複数ファイルに対応</div>
+          <strong>PDF・PNG・JPG・JPEG・WebPをドラッグ＆ドロップ</strong>
+          <div class="small">複数ファイルに対応。指定形式以外は追加しません。</div>
         </div>
-        <input class="hidden" id="fileInput" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,.png,.jpg,.jpeg" multiple>
+        <input class="hidden" id="fileInput" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple>
+        <label for="extractMode">抽出方式</label>
+        <select id="extractMode">
+          <option value="auto">テキスト直接抽出を優先</option>
+          <option value="direct">テキスト直接抽出</option>
+          <option value="ocr">OCR抽出</option>
+          <option value="both">両方実行して比較</option>
+        </select>
         <div class="row" style="margin-top:10px">
           <button type="button" id="pickFiles">ファイルを選択</button>
           <button type="button" class="primary" id="extractButton" disabled>文字抽出</button>
@@ -73,8 +91,38 @@
       </section>
 
       <section class="panel">
+        <div class="preview-panel">
+          <h2>PDF・画像プレビュー</h2>
+          <div class="pagebar">
+            <button type="button" id="prevPage" disabled>前へ</button>
+            <button type="button" id="nextPage" disabled>次へ</button>
+            <button type="button" id="ocrSelection" disabled>選択範囲OCR</button>
+            <span class="small" id="previewInfo">未選択</span>
+          </div>
+          <div class="preview-tools">
+            <label>倍率<select id="zoomSelect"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
+            <label>回転<select id="rotateSelect"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></label>
+            <label>二値化<select id="thresholdSelect"><option value="off">なし</option><option value="on">あり</option></select></label>
+            <label>明るさ<input id="brightnessRange" type="range" min="50" max="150" value="100"></label>
+            <label>コントラスト<input id="contrastRange" type="range" min="50" max="180" value="100"></label>
+          </div>
+          <div class="checks">
+            <label><input id="grayCheck" type="checkbox">白黒化</label>
+            <label><input id="invertCheck" type="checkbox">反転</label>
+            <label><input id="noiseCheck" type="checkbox">ノイズ軽減</label>
+          </div>
+          <div class="canvas-wrap" id="canvasWrap"><canvas id="previewCanvas"></canvas><div class="selection" id="selectionBox"></div></div>
+        </div>
         <h2>抽出結果</h2>
-        <textarea id="allOutput" readonly placeholder="抽出した文字がここに表示されます。"></textarea>
+        <textarea id="allOutput" placeholder="抽出した文字がここに表示されます。結果は直接編集できます。"></textarea>
+        <div class="edit-tools">
+          <input id="findText" type="text" placeholder="検索文字">
+          <input id="replaceText" type="text" placeholder="置換文字">
+          <button type="button" id="replaceAll">全置換</button>
+          <button type="button" id="removeBlank">空行削除</button>
+          <button type="button" id="removeSpaces">不要スペース削除</button>
+          <button type="button" id="normalizeLines">改行整理</button>
+        </div>
         <div class="row" style="margin-top:10px">
           <button type="button" id="copyAll" disabled>全結果コピー</button>
           <button type="button" id="saveAll" disabled>全結果txt保存</button>
@@ -91,8 +139,14 @@
       'use strict';
       var files = [];
       var results = [];
+      var selectedFileId = null;
+      var currentPage = 1;
+      var currentRendered = null;
+      var selection = null;
+      var dragging = false;
       var $ = function (id) { return document.getElementById(id); };
       var dropZone = $('dropZone'), fileInput = $('fileInput'), fileList = $('fileList'), status = $('status'), allOutput = $('allOutput'), resultList = $('resultList');
+      var previewCanvas = $('previewCanvas'), previewInfo = $('previewInfo'), canvasWrap = $('canvasWrap'), selectionBox = $('selectionBox');
 
       if (window.pdfjsLib) {
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -118,17 +172,33 @@
           reader.readAsArrayBuffer(file);
         });
       }
-      function addFiles(list) {
-        var incoming = Array.prototype.slice.call(list || []).filter(function (file) {
-          return file.type === 'application/pdf' || /^image\/(png|jpeg)$/.test(file.type) || /\.(pdf|png|jpe?g)$/i.test(file.name);
+      function readDataUrl(file) {
+        return new Promise(function (resolve, reject) {
+          var reader = new FileReader();
+          reader.onerror = function () { reject(new Error('ファイルを読み込めませんでした。')); };
+          reader.onload = function () { resolve(reader.result); };
+          reader.readAsDataURL(file);
         });
+      }
+      function isAllowed(file) {
+        return file.type === 'application/pdf' || /^image\/(png|jpeg|webp)$/.test(file.type) || /\.(pdf|png|jpe?g|webp)$/i.test(file.name);
+      }
+      function addFiles(list) {
+        var raw = Array.prototype.slice.call(list || []);
+        var incoming = raw.filter(isAllowed);
+        var rejected = raw.length - incoming.length;
         if (!incoming.length) {
-          setStatus('PDF、PNG、JPEGだけ追加できます。', 'error');
+          setStatus('PDF、PNG、JPG、JPEG、WebPだけ追加できます。', 'error');
           return;
         }
-        incoming.forEach(function (file) { files.push({ id: Date.now() + '-' + Math.random(), file: file }); });
+        incoming.forEach(function (file) {
+          var item = { id: Date.now() + '-' + Math.random(), file: file, pages: 1 };
+          files.push(item);
+          if (!selectedFileId) selectedFileId = item.id;
+        });
         renderFiles();
-        setStatus(files.length + '件のファイルを追加しました。', 'ok');
+        renderPreview();
+        setStatus(files.length + '件のファイルを追加しました。' + (rejected ? ' 対応外ファイル ' + rejected + '件は除外しました。' : ''), rejected ? 'warn' : 'ok');
       }
       function renderFiles() {
         fileList.innerHTML = '';
@@ -138,9 +208,94 @@
           row.innerHTML = '<div class="file-name"></div><div class="file-meta"></div>';
           row.querySelector('.file-name').textContent = item.file.name;
           row.querySelector('.file-meta').textContent = item.file.type + ' / ' + bytes(item.file.size);
+          row.addEventListener('click', function () {
+            selectedFileId = item.id;
+            currentPage = 1;
+            renderFiles();
+            renderPreview();
+          });
           fileList.appendChild(row);
         });
         $('extractButton').disabled = !files.length;
+      }
+      function selectedItem() {
+        return files.find(function (item) { return item.id === selectedFileId; }) || files[0] || null;
+      }
+      function applyPreprocess(ctx, canvas) {
+        var image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var data = image.data;
+        var brightness = Number($('brightnessRange').value) / 100;
+        var contrast = Number($('contrastRange').value) / 100;
+        var gray = $('grayCheck').checked;
+        var invert = $('invertCheck').checked;
+        var threshold = $('thresholdSelect').value === 'on';
+        for (var i = 0; i < data.length; i += 4) {
+          var r = ((data[i] - 128) * contrast + 128) * brightness;
+          var g = ((data[i + 1] - 128) * contrast + 128) * brightness;
+          var b = ((data[i + 2] - 128) * contrast + 128) * brightness;
+          if (gray || threshold) {
+            var y = .299 * r + .587 * g + .114 * b;
+            if (threshold) y = y > 150 ? 255 : 0;
+            r = g = b = y;
+          }
+          if (invert) { r = 255 - r; g = 255 - g; b = 255 - b; }
+          data[i] = Math.max(0, Math.min(255, r));
+          data[i + 1] = Math.max(0, Math.min(255, g));
+          data[i + 2] = Math.max(0, Math.min(255, b));
+        }
+        ctx.putImageData(image, 0, 0);
+      }
+      async function renderPreview() {
+        var item = selectedItem();
+        if (!item) {
+          previewInfo.textContent = '未選択';
+          $('prevPage').disabled = true; $('nextPage').disabled = true; $('ocrSelection').disabled = true;
+          return;
+        }
+        selectedFileId = item.id;
+        var file = item.file;
+        var ctx = previewCanvas.getContext('2d');
+        selection = null;
+        selectionBox.style.display = 'none';
+        try {
+          var zoom = Number($('zoomSelect').value);
+          var rotate = Number($('rotateSelect').value);
+          if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
+            var pdf = await pdfjsLib.getDocument({ data: await readArrayBuffer(file) }).promise;
+            item.pages = pdf.numPages;
+            currentPage = Math.max(1, Math.min(currentPage, pdf.numPages));
+            var page = await pdf.getPage(currentPage);
+            var viewport = page.getViewport({ scale: zoom, rotation: rotate });
+            previewCanvas.width = viewport.width;
+            previewCanvas.height = viewport.height;
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            previewInfo.textContent = file.name + ' / ' + currentPage + '/' + pdf.numPages + 'ページ';
+          } else {
+            var img = new Image();
+            img.src = await readDataUrl(file);
+            await img.decode();
+            var swap = rotate === 90 || rotate === 270;
+            previewCanvas.width = (swap ? img.height : img.width) * zoom;
+            previewCanvas.height = (swap ? img.width : img.height) * zoom;
+            ctx.save();
+            ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+            if (rotate === 90) { ctx.translate(previewCanvas.width, 0); ctx.rotate(Math.PI / 2); }
+            else if (rotate === 180) { ctx.translate(previewCanvas.width, previewCanvas.height); ctx.rotate(Math.PI); }
+            else if (rotate === 270) { ctx.translate(0, previewCanvas.height); ctx.rotate(Math.PI * 1.5); }
+            ctx.drawImage(img, 0, 0, img.width * zoom, img.height * zoom);
+            ctx.restore();
+            item.pages = 1;
+            previewInfo.textContent = file.name + ' / 画像';
+          }
+          if ($('noiseCheck').checked) ctx.filter = 'blur(.25px)';
+          applyPreprocess(ctx, previewCanvas);
+          currentRendered = { file: file, page: currentPage };
+          $('prevPage').disabled = currentPage <= 1;
+          $('nextPage').disabled = currentPage >= item.pages;
+          $('ocrSelection').disabled = false;
+        } catch (error) {
+          previewInfo.textContent = 'プレビューできません: ' + error.message;
+        }
       }
       async function extractPdf(file) {
         if (!window.pdfjsLib) throw new Error('PDF文字抽出ライブラリを読み込めませんでした。');
@@ -157,7 +312,8 @@
       }
       async function extractImage(file) {
         if (!window.Tesseract) throw new Error('画像OCRライブラリを読み込めませんでした。');
-        var result = await Tesseract.recognize(file, 'jpn+eng', {
+        var target = file instanceof Blob ? file : file;
+        var result = await Tesseract.recognize(target, 'jpn+eng', {
           logger: function (message) {
             if (message.status) {
               var pct = message.progress ? ' ' + Math.round(message.progress * 100) + '%' : '';
@@ -174,9 +330,24 @@
         allOutput.value = '';
         resultList.innerHTML = '';
         try {
+          var mode = $('extractMode').value;
           for (var i = 0; i < files.length; i++) {
             var file = files[i].file;
-            var text = /\.pdf$/i.test(file.name) || file.type === 'application/pdf' ? await extractPdf(file) : await extractImage(file);
+            var isPdf = /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
+            var text = '';
+            if (isPdf && (mode === 'direct' || mode === 'auto' || mode === 'both')) {
+              text = await extractPdf(file);
+            }
+            if ((!isPdf || mode === 'ocr' || mode === 'both' || (mode === 'auto' && !text.replace(/\[.*?\]/g, '').trim()))) {
+              if (isPdf) {
+                selectedFileId = files[i].id;
+                currentPage = 1;
+                await renderPreview();
+                text += (text ? '\n\n--- OCR ---\n' : '') + await ocrCanvas(previewCanvas);
+              } else {
+                text += (text ? '\n\n--- OCR ---\n' : '') + await extractImage(file);
+              }
+            }
             results.push({ name: file.name, text: text });
             renderResults();
           }
@@ -200,8 +371,54 @@
           card.innerHTML = '<div class="result-head"><strong></strong><div class="row"><button type="button" data-copy="' + index + '">コピー</button><button type="button" data-save="' + index + '">txt保存</button></div></div><div class="result-text"></div>';
           card.querySelector('strong').textContent = r.name;
           card.querySelector('.result-text').textContent = r.text;
+          card.addEventListener('click', function () {
+            Array.prototype.forEach.call(resultList.querySelectorAll('.result-card'), function (el) { el.classList.remove('active'); });
+            card.classList.add('active');
+            var match = files.find(function (item) { return item.file.name === r.name; });
+            if (match) { selectedFileId = match.id; currentPage = 1; renderFiles(); renderPreview(); }
+          });
           resultList.appendChild(card);
         });
+      }
+      function ocrCanvas(canvas) {
+        return new Promise(function (resolve, reject) {
+          canvas.toBlob(function (blob) {
+            if (!blob) return reject(new Error('OCR用画像を作成できませんでした。'));
+            extractImage(blob).then(resolve, reject);
+          }, 'image/png');
+        });
+      }
+      async function ocrSelectedArea() {
+        if (!selection) return setStatus('プレビュー上で範囲をドラッグ選択してください。', 'error');
+        var temp = document.createElement('canvas');
+        temp.width = selection.w;
+        temp.height = selection.h;
+        temp.getContext('2d').drawImage(previewCanvas, selection.x, selection.y, selection.w, selection.h, 0, 0, selection.w, selection.h);
+        setBusy(true);
+        try {
+          var text = await ocrCanvas(temp);
+          results.push({ name: (selectedItem() ? selectedItem().file.name : '選択範囲') + ' 選択範囲', text: text });
+          renderResults();
+          setStatus('選択範囲OCRが完了しました。', 'ok');
+        } catch (error) {
+          setStatus('選択範囲OCRに失敗しました: ' + error.message, 'error');
+        } finally {
+          setBusy(false);
+        }
+      }
+      function editOutput(kind) {
+        var text = allOutput.value;
+        if (kind === 'replace') {
+          var find = $('findText').value;
+          if (!find) return;
+          allOutput.value = text.split(find).join($('replaceText').value);
+        } else if (kind === 'blank') {
+          allOutput.value = text.split(/\r?\n/).filter(function (line) { return line.trim(); }).join('\n');
+        } else if (kind === 'spaces') {
+          allOutput.value = text.replace(/[ \t]+/g, ' ').replace(/^\s+|\s+$/gm, '');
+        } else if (kind === 'lines') {
+          allOutput.value = text.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n');
+        }
       }
       function downloadText(name, text) {
         var blob = new Blob([text], { type:'text/plain;charset=utf-8' });
@@ -215,17 +432,60 @@
         if (!text) return setStatus('コピーする結果がありません。', 'error');
         navigator.clipboard.writeText(text).then(function () { setStatus('コピーしました。', 'ok'); }, function () { setStatus('コピーできませんでした。手動で選択してください。', 'error'); });
       }
+      document.addEventListener('dragover', function (e) { e.preventDefault(); });
+      document.addEventListener('drop', function (e) { e.preventDefault(); });
       dropZone.addEventListener('click', function () { fileInput.click(); });
       dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('dragging'); });
       dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('dragging'); });
       dropZone.addEventListener('drop', function (e) { e.preventDefault(); dropZone.classList.remove('dragging'); addFiles(e.dataTransfer.files); });
+      canvasWrap.addEventListener('mousedown', function (e) {
+        if (!currentRendered) return;
+        var rect = previewCanvas.getBoundingClientRect();
+        if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+        dragging = true;
+        var scaleX = previewCanvas.width / rect.width;
+        var scaleY = previewCanvas.height / rect.height;
+        selection = { sx: (e.clientX - rect.left) * scaleX, sy: (e.clientY - rect.top) * scaleY, x: 0, y: 0, w: 0, h: 0 };
+      });
+      canvasWrap.addEventListener('mousemove', function (e) {
+        if (!dragging || !selection) return;
+        var rect = previewCanvas.getBoundingClientRect();
+        var scaleX = previewCanvas.width / rect.width;
+        var scaleY = previewCanvas.height / rect.height;
+        var ex = Math.max(0, Math.min(previewCanvas.width, (e.clientX - rect.left) * scaleX));
+        var ey = Math.max(0, Math.min(previewCanvas.height, (e.clientY - rect.top) * scaleY));
+        selection.x = Math.min(selection.sx, ex);
+        selection.y = Math.min(selection.sy, ey);
+        selection.w = Math.abs(ex - selection.sx);
+        selection.h = Math.abs(ey - selection.sy);
+        selectionBox.style.display = selection.w > 5 && selection.h > 5 ? 'block' : 'none';
+        selectionBox.style.left = (previewCanvas.offsetLeft + selection.x / scaleX) + 'px';
+        selectionBox.style.top = (previewCanvas.offsetTop + selection.y / scaleY) + 'px';
+        selectionBox.style.width = (selection.w / scaleX) + 'px';
+        selectionBox.style.height = (selection.h / scaleY) + 'px';
+      });
+      window.addEventListener('mouseup', function () {
+        if (dragging && selection && (selection.w < 5 || selection.h < 5)) selection = null;
+        dragging = false;
+      });
       $('pickFiles').addEventListener('click', function () { fileInput.click(); });
       fileInput.addEventListener('change', function () { addFiles(fileInput.files); fileInput.value = ''; });
       $('extractButton').addEventListener('click', extractAll);
-      $('clearFiles').addEventListener('click', function () { files = []; renderFiles(); setStatus('文字抽出したいファイルを追加してください。'); });
+      $('clearFiles').addEventListener('click', function () { files = []; selectedFileId = null; currentPage = 1; renderFiles(); renderPreview(); setStatus('文字抽出したいファイルを追加してください。'); });
       $('clearResults').addEventListener('click', function () { results = []; renderResults(); setStatus('結果をクリアしました。'); });
       $('copyAll').addEventListener('click', function () { copy(allOutput.value); });
       $('saveAll').addEventListener('click', function () { downloadText('extracted-text.txt', allOutput.value); });
+      $('prevPage').addEventListener('click', function () { currentPage = Math.max(1, currentPage - 1); renderPreview(); });
+      $('nextPage').addEventListener('click', function () { var item = selectedItem(); currentPage = item ? Math.min(item.pages || 1, currentPage + 1) : 1; renderPreview(); });
+      $('ocrSelection').addEventListener('click', ocrSelectedArea);
+      ['zoomSelect','rotateSelect','thresholdSelect','brightnessRange','contrastRange','grayCheck','invertCheck','noiseCheck'].forEach(function (id) {
+        $(id).addEventListener('change', renderPreview);
+        $(id).addEventListener('input', renderPreview);
+      });
+      $('replaceAll').addEventListener('click', function () { editOutput('replace'); });
+      $('removeBlank').addEventListener('click', function () { editOutput('blank'); });
+      $('removeSpaces').addEventListener('click', function () { editOutput('spaces'); });
+      $('normalizeLines').addEventListener('click', function () { editOutput('lines'); });
       document.addEventListener('click', function (e) {
         var copyBtn = e.target.closest('[data-copy]');
         var saveBtn = e.target.closest('[data-save]');

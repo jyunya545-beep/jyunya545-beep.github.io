@@ -41,6 +41,7 @@
     .tabs button.active { color:#fff; background:linear-gradient(135deg,var(--blue),var(--cyan)); }
     .file-list { display:grid; gap:9px; }
     .file-row { display:grid; grid-template-columns:minmax(0,1fr) 110px auto; gap:8px; align-items:center; padding:9px; border:1px solid var(--line); border-radius:10px; background:#f8fafc; }
+    .file-row.selected { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
     .file-name { font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .file-meta { color:var(--muted); font-size:.78rem; margin-top:2px; }
     .tools { display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; }
@@ -48,11 +49,21 @@
     .panel-mode { display:none; }
     .panel-mode.active { display:block; }
     .hint { color:var(--muted); font-size:.85rem; line-height:1.6; }
+    .name-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
+    .preview-wrap { margin-top:14px; display:grid; grid-template-columns:160px minmax(0,1fr); gap:12px; }
+    .thumbs { max-height:420px; overflow:auto; display:grid; gap:8px; padding-right:4px; }
+    .thumb { border:1px solid var(--line); border-radius:10px; background:#fff; padding:7px; display:grid; gap:6px; }
+    .thumb.active { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+    .thumb canvas { width:100%; height:auto; display:block; background:#f8fafc; border-radius:6px; }
+    .thumb label { display:flex; gap:6px; align-items:center; font-size:.78rem; font-weight:900; }
+    .preview-main { min-height:320px; border:1px solid var(--line); border-radius:12px; background:#f8fafc; padding:10px; overflow:auto; }
+    .preview-main canvas { max-width:100%; height:auto; display:block; margin:auto; background:#fff; box-shadow:0 8px 18px rgba(15,23,42,.12); }
     @media (max-width: 760px) {
       header, main { width:min(100% - 16px, 1180px); }
       .layout { grid-template-columns:1fr; }
       .file-row { grid-template-columns:1fr; }
       .tools { justify-content:flex-start; }
+      .name-grid, .preview-wrap { grid-template-columns:1fr; }
       button { min-height:38px; }
     }
   </style>
@@ -90,8 +101,12 @@
 
         <div class="panel-mode active" id="mergePanel">
           <p class="hint">上から順に結合します。範囲は <code>all</code>, <code>1</code>, <code>1-3</code>, <code>2,5-7</code>, <code>5-</code> が使えます。</p>
+          <label for="mergeName">結合後ファイル名</label>
+          <input id="mergeName" type="text" value="merged.pdf" placeholder="merged.pdf">
           <div class="file-list" id="fileList"></div>
           <div class="row" style="margin-top:12px">
+            <button type="button" id="rotateAll90" disabled>選択PDFを90°回転</button>
+            <button type="button" id="rotateAll180" disabled>選択PDFを180°回転</button>
             <button type="button" class="primary" id="mergeButton" disabled>指定順でPDF結合</button>
           </div>
         </div>
@@ -102,9 +117,28 @@
           <select id="splitSource"></select>
           <label for="splitRanges" style="display:block;margin-top:10px">分割範囲</label>
           <textarea id="splitRanges" placeholder="1&#10;2-3&#10;4-"></textarea>
+          <label for="splitBaseName" style="display:block;margin-top:10px">分割後ファイル名ベース</label>
+          <input id="splitBaseName" type="text" placeholder="元ファイル名_split">
           <div class="row" style="margin-top:10px">
             <button type="button" id="splitEveryPage" disabled>全ページを1ページずつ</button>
             <button type="button" class="primary" id="splitButton" disabled>範囲ごとにPDF分割</button>
+          </div>
+        </div>
+        <div class="preview-wrap">
+          <div>
+            <h2>ページ一覧</h2>
+            <p class="hint">チェックを外すと結合対象から除外します。矢印でページ順を変更できます。</p>
+            <div class="thumbs" id="thumbList"></div>
+          </div>
+          <div>
+            <h2>PDFプレビュー</h2>
+            <div class="row" style="margin-bottom:8px">
+              <button type="button" id="prevPage" disabled>前へ</button>
+              <button type="button" id="nextPage" disabled>次へ</button>
+              <button type="button" id="rotatePage90" disabled>ページ90°回転</button>
+              <span class="small" id="previewInfo">未選択</span>
+            </div>
+            <div class="preview-main"><canvas id="previewCanvas"></canvas></div>
           </div>
         </div>
       </section>
@@ -116,11 +150,14 @@
       'use strict';
       var files = [];
       var mode = 'merge';
+      var selectedFileId = null;
+      var selectedPageIndex = 0;
       var $ = function (id) { return document.getElementById(id); };
       var dropZone = $('dropZone'), fileInput = $('fileInput'), folderInput = $('folderInput');
       var fileList = $('fileList'), fileCount = $('fileCount'), status = $('status');
       var mergeTab = $('mergeTab'), splitTab = $('splitTab'), mergePanel = $('mergePanel'), splitPanel = $('splitPanel');
       var splitSource = $('splitSource'), splitRanges = $('splitRanges');
+      var thumbList = $('thumbList'), previewCanvas = $('previewCanvas'), previewInfo = $('previewInfo');
 
       if (window.pdfjsLib) {
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -130,8 +167,11 @@
         status.textContent = message;
         status.className = 'status' + (kind ? ' ' + kind : '');
       }
+      document.addEventListener('dragover', function (e) { e.preventDefault(); });
+      document.addEventListener('drop', function (e) { e.preventDefault(); });
+
       function setBusy(isBusy) {
-        ['mergeButton','splitButton','splitEveryPage','pickFiles','pickFolder','clearFiles'].forEach(function (id) {
+        ['mergeButton','splitButton','splitEveryPage','pickFiles','pickFolder','clearFiles','rotateAll90','rotateAll180','rotatePage90','prevPage','nextPage'].forEach(function (id) {
           var el = $(id);
           if (el) el.disabled = isBusy || (['mergeButton','splitButton','splitEveryPage'].includes(id) && !files.length);
         });
@@ -154,6 +194,28 @@
         var pdf = await pdfjsLib.getDocument({ data: data }).promise;
         return pdf.numPages;
       }
+      async function loadPdfLibDocument(file) {
+        var data = await readArrayBuffer(file);
+        try {
+          return await PDFLib.PDFDocument.load(data);
+        } catch (error) {
+          try {
+            return await PDFLib.PDFDocument.load(data, { ignoreEncryption: true });
+          } catch (retryError) {
+            throw new Error('PDFを読み込めませんでした。暗号化PDF、保護PDF、破損PDFの可能性があります。パスワード解除後のPDFで再試行してください。');
+          }
+        }
+      }
+      function selectedItem() {
+        return files.find(function (item) { return item.id === selectedFileId; }) || files[0] || null;
+      }
+      function ensurePdfName(name, fallback) {
+        var clean = String(name || '').trim() || fallback;
+        return /\.pdf$/i.test(clean) ? clean : clean + '.pdf';
+      }
+      function safeBaseName(name, fallback) {
+        return String(name || '').trim().replace(/[\\/:*?"<>|]/g, '_').replace(/\.pdf$/i, '') || fallback;
+      }
       async function addFiles(list) {
         var incoming = Array.prototype.slice.call(list || []).filter(function (file) {
           return file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
@@ -167,12 +229,24 @@
         try {
           for (var i = 0; i < incoming.length; i++) {
             var file = incoming[i];
-            files.push({ id: Date.now() + '-' + Math.random(), file: file, pages: await getPageCount(file), range: 'all' });
+            var pageCount = await getPageCount(file);
+            var item = {
+              id: Date.now() + '-' + Math.random(),
+              file: file,
+              pages: pageCount,
+              range: 'all',
+              pageOrder: Array.from({ length: pageCount }, function (_, index) { return { page: index, include: true, rotate: 0 }; })
+            };
+            files.push(item);
+            if (!selectedFileId) selectedFileId = item.id;
           }
           render();
           setStatus(files.length + '件のPDFを追加しました。', 'ok');
         } catch (error) {
-          setStatus(error.message, 'error');
+          var message = /encrypted|password|Invalid PDF/i.test(error.message || '')
+            ? 'PDFを読み込めませんでした。暗号化PDF、保護PDF、破損PDFの可能性があります。パスワード解除後のPDFで再試行してください。'
+            : error.message;
+          setStatus(message, 'error');
         } finally {
           setBusy(false);
           render();
@@ -210,6 +284,7 @@
         files.forEach(function (item, index) {
           var row = document.createElement('div');
           row.className = 'file-row';
+          if (item.id === selectedFileId) row.className += ' selected';
           row.innerHTML = '<div><div class="file-name"></div><div class="file-meta"></div></div><input aria-label="範囲"><div class="tools"></div>';
           row.querySelector('.file-name').textContent = item.file.name;
           row.querySelector('.file-meta').textContent = item.pages + 'ページ / ' + bytes(item.file.size);
@@ -217,6 +292,12 @@
           input.value = item.range;
           input.addEventListener('change', function () { item.range = input.value.trim() || 'all'; });
           var tools = row.querySelector('.tools');
+          row.addEventListener('click', function (event) {
+            if (event.target.closest('button') || event.target.closest('input')) return;
+            selectedFileId = item.id;
+            selectedPageIndex = 0;
+            render();
+          });
           [['↑', -1], ['↓', 1]].forEach(function (pair) {
             var b = document.createElement('button');
             b.type = 'button'; b.textContent = pair[0]; b.disabled = index + pair[1] < 0 || index + pair[1] >= files.length;
@@ -225,7 +306,15 @@
           });
           var remove = document.createElement('button');
           remove.type = 'button'; remove.textContent = '削除'; remove.className = 'danger';
-          remove.addEventListener('click', function () { files = files.filter(function (x) { return x.id !== item.id; }); render(); setStatus(files.length ? files.length + '件のPDFがあります。' : 'PDFを追加してください。'); });
+          remove.addEventListener('click', function () {
+            files = files.filter(function (x) { return x.id !== item.id; });
+            if (selectedFileId === item.id) {
+              selectedFileId = files[0] ? files[0].id : null;
+              selectedPageIndex = 0;
+            }
+            render();
+            setStatus(files.length ? files.length + '件のPDFがあります。' : 'PDFを追加してください。');
+          });
           tools.appendChild(remove);
           fileList.appendChild(row);
           var option = document.createElement('option');
@@ -235,6 +324,89 @@
         $('mergeButton').disabled = !files.length;
         $('splitButton').disabled = !files.length;
         $('splitEveryPage').disabled = !files.length;
+        $('rotateAll90').disabled = !selectedItem();
+        $('rotateAll180').disabled = !selectedItem();
+        renderPagePreview();
+      }
+      async function renderPagePreview() {
+        thumbList.innerHTML = '';
+        var item = selectedItem();
+        if (!item) {
+          previewInfo.textContent = '未選択';
+          previewCanvas.getContext('2d').clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+          ['prevPage','nextPage','rotatePage90'].forEach(function (id) { $(id).disabled = true; });
+          return;
+        }
+        selectedFileId = item.id;
+        if (selectedPageIndex >= item.pageOrder.length) selectedPageIndex = Math.max(0, item.pageOrder.length - 1);
+        ['prevPage','nextPage','rotatePage90'].forEach(function (id) { $(id).disabled = !item.pageOrder.length; });
+        try {
+          var pdf = await pdfjsLib.getDocument({ data: await readArrayBuffer(item.file) }).promise;
+          item.pageOrder.forEach(function (pageInfo, index) {
+            var card = document.createElement('div');
+            card.className = 'thumb' + (index === selectedPageIndex ? ' active' : '');
+            var label = document.createElement('label');
+            var check = document.createElement('input');
+            check.type = 'checkbox';
+            check.checked = pageInfo.include;
+            check.addEventListener('change', function () { pageInfo.include = check.checked; });
+            label.appendChild(check);
+            label.appendChild(document.createTextNode((index + 1) + ': 元' + (pageInfo.page + 1) + 'P / ' + pageInfo.rotate + '°'));
+            var canvas = document.createElement('canvas');
+            var row = document.createElement('div');
+            row.className = 'tools';
+            [['↑', -1], ['↓', 1]].forEach(function (pair) {
+              var b = document.createElement('button');
+              b.type = 'button'; b.textContent = pair[0];
+              b.disabled = index + pair[1] < 0 || index + pair[1] >= item.pageOrder.length;
+              b.addEventListener('click', function () {
+                var next = index + pair[1], tmp = item.pageOrder[index];
+                item.pageOrder[index] = item.pageOrder[next]; item.pageOrder[next] = tmp;
+                selectedPageIndex = next; render();
+              });
+              row.appendChild(b);
+            });
+            var rotate = document.createElement('button');
+            rotate.type = 'button'; rotate.textContent = '回転';
+            rotate.addEventListener('click', function () { pageInfo.rotate = (pageInfo.rotate + 90) % 360; render(); });
+            row.appendChild(rotate);
+            card.appendChild(label);
+            card.appendChild(canvas);
+            card.appendChild(row);
+            card.addEventListener('click', function (event) {
+              if (event.target.closest('button') || event.target.closest('input')) return;
+              selectedPageIndex = index; renderPagePreview();
+            });
+            thumbList.appendChild(card);
+            pdf.getPage(pageInfo.page + 1).then(function (page) {
+              var viewport = page.getViewport({ scale: .22, rotation: pageInfo.rotate });
+              canvas.width = viewport.width; canvas.height = viewport.height;
+              page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport });
+            });
+          });
+          var current = item.pageOrder[selectedPageIndex];
+          if (current) {
+            var page = await pdf.getPage(current.page + 1);
+            var viewport = page.getViewport({ scale: 1.25, rotation: current.rotate });
+            previewCanvas.width = viewport.width; previewCanvas.height = viewport.height;
+            await page.render({ canvasContext: previewCanvas.getContext('2d'), viewport: viewport }).promise;
+            previewInfo.textContent = item.file.name + ' / ' + (selectedPageIndex + 1) + '/' + item.pageOrder.length + '（元' + (current.page + 1) + 'P）';
+          }
+        } catch (error) {
+          previewInfo.textContent = 'プレビューできません: ' + error.message;
+        }
+      }
+      function rotateSelectedPages(deg) {
+        var item = selectedItem();
+        if (!item) return;
+        item.pageOrder.forEach(function (page) { page.rotate = (page.rotate + deg) % 360; });
+        render();
+      }
+      function rotateCurrentPage() {
+        var item = selectedItem();
+        if (!item || !item.pageOrder[selectedPageIndex]) return;
+        item.pageOrder[selectedPageIndex].rotate = (item.pageOrder[selectedPageIndex].rotate + 90) % 360;
+        render();
       }
       async function mergePdf() {
         if (!files.length) return setStatus('結合するPDFを追加してください。', 'error');
@@ -245,13 +417,23 @@
           var copied = 0;
           for (var i = 0; i < files.length; i++) {
             var item = files[i];
-            var src = await PDFLib.PDFDocument.load(await readArrayBuffer(item.file));
-            var indexes = parseRange(item.range, src.getPageCount());
+            var src = await loadPdfLibDocument(item.file);
+            var allowed = parseRange(item.range, src.getPageCount());
+            var indexes = item.pageOrder.filter(function (page) {
+              return page.include && allowed.includes(page.page);
+            }).map(function (page) { return page.page; });
+            if (!indexes.length) continue;
             var pages = await out.copyPages(src, indexes);
-            pages.forEach(function (p) { out.addPage(p); copied++; });
+            pages.forEach(function (p, pageIndex) {
+              var pageInfo = item.pageOrder.filter(function (page) { return page.include && allowed.includes(page.page); })[pageIndex];
+              if (pageInfo && pageInfo.rotate) p.setRotation(PDFLib.degrees(pageInfo.rotate));
+              out.addPage(p); copied++;
+            });
           }
-          downloadBlob('merged.pdf', new Blob([await out.save()], { type:'application/pdf' }));
-          setStatus('結合完了: ' + copied + 'ページを merged.pdf として保存しました。', 'ok');
+          if (!copied) throw new Error('出力対象ページがありません。ページチェックと範囲指定を確認してください。');
+          var mergeName = ensurePdfName($('mergeName').value, 'merged.pdf');
+          downloadBlob(mergeName, new Blob([await out.save()], { type:'application/pdf' }));
+          setStatus('結合完了: ' + copied + 'ページを ' + mergeName + ' として保存しました。', 'ok');
         } catch (error) {
           setStatus('結合できませんでした: ' + error.message, 'error');
         } finally {
@@ -266,16 +448,17 @@
         if (!window.PDFLib || !window.JSZip) return setStatus('PDFまたはZIPライブラリを読み込めませんでした。', 'error');
         setStatus('処理中... 分割PDFをZIP化しています。'); setBusy(true);
         try {
-          var src = await PDFLib.PDFDocument.load(await readArrayBuffer(source.file));
+          var src = await loadPdfLibDocument(source.file);
           var zip = new JSZip();
+          var base = safeBaseName($('splitBaseName').value, source.file.name.replace(/\.pdf$/i, '') + '_split');
           for (var i = 0; i < ranges.length; i++) {
             var out = await PDFLib.PDFDocument.create();
             var indexes = parseRange(ranges[i], src.getPageCount());
             var pages = await out.copyPages(src, indexes);
             pages.forEach(function (p) { out.addPage(p); });
-            zip.file(source.file.name.replace(/\.pdf$/i, '') + '_split_' + (i + 1) + '.pdf', await out.save());
+            zip.file(base + '_' + String(i + 1).padStart(2, '0') + '.pdf', await out.save());
           }
-          downloadBlob(source.file.name.replace(/\.pdf$/i, '') + '_split.zip', await zip.generateAsync({ type:'blob' }));
+          downloadBlob(base + '.zip', await zip.generateAsync({ type:'blob' }));
           setStatus('分割完了: ' + ranges.length + '件のPDFをZIP保存しました。', 'ok');
         } catch (error) {
           setStatus('分割できませんでした: ' + error.message, 'error');
@@ -301,6 +484,16 @@
       $('clearFiles').addEventListener('click', function () { files = []; splitRanges.value = ''; render(); setStatus('PDFを追加してください。'); });
       mergeTab.addEventListener('click', function () { switchMode('merge'); });
       splitTab.addEventListener('click', function () { switchMode('split'); });
+      splitSource.addEventListener('change', function () { selectedFileId = splitSource.value; selectedPageIndex = 0; render(); });
+      $('rotateAll90').addEventListener('click', function () { rotateSelectedPages(90); });
+      $('rotateAll180').addEventListener('click', function () { rotateSelectedPages(180); });
+      $('rotatePage90').addEventListener('click', rotateCurrentPage);
+      $('prevPage').addEventListener('click', function () { selectedPageIndex = Math.max(0, selectedPageIndex - 1); renderPagePreview(); });
+      $('nextPage').addEventListener('click', function () {
+        var item = selectedItem();
+        selectedPageIndex = item ? Math.min(item.pageOrder.length - 1, selectedPageIndex + 1) : 0;
+        renderPagePreview();
+      });
       $('mergeButton').addEventListener('click', mergePdf);
       $('splitButton').addEventListener('click', splitPdf);
       $('splitEveryPage').addEventListener('click', function () {
