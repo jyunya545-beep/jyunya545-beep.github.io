@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -24,6 +24,7 @@
     .panel { background:rgba(255,255,255,.94); border:1px solid var(--line); border-radius:12px; padding:16px; box-shadow:0 12px 30px rgba(37,99,235,.08); }
     .drop { border:2px dashed #93c5fd; border-radius:12px; padding:24px 14px; text-align:center; background:#f8fbff; cursor:pointer; }
     .drop.dragging { border-color:var(--cyan); background:#ecfeff; }
+    body.dragging::after { content:"PDFをこの画面にドロップして追加"; position:fixed; inset:12px; z-index:9999; display:grid; place-items:center; border:3px dashed var(--cyan); border-radius:18px; background:rgba(236,254,255,.86); color:var(--text); font-size:1.2rem; font-weight:900; pointer-events:none; }
     .small { color:var(--muted); font-size:.82rem; font-weight:700; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     button { border:0; border-radius:9px; padding:9px 13px; font:inherit; font-size:.84rem; font-weight:900; cursor:pointer; background:#e0f2fe; color:var(--text); }
@@ -33,7 +34,7 @@
     input, select, textarea { width:100%; border:1px solid var(--line); border-radius:9px; padding:8px 10px; font:inherit; background:#fff; color:var(--text); }
     textarea { min-height:120px; resize:vertical; line-height:1.5; }
     .hidden { display:none; }
-    .status { margin-top:12px; padding:10px 12px; border-radius:10px; background:#eff6ff; color:#1d4ed8; font-weight:800; }
+    .status { margin-top:12px; padding:10px 12px; border-radius:10px; background:#eff6ff; color:#1d4ed8; font-weight:800; white-space:pre-line; }
     .status.ok { background:#ecfdf5; color:var(--green); }
     .status.error { background:#fff1f2; color:#be123c; }
     .status.warn { background:#fffbeb; color:var(--amber); }
@@ -67,6 +68,15 @@
       button { min-height:38px; }
     }
   </style>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="今日もあいネコ">
+  <meta property="og:title" content="PDF結合・分割ツール｜便利ツール集">
+  <meta property="og:description" content="複数PDFをブラウザ内で結合・分割できる無料ツールです。ページ範囲指定とZIP出力に対応しています。">
+  <meta property="og:url" content="https://toaruseigyoya.github.io/utilities/pdf/">
+  <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
+  
+  
+  <script defer src="/assets/share-buttons.js"></script>
 </head>
 <body>
   <header>
@@ -80,7 +90,7 @@
         <h2>PDF追加</h2>
         <div class="drop" id="dropZone">
           <strong>PDFをドラッグ＆ドロップ</strong>
-          <div class="small">または下のボタンから選択</div>
+          <div class="small">PDFは画面上のどこにドラッグしても追加できます。</div>
         </div>
         <input class="hidden" id="fileInput" type="file" accept="application/pdf,.pdf" multiple>
         <input class="hidden" id="folderInput" type="file" accept="application/pdf,.pdf" webkitdirectory directory multiple>
@@ -127,7 +137,7 @@
         <div class="preview-wrap">
           <div>
             <h2>ページ一覧</h2>
-            <p class="hint">チェックを外すと結合対象から除外します。矢印でページ順を変更できます。</p>
+            <p class="hint">チェックを外すと結合対象から除外します。行はドラッグ、または矢印で並び替えできます。</p>
             <div class="thumbs" id="thumbList"></div>
           </div>
           <div>
@@ -167,8 +177,34 @@
         status.textContent = message;
         status.className = 'status' + (kind ? ' ' + kind : '');
       }
-      document.addEventListener('dragover', function (e) { e.preventDefault(); });
-      document.addEventListener('drop', function (e) { e.preventDefault(); });
+      function hasFiles(event) {
+        return event.dataTransfer && Array.prototype.includes.call(event.dataTransfer.types || [], 'Files');
+      }
+      document.addEventListener('dragenter', function (e) {
+        if (!hasFiles(e)) return;
+        e.preventDefault();
+        document.body.classList.add('dragging');
+      });
+      document.addEventListener('dragover', function (e) {
+        if (!hasFiles(e)) return;
+        e.preventDefault();
+        document.body.classList.add('dragging');
+      });
+      document.addEventListener('dragleave', function (e) {
+        if (!e.relatedTarget) document.body.classList.remove('dragging');
+      });
+      document.addEventListener('drop', function (e) {
+        if (!hasFiles(e)) return;
+        e.preventDefault();
+        document.body.classList.remove('dragging');
+        addFiles(e.dataTransfer.files);
+      });
+      function friendlyPdfError(prefix, error) {
+        console.error('[PDF tool]', error);
+        var message = String(error && error.message || '');
+        if (/範囲|出力対象|ページチェック/.test(message)) return prefix + message;
+        return prefix + 'PDFが保護されている、または読み取りできない形式のため処理できませんでした。\nパスワード保護・編集制限を解除するか、PDFを保存し直してから再度お試しください。\n\n考えられる原因：パスワード付きPDF、暗号化PDF、編集制限付きPDF、破損PDF、未対応PDF形式';
+      }
 
       function setBusy(isBusy) {
         ['mergeButton','splitButton','splitEveryPage','pickFiles','pickFolder','clearFiles','rotateAll90','rotateAll180','rotatePage90','prevPage','nextPage'].forEach(function (id) {
@@ -202,7 +238,7 @@
           try {
             return await PDFLib.PDFDocument.load(data, { ignoreEncryption: true });
           } catch (retryError) {
-            throw new Error('PDFを読み込めませんでした。暗号化PDF、保護PDF、破損PDFの可能性があります。パスワード解除後のPDFで再試行してください。');
+            throw new Error('PDFが保護されている、または読み取りできない形式です。');
           }
         }
       }
@@ -243,10 +279,7 @@
           render();
           setStatus(files.length + '件のPDFを追加しました。', 'ok');
         } catch (error) {
-          var message = /encrypted|password|Invalid PDF/i.test(error.message || '')
-            ? 'PDFを読み込めませんでした。暗号化PDF、保護PDF、破損PDFの可能性があります。パスワード解除後のPDFで再試行してください。'
-            : error.message;
-          setStatus(message, 'error');
+          setStatus(friendlyPdfError('', error), 'error');
         } finally {
           setBusy(false);
           render();
@@ -345,6 +378,24 @@
           item.pageOrder.forEach(function (pageInfo, index) {
             var card = document.createElement('div');
             card.className = 'thumb' + (index === selectedPageIndex ? ' active' : '');
+            card.draggable = true;
+            card.addEventListener('dragstart', function (event) {
+              event.dataTransfer.setData('text/plain', String(index));
+              event.dataTransfer.effectAllowed = 'move';
+            });
+            card.addEventListener('dragover', function (event) {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = 'move';
+            });
+            card.addEventListener('drop', function (event) {
+              event.preventDefault();
+              var from = Number(event.dataTransfer.getData('text/plain'));
+              if (!Number.isInteger(from) || from === index || from < 0 || from >= item.pageOrder.length) return;
+              var moved = item.pageOrder.splice(from, 1)[0];
+              item.pageOrder.splice(index, 0, moved);
+              selectedPageIndex = index;
+              render();
+            });
             var label = document.createElement('label');
             var check = document.createElement('input');
             check.type = 'checkbox';
@@ -435,7 +486,7 @@
           downloadBlob(mergeName, new Blob([await out.save()], { type:'application/pdf' }));
           setStatus('結合完了: ' + copied + 'ページを ' + mergeName + ' として保存しました。', 'ok');
         } catch (error) {
-          setStatus('結合できませんでした: ' + error.message, 'error');
+          setStatus(friendlyPdfError('結合できませんでした。\n', error), 'error');
         } finally {
           setBusy(false); render();
         }
@@ -461,7 +512,7 @@
           downloadBlob(base + '.zip', await zip.generateAsync({ type:'blob' }));
           setStatus('分割完了: ' + ranges.length + '件のPDFをZIP保存しました。', 'ok');
         } catch (error) {
-          setStatus('分割できませんでした: ' + error.message, 'error');
+          setStatus(friendlyPdfError('分割できませんでした。\n', error), 'error');
         } finally {
           setBusy(false); render();
         }
@@ -476,7 +527,7 @@
       dropZone.addEventListener('click', function () { fileInput.click(); });
       dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('dragging'); });
       dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('dragging'); });
-      dropZone.addEventListener('drop', function (e) { e.preventDefault(); dropZone.classList.remove('dragging'); addFiles(e.dataTransfer.files); });
+      dropZone.addEventListener('drop', function (e) { e.preventDefault(); e.stopPropagation(); document.body.classList.remove('dragging'); dropZone.classList.remove('dragging'); addFiles(e.dataTransfer.files); });
       $('pickFiles').addEventListener('click', function () { fileInput.click(); });
       $('pickFolder').addEventListener('click', function () { folderInput.click(); });
       fileInput.addEventListener('change', function () { addFiles(fileInput.files); fileInput.value = ''; });

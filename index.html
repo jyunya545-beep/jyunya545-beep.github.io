@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -45,6 +45,8 @@
     .profile-bio { color:var(--sub); font-size:.92rem; line-height:1.95; }
     .links { padding:16px; display:grid; gap:10px; }
     .value-box, .featured-box { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; }
+    .build-notice { background:#fff7d6; border:1px solid #f3d982; border-radius:14px; padding:12px 14px; color:#67511a; font-size:.9rem; font-weight:800; }
+    .build-notice span { display:block; color:#8a6a12; font-size:.78rem; font-weight:700; margin-top:2px; }
     .value-box h2, .featured-box h2 { font-size:1.05rem; line-height:1.45; margin-bottom:6px; }
     .value-box p, .featured-box p { color:var(--sub); font-size:.9rem; }
     .quick-links { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
@@ -72,6 +74,7 @@
       .link-desc { grid-column:2; white-space:normal; }
     }
   </style>
+  <script defer src="/assets/share-buttons.js"></script>
 </head>
 <body>
   <div class="site-banner"><img src="assets/images/aineko-banner.png" alt="今日もあいネコ"></div>
@@ -82,6 +85,10 @@
       <p class="profile-bio">AI×ネコで、あいネコ。<br>仕事と子育てに奮闘中。<br>4歳＆1歳に癒される日々。<br>AIと子育てのコツを、実体験から発信するメモ置き場です。</p>
     </aside>
     <section class="links" aria-label="コンテンツ一覧">
+      <div class="build-notice">
+        ただいま頑張って作っています。
+        <span>一部のページやツールは調整中のため、表示や動作が変わることがあります。</span>
+      </div>
       <div class="value-box">
         <h2>忙しい育児中の親向けに、AI活用・便利ツール・時短アイデアを紹介しています。</h2>
         <p>仕事、家事、子育ての合間に使いやすいツールと、AIを無理なく取り入れるための読みものをまとめています。</p>
