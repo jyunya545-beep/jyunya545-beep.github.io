@@ -1,15 +1,15 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>プロフィール | 今日もあいネコ</title>
-  <meta name="description" content="今日もあいネコのプロフィールページです。AI活用、仕事、子育て、便利ツール制作について紹介します。">
+  <meta name="description" content="今日もあいネコの自己紹介ページです。AI初心者の最初の一歩、仕事・子育て・副業を少し楽にするAI活用、制御設計の実務経験、自作ツール制作について紹介します。">
   <link rel="canonical" href="https://toaruseigyoya.github.io/about/">
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="今日もあいネコ">
   <meta property="og:title" content="プロフィール | 今日もあいネコ">
-  <meta property="og:description" content="AI×ネコで、あいネコ。AI活用、仕事、子育て、便利ツール制作について紹介します。">
+  <meta property="og:description" content="AIを実際に試しながら、仕事・子育て・副業を少し楽にしていく実践型の備忘録です。">
   <meta property="og:url" content="https://toaruseigyoya.github.io/about/">
   <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-profile.png">
   <meta name="twitter:card" content="summary">
@@ -22,47 +22,153 @@
       "mainEntity": {
         "@type": "Person",
         "name": "あいネコ",
-        "description": "仕事と子育てをしながら、AI活用、便利ツール、子育ての日常を発信しています。",
+        "description": "制御設計やPLC、上位連携に関わる実務系エンジニア。仕事と子育てをしながら、AI活用、自作ツール、情報発信を試行錯誤しています。",
         "image": "https://toaruseigyoya.github.io/assets/images/aineko-profile.png"
       }
     }
   </script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif;background:linear-gradient(180deg,#fff8ee,#f7fbff);color:#273044;line-height:1.85}
-    main{max-width:920px;margin:0 auto;padding:34px 18px 70px}a{color:#0f7f68;text-decoration:none;font-weight:700}a:hover{text-decoration:underline}
-    .top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:22px}
-    h1{font-size:clamp(1.65rem,4vw,2.25rem);line-height:1.25;margin-bottom:10px}h2{font-size:1.12rem;margin:28px 0 8px;border-left:5px solid #ffd76a;padding-left:10px}
-    p,li{color:#4f5b73}.hero{background:#fff;border:1px solid #f0dccb;border-radius:16px;padding:20px;box-shadow:0 12px 30px rgba(85,70,50,.08);display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:center}
-    .hero img{width:96px;height:96px;border-radius:22px;object-fit:cover}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px}.card{background:#fff;border:1px solid #f0dccb;border-radius:14px;padding:16px}
-    ul{padding-left:1.4em}footer{text-align:center;color:#8a7890;font-size:.78rem;padding:24px}.footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-bottom:8px}@media(max-width:560px){.hero{grid-template-columns:1fr}.hero img{width:86px;height:86px}}
+    :root{
+      --mint:#36c49f;--pink:#ff8cb3;--sky:#5fb5ff;--lemon:#ffd76a;
+      --ink:#273044;--sub:#596579;--muted:#7a8498;--bg:#fff8ee;--paper:#fff;--line:#f0dccb;
+      --soft:#f7fbff;--shadow:0 14px 38px rgba(85,70,50,.12)
+    }
+    body{font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif;background:linear-gradient(180deg,#fff8ee 0%,#f7fbff 56%,#fff7fb 100%);color:var(--ink);line-height:1.85;min-height:100vh}
+    a{color:#0f7f68;text-decoration:none;font-weight:800}a:hover{text-decoration:underline}
+    .wrap{max-width:1040px;margin:0 auto;padding:24px 18px 72px}
+    .top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}
+    .brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);font-size:.95rem}
+    .brand img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+    .top nav{display:flex;flex-wrap:wrap;gap:12px;font-size:.88rem}
+    .hero{display:grid;grid-template-columns:minmax(0,1.15fr) 280px;gap:28px;align-items:center;background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.95);border-radius:18px;padding:28px;box-shadow:var(--shadow)}
+    .eyebrow{display:inline-block;color:#0f7f68;background:#eaf8f3;border:1px solid #c8efe3;border-radius:999px;padding:5px 10px;font-size:.8rem;font-weight:900;margin-bottom:12px}
+    h1{font-size:clamp(1.95rem,5vw,3rem);line-height:1.22;letter-spacing:0;margin-bottom:14px}
+    .lead{font-size:1.02rem;color:#475268;max-width:680px}
+    .hero-figure{display:grid;gap:10px;justify-items:center}
+    .hero-figure img{width:210px;height:210px;border-radius:38px;object-fit:cover;background:#fff;border:5px solid #fff;box-shadow:0 12px 30px rgba(255,140,179,.2)}
+    .hero-figure p{color:var(--muted);font-size:.82rem;text-align:center}
+    section{margin-top:24px}
+    .panel{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(85,70,50,.07)}
+    h2{font-size:1.25rem;line-height:1.4;margin-bottom:10px}
+    h3{font-size:1rem;line-height:1.45;margin-bottom:6px}
+    p{color:var(--sub)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:14px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+    .card strong{display:inline-block;color:var(--ink);font-size:.98rem;margin-bottom:5px}
+    .note{background:#fff7d6;border-color:#f3d982}
+    .badge-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .badge{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;background:#f3f7fb;border:1px solid #dfe7f1;color:#475268;font-size:.82rem;font-weight:800}
+    .timeline{display:grid;gap:12px;margin-top:12px}
+    .item{display:grid;grid-template-columns:130px minmax(0,1fr);gap:14px;padding:12px 0;border-top:1px solid #f1e3d7}
+    .item:first-child{border-top:0}
+    .item span{color:#0f7f68;font-weight:900;font-size:.9rem}
+    .quote{font-weight:900;color:#354052;font-size:1.05rem;background:#f7fbff;border-left:5px solid var(--sky);padding:14px 16px;border-radius:12px;margin-top:14px}
+    .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px}
+    .link-card{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--ink);font-weight:900;text-decoration:none}
+    .link-card:hover{border-color:rgba(54,196,159,.45);box-shadow:0 8px 20px rgba(54,196,159,.12);text-decoration:none}
+    footer{text-align:center;color:#8a7890;font-size:.78rem;padding:24px}
+    .footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-bottom:8px}
+    @media(max-width:760px){
+      .wrap{padding-inline:14px}.top{align-items:flex-start;flex-direction:column}.hero{grid-template-columns:1fr;padding:20px}.hero-figure{justify-items:start}.hero-figure img{width:150px;height:150px;border-radius:28px}.item{grid-template-columns:1fr;gap:4px}
+    }
   </style>
   <script defer src="/assets/share-buttons.js"></script>
 </head>
 <body>
-  <main>
-    <div class="top"><a href="https://toaruseigyoya.github.io/">今日もあいネコ</a><a href="https://toaruseigyoya.github.io/articles/">読みもの</a></div>
-    <h1>プロフィール</h1>
-    <section class="hero">
-      <img src="../assets/images/aineko-profile.png" alt="今日もあいネコ">
-      <p>AI×ネコで、あいネコ。仕事と子育てに奮闘しながら、毎日を少しラクにするAI活用、便利ツール、子育ての日常を発信しています。</p>
-    </section>
-    <h2>このサイトについて</h2>
-    <p>今日もあいネコは、忙しい日々の中で「少しだけ手間を減らす」「考える時間を作る」ためのメモ置き場です。便利ツール、タスク管理、無料ゲーム、占い、読みものをまとめ、PCでもスマホでも開きやすい静的サイトとして運営しています。</p>
-    <h2>始めたきっかけ</h2>
-    <p>4歳と1歳の育児をしながら仕事をしていると、毎日は細かい判断と小さな作業でいっぱいになります。連絡文を整える、PDFをまとめる、タスクを整理する、少しだけ息抜きする。そうした場面で「自分用にすぐ使える場所がほしい」と感じたことが、このサイトを作り始めたきっかけです。</p>
-    <div class="cards">
-      <div class="card"><h2>AI活用</h2><p>文章作成、情報整理、画像づくり、仕事効率化など、日常に取り入れやすい使い方を試しています。</p></div>
-      <div class="card"><h2>子育て</h2><p>4歳と1歳に癒される日々の中で、完璧を目指しすぎない暮らし方を大切にしています。</p></div>
-      <div class="card"><h2>ツール制作</h2><p>PDF、文章、タスク管理など、思いついた不便をすぐ試せる形にして公開しています。</p></div>
+  <main class="wrap">
+    <div class="top">
+      <a class="brand" href="https://toaruseigyoya.github.io/"><img src="../assets/images/aineko-profile.png" alt="">今日もあいネコ</a>
+      <nav aria-label="主要リンク">
+        <a href="https://toaruseigyoya.github.io/articles/">読みもの</a>
+        <a href="https://toaruseigyoya.github.io/utilities/">便利ツール</a>
+        <a href="https://toaruseigyoya.github.io/contact/">お問い合わせ</a>
+      </nav>
     </div>
-    <h2>運営方針</h2>
-    <p>派手な正解を押し付けるのではなく、実際に使ってみて便利だったこと、失敗したこと、あとから直したことを残していきます。ツールや記事は継続して改善し、分かりにくい部分や不具合は見つけ次第修正します。</p>
-    <h2>今後の更新予定</h2>
-    <p>AI活用の実例、子育て中に使いやすい時短メモ、ブラウザで完結する便利ツール、短時間で遊べる無料ゲームを少しずつ追加していきます。更新頻度は無理なく続けられる範囲にしつつ、使いにくい部分を直すことを優先します。</p>
-    <h2>運営者メモ</h2>
-    <p>ハンドルネームは「あいネコ」。AI×ネコで、あいネコです。仕事効率化、AIツール試作、4コマ漫画づくり、子どもの何気ないしぐさをメモすることが好きです。完璧じゃなくていい、でも昨日より少しラクにしたい、という温度感で運営しています。</p>
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">プロフィール</span>
+        <h1>AIの最初の一歩を、仕事と暮らしの中で試しています。</h1>
+        <p class="lead">今日もあいネコは、AIを実際に試しながら、仕事・子育て・副業を少し楽にしていく実践型の備忘録です。AI初心者の「最初の一歩」を大事にしながら、試して分かったこと、うまくいかなかったこと、改善したことを発信しています。</p>
+      </div>
+      <div class="hero-figure">
+        <img src="../assets/images/aineko-profile.png" alt="今日もあいネコ">
+        <p>完璧な正解より、実際に試した記録を大事にしています。</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>こんな人が運営しています</h2>
+      <p>普段は、制御設計・PLCラダー制御・上位連携などに関わる実務系エンジニアです。業務では、複数のシステムをつなぐネットワーク構築や、設備・システム・トラブル対応にも関わっています。</p>
+      <p>AIや自動化を、机上の話で終わらせず、実際の業務改善や日常に落とし込むことに興味があります。子育てをしながら、AI活用や副業も試行錯誤中です。</p>
+      <div class="grid">
+        <div class="card"><strong>現場寄りの制御屋</strong><p>設備、通信、上位連携など、実際に動くものを相手にする仕事が多いです。</p></div>
+        <div class="card"><strong>気になったら試すタイプ</strong><p>自作ツールでも「ここをもう少し便利にしたい」と細かく直したくなります。</p></div>
+        <div class="card"><strong>子育て中の会社員</strong><p>仕事、家事、子育ての合間で、無理なく続けられるAI活用を探しています。</p></div>
+      </div>
+      <div class="badge-list" aria-label="保有資格">
+        <span class="badge">基本情報技術者</span>
+        <span class="badge">情報セキュリティマネジメント</span>
+        <span class="badge">ITパスポート</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>AIを触り始めた理由</h2>
+      <p>きっかけは、業務を効率化したかったこと、残業を減らしたかったこと、そしてAI時代に取り残されたくなかったことです。もともと「これ、自動化できるのでは？」と考えるのが好きで、副業の可能性も小さく試していました。</p>
+      <p>AIは使い始めれば、困ったことをAIに聞けます。でも、その「最初の一歩」を踏み出すのが一番難しいと感じました。</p>
+      <p class="quote">AIを全く触ったことがない人でも、最初の一歩を踏み出せるきっかけになる場所を作りたいです。</p>
+    </section>
+
+    <section class="panel">
+      <h2>主にこんなことを発信しています</h2>
+      <div class="grid">
+        <div class="card"><strong>AI×業務効率化</strong><p>日々の面倒な作業や繰り返し作業を、AIや自動化で少しずつ楽にする試みを紹介します。</p></div>
+        <div class="card"><strong>AI×副業</strong><p>初心者目線で、小さく試しながら副業の可能性を探っています。成功だけでなく失敗や改善も記録します。</p></div>
+        <div class="card"><strong>AI×子育て</strong><p>子育て中の大変さや日常の気づきを、AIや4コマ漫画などと組み合わせて発信します。</p></div>
+        <div class="card"><strong>AI×自動化</strong><p>投稿、下書き作成、情報整理など、手作業を減らす仕組みづくりを試しています。</p></div>
+        <div class="card"><strong>AI×制御</strong><p>制御設計や現場寄りの視点から、AIを仕事にどう使えるか考えています。</p></div>
+        <div class="card"><strong>自作ツール</strong><p>PDF、OCR、文章作成、タスク管理など、自分が困った作業を少し楽にするツールを作っています。</p></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>現在進行中のこと</h2>
+      <div class="timeline">
+        <div class="item"><span>公開向け</span><p>AI×4コマ漫画、note自動投稿、ホームページ制作を進めています。</p></div>
+        <div class="item"><span>ツール系</span><p>OCRツール、PDFツール、タスク管理、工程管理アプリ、業務効率化ツールを作っています。</p></div>
+        <div class="item"><span>考え方</span><p>自分が実際に困ったことや、日々の作業を楽にするために作ったものを、他の人にも使える形で広めたいと考えています。</p></div>
+      </div>
+    </section>
+
+    <section class="panel note">
+      <h2>このサイトを作った理由</h2>
+      <p>AI初心者が「ちょっと触ってみようかな」と思える場所を作りたい。仕事・子育て・副業など、日々の悩みを少しでも楽にするきっかけにしたい。そんな思いで、このサイトを作っています。</p>
+      <p>難しい専門用語だけではなく、実際に試したことを失敗も含めて残していきます。各ページに質問しやすい導線も置き、読者が気軽に質問できる場所にしていきたいです。</p>
+      <p class="quote">AIの第一歩を踏み出すならここ。そんなふうに思ってもらえる場所を目指しています。</p>
+    </section>
+
+    <section class="panel">
+      <h2>気軽に見てもらえたら嬉しいです</h2>
+      <p>このサイトは、完成された正解を並べる場所というより、実際に試しながら少しずつ改善していく記録です。完璧な専門家としてではなく、実際に試している人として発信しています。</p>
+      <p>同じように仕事や子育て、副業、AI活用で悩んでいる人の参考になれば嬉しいです。「ここが分からない」「これを試してほしい」など、気軽に見てもらえたら嬉しいです。</p>
+      <div class="links" aria-label="次に読むページ">
+        <a class="link-card" href="https://toaruseigyoya.github.io/articles/#parenting-ai">AI初心者向け記事 <span>→</span></a>
+        <a class="link-card" href="https://toaruseigyoya.github.io/utilities/">自作ツール一覧 <span>→</span></a>
+        <a class="link-card" href="https://toaruseigyoya.github.io/articles/">note・読みもの <span>→</span></a>
+        <a class="link-card" href="https://toaruseigyoya.github.io/contact/">お問い合わせ <span>→</span></a>
+      </div>
+    </section>
   </main>
-  <footer><nav class="footer-links"><a href="https://toaruseigyoya.github.io/contact/">お問い合わせ</a><a href="https://toaruseigyoya.github.io/privacy/">プライバシーポリシー</a><a href="https://toaruseigyoya.github.io/disclaimer/">免責事項</a></nav>© 2026 今日もあいネコ</footer>
+  <footer>
+    <nav class="footer-links" aria-label="サイト情報">
+      <a href="https://toaruseigyoya.github.io/">ホーム</a>
+      <a href="https://toaruseigyoya.github.io/contact/">お問い合わせ</a>
+      <a href="https://toaruseigyoya.github.io/privacy/">プライバシーポリシー</a>
+      <a href="https://toaruseigyoya.github.io/disclaimer/">免責事項</a>
+    </nav>
+    © 2026 今日もあいネコ
+  </footer>
 </body>
 </html>
