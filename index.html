@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>今日もあいネコ | 子育てとAI活用のメモ</title>
-  <meta name="description" content="忙しい育児中の親向けに、AI活用・便利ツール・時短アイデアを実体験ベースで紹介するメモ置き場です。">
+  <meta name="description" content="AI活用・便利ツール・時短アイデアを実体験ベースで紹介するメモ置き場です。">
   <link rel="canonical" href="https://toaruseigyoya.github.io/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="今日もあいネコ">
   <meta property="og:title" content="今日もあいネコ">
-  <meta property="og:description" content="忙しい育児中の親向けに、AI活用・便利ツール・時短アイデアを実体験ベースで紹介します。">
+  <meta property="og:description" content="AI活用・便利ツール・時短アイデアを実体験ベースで紹介します。">
   <meta property="og:url" content="https://toaruseigyoya.github.io/">
   <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -19,7 +19,7 @@
       "@type": "WebSite",
       "name": "今日もあいネコ",
       "url": "https://toaruseigyoya.github.io/",
-      "description": "忙しい育児中の親向けに、AI活用・便利ツール・時短アイデアを実体験ベースで紹介するメモ置き場です。",
+      "description": "AI活用・便利ツール・時短アイデアを実体験ベースで紹介するメモ置き場です。",
       "publisher": {
         "@type": "Person",
         "name": "あいネコ"
@@ -43,17 +43,19 @@
     .avatar img { width:100%; height:100%; object-fit:cover; display:block; transform:scale(1.08); }
     .profile-name { font-size:1.35rem; font-weight:900; letter-spacing:.02em; margin-bottom:12px; }
     .profile-bio { color:var(--sub); font-size:.92rem; line-height:1.95; }
+    .profile-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+    .profile-link { display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:7px 12px; border-radius:999px; background:#eaf8f3; border:1px solid #c8efe3; color:#0f7f68; font-size:.84rem; font-weight:900; text-decoration:none; }
+    .profile-link:hover { background:#dff4ec; text-decoration:none; }
     .links { padding:16px; display:grid; gap:10px; }
-    .value-box, .featured-box { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; }
     .build-notice { background:#fff7d6; border:1px solid #f3d982; border-radius:14px; padding:12px 14px; color:#67511a; font-size:.9rem; font-weight:800; }
     .build-notice span { display:block; color:#8a6a12; font-size:.78rem; font-weight:700; margin-top:2px; }
-    .value-box h2, .featured-box h2 { font-size:1.05rem; line-height:1.45; margin-bottom:6px; }
-    .value-box p, .featured-box p { color:var(--sub); font-size:.9rem; }
-    .quick-links { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-    .quick-links a { color:#0f7f68; background:#eaf8f3; border:1px solid #c8efe3; border-radius:999px; padding:6px 10px; font-size:.82rem; font-weight:900; text-decoration:none; }
-    .featured-list { display:grid; gap:8px; margin-top:10px; }
-    .featured-list a { display:flex; justify-content:space-between; gap:10px; color:var(--ink); text-decoration:none; font-weight:900; border-top:1px solid #f4e6d9; padding-top:8px; }
-    .featured-list span { color:#8a7890; font-size:.78rem; font-weight:800; white-space:nowrap; }
+    .hub-section { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .hub-section h2 { font-size:1rem; line-height:1.45; margin-bottom:8px; }
+    .hub-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; }
+    .hub-link { display:block; color:var(--ink); text-decoration:none; border-top:1px solid #f4e6d9; padding:8px 0 0; font-weight:900; }
+    .hub-link:first-child { border-top:0; padding-top:0; }
+    .hub-link span { display:block; color:var(--sub); font-size:.8rem; font-weight:700; margin-top:2px; }
+    .hub-link:hover { color:#0f7f68; text-decoration:none; }
     .link-card { display:grid; grid-template-columns:54px minmax(0,170px) minmax(0,1fr); gap:14px; align-items:center; min-height:74px; padding:12px 14px; border-radius:14px; background:#fff; border:1px solid var(--line); color:var(--ink); text-decoration:none; transition:transform .15s, box-shadow .15s, border-color .15s; }
     .link-card:hover { transform:translateY(-2px); border-color:rgba(54,196,159,.45); box-shadow:0 10px 24px rgba(54,196,159,.12); }
     .link-icon { width:48px; height:48px; border-radius:15px; display:grid; place-items:center; font-size:1.45rem; font-weight:900; color:#fff; }
@@ -83,19 +85,37 @@
       <div class="avatar"><img src="assets/images/aineko-profile.png" alt="今日もあいネコ"></div>
       <h1 class="profile-name">今日もあいネコ</h1>
       <p class="profile-bio">AI×ネコで、あいネコ。<br>仕事と子育てに奮闘中。<br>4歳＆1歳に癒される日々。<br>AIと子育てのコツを、実体験から発信するメモ置き場です。</p>
+      <div class="profile-actions">
+        <a class="profile-link" href="https://toaruseigyoya.github.io/about/">プロフィールを見る</a>
+      </div>
     </aside>
     <section class="links" aria-label="コンテンツ一覧">
       <div class="build-notice">
         ただいま頑張って作っています。
         <span>一部のページやツールは調整中のため、表示や動作が変わることがあります。</span>
       </div>
-      <div class="value-box">
-        <h2>忙しい育児中の親向けに、AI活用・便利ツール・時短アイデアを紹介しています。</h2>
-        <p>仕事、家事、子育ての合間に使いやすいツールと、AIを無理なく取り入れるための読みものをまとめています。</p>
-        <div class="quick-links">
-          <a href="https://toaruseigyoya.github.io/articles/#parenting-ai">子育て中のAI活用</a>
-          <a href="https://toaruseigyoya.github.io/articles/#tools-guide">便利ツールの選び方</a>
-          <a href="https://toaruseigyoya.github.io/tasks/">タスク管理を使う</a>
+      <div class="hub-section">
+        <h2>AI初心者向け入口</h2>
+        <div class="hub-grid">
+          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#ai-work">AIを仕事に使う最初の考え方<span>丸投げではなく分担から始める</span></a>
+          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#tools-guide">無料ツールでできること<span>まずは小さな作業を楽にする</span></a>
+          <a class="hub-link" href="https://toaruseigyoya.github.io/about/">運営者プロフィール<span>どんな人が試しているサイトか確認する</span></a>
+        </div>
+      </div>
+      <div class="hub-section">
+        <h2>最新・おすすめ</h2>
+        <div class="hub-grid">
+          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#image-guide">画像生成の使い方<span>4コマ漫画や素材づくりの確認ポイント</span></a>
+          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#pdf-guide">PDF作業を楽にする<span>結合・分割だけでも作業を減らす</span></a>
+          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#parenting-ai">子育て中のAI活用<span>完璧より余白づくりを大事にする</span></a>
+        </div>
+      </div>
+      <div class="hub-section">
+        <h2>note・4コマ・SNSにつなげる準備中</h2>
+        <div class="hub-grid">
+          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/">note向け読みもの<span>AI活用・体験談・ツール活用の入口</span></a>
+          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#image-guide">4コマ漫画づくり<span>AI画像と発信素材の試行錯誤</span></a>
+          <a class="hub-link" href="https://toaruseigyoya.github.io/contact/">質問・お問い合わせ<span>分からないことや試してほしいことはこちら</span></a>
         </div>
       </div>
       <a class="link-card" href="https://toaruseigyoya.github.io/tools/">
@@ -116,16 +136,6 @@
       <a class="link-card" href="https://toaruseigyoya.github.io/articles/">
         <span class="link-icon i-article">文</span><span class="link-title">読みもの</span><span class="link-desc">AI活用・子育て・ツールの使い方メモ</span>
       </a>
-      <div class="featured-box">
-        <h2>まず読む・使うならここ</h2>
-        <p>初めて来た人向けの注目コンテンツです。</p>
-        <div class="featured-list">
-          <a href="https://toaruseigyoya.github.io/articles/#ai-work">AIを仕事に取り入れる考え方 <span>読みもの</span></a>
-          <a href="https://toaruseigyoya.github.io/articles/#task-guide">タスク管理の整え方 <span>読みもの</span></a>
-          <a href="https://toaruseigyoya.github.io/utilities/">PDF・文章の便利ツール <span>ツール</span></a>
-          <a href="https://toaruseigyoya.github.io/games/">短時間で遊べる無料ゲーム <span>休憩</span></a>
-        </div>
-      </div>
     </section>
   </main>
   <footer>
