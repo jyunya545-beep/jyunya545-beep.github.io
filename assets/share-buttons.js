@@ -64,11 +64,6 @@
     wrap.className = 'share-buttons share-buttons-' + position;
     wrap.setAttribute('aria-label', 'SNS' + text.shareWith);
 
-    var label = document.createElement('span');
-    label.className = 'share-label';
-    label.textContent = text.share;
-    wrap.appendChild(label);
-
     networks.forEach(function (network) {
       var a = document.createElement('a');
       a.className = 'share-btn ' + network.className;
@@ -111,14 +106,13 @@
     style.textContent = [
       '.share-buttons{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 18px}',
       '.share-buttons-bottom{margin-top:28px;padding-top:18px;border-top:1px solid rgba(100,116,139,.22)}',
-      '.share-label{color:#64748b;font:800 12px/1.2 "Yu Gothic UI","Meiryo",system-ui,sans-serif;letter-spacing:0}',
       '.share-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:0;border-radius:999px;color:#fff!important;text-decoration:none!important;cursor:pointer;box-shadow:0 4px 12px rgba(15,23,42,.12);transition:filter .15s,transform .15s}',
       '.share-btn svg{width:18px;height:18px;fill:currentColor;display:block}',
       '.share-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
       '.share-x{background:#111827}.share-fb{background:#1877f2}.share-line{background:#06c755}.share-note{background:#41c9b4}.share-hb{background:#00a4de}.share-pocket{background:#ef4056}.share-li{background:#0a66c2}.share-copy{background:#64748b}',
       '.share-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}',
       '.share-btn:focus-visible{outline:3px solid rgba(54,196,159,.35);outline-offset:2px}',
-      '@media(max-width:560px){.share-buttons{gap:7px}.share-label{width:100%}.share-btn{width:34px;height:34px}.share-btn svg{width:17px;height:17px}}'
+      '@media(max-width:560px){.share-buttons{gap:7px}.share-btn{width:34px;height:34px}.share-btn svg{width:17px;height:17px}}'
     ].join('');
     document.head.appendChild(style);
   }
@@ -127,14 +121,19 @@
     if (document.querySelector('.share-buttons')) return;
     injectStyle();
     var main = document.querySelector('main') || document.body;
-    var topTarget =
-      main.querySelector('h1') ||
-      document.querySelector('h1') ||
-      document.querySelector('.hdr-title') ||
-      document.querySelector('header .title') ||
-      document.querySelector('header');
-    if (topTarget && topTarget.parentNode) {
-      topTarget.insertAdjacentElement('afterend', buildButtons('top'));
+    var explicitTarget = document.querySelector('[data-share-target="top"]');
+    if (explicitTarget) {
+      explicitTarget.appendChild(buildButtons('top'));
+    } else {
+      var topTarget =
+        main.querySelector('h1') ||
+        document.querySelector('h1') ||
+        document.querySelector('.hdr-title') ||
+        document.querySelector('header .title') ||
+        document.querySelector('header');
+      if (topTarget && topTarget.parentNode) {
+        topTarget.insertAdjacentElement('afterend', buildButtons('top'));
+      }
     }
     main.appendChild(buildButtons('bottom'));
   }

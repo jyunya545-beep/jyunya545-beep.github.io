@@ -49,13 +49,8 @@
     .links { padding:16px; display:grid; gap:10px; }
     .build-notice { background:#fff7d6; border:1px solid #f3d982; border-radius:14px; padding:12px 14px; color:#67511a; font-size:.9rem; font-weight:800; }
     .build-notice span { display:block; color:#8a6a12; font-size:.78rem; font-weight:700; margin-top:2px; }
-    .hub-section { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
-    .hub-section h2 { font-size:1rem; line-height:1.45; margin-bottom:8px; }
-    .hub-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; }
-    .hub-link { display:block; color:var(--ink); text-decoration:none; border-top:1px solid #f4e6d9; padding:8px 0 0; font-weight:900; }
-    .hub-link:first-child { border-top:0; padding-top:0; }
-    .hub-link span { display:block; color:var(--sub); font-size:.8rem; font-weight:700; margin-top:2px; }
-    .hub-link:hover { color:#0f7f68; text-decoration:none; }
+    .share-slot { display:flex; justify-content:flex-end; min-height:36px; }
+    .share-slot .share-buttons { margin:0 0 4px; justify-content:flex-end; }
     .link-card { display:grid; grid-template-columns:54px minmax(0,170px) minmax(0,1fr); gap:14px; align-items:center; min-height:74px; padding:12px 14px; border-radius:14px; background:#fff; border:1px solid var(--line); color:var(--ink); text-decoration:none; transition:transform .15s, box-shadow .15s, border-color .15s; }
     .link-card:hover { transform:translateY(-2px); border-color:rgba(54,196,159,.45); box-shadow:0 10px 24px rgba(54,196,159,.12); }
     .link-icon { width:48px; height:48px; border-radius:15px; display:grid; place-items:center; font-size:1.45rem; font-weight:900; color:#fff; }
@@ -93,33 +88,10 @@
       </div>
     </aside>
     <section class="links" aria-label="コンテンツ一覧">
+      <div class="share-slot" data-share-target="top"></div>
       <div class="build-notice">
         ただいま頑張って作っています。
         <span>一部のページやツールは調整中のため、表示や動作が変わることがあります。</span>
-      </div>
-      <div class="hub-section">
-        <h2>AI初心者向け入口</h2>
-        <div class="hub-grid">
-          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#ai-work">AIを仕事に使う最初の考え方<span>丸投げではなく分担から始める</span></a>
-          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#tools-guide">無料ツールでできること<span>まずは小さな作業を楽にする</span></a>
-          <a class="hub-link" href="https://toaruseigyoya.github.io/about/">運営者プロフィール<span>どんな人が試しているサイトか確認する</span></a>
-        </div>
-      </div>
-      <div class="hub-section">
-        <h2>最新・おすすめ</h2>
-        <div class="hub-grid">
-          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#image-guide">画像生成の使い方<span>4コマ漫画や素材づくりの確認ポイント</span></a>
-          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#pdf-guide">PDF作業を楽にする<span>結合・分割だけでも作業を減らす</span></a>
-          <a class="hub-link" href="https://toaruseigyoya.github.io/articles/#parenting-ai">子育て中のAI活用<span>完璧より余白づくりを大事にする</span></a>
-        </div>
-      </div>
-      <div class="hub-section">
-        <h2>note・4コマ・SNSにつなげる準備中</h2>
-        <div class="hub-grid">
-          <a class="hub-link" href="https://toaruseigyoya.github.io/note/">note記事シリーズ<span>AI活用・体験談・ツール活用の入口</span></a>
-          <a class="hub-link" href="https://toaruseigyoya.github.io/instagram/">4コマ漫画づくり<span>Instagram向け作品の置き場</span></a>
-          <a class="hub-link" href="https://toaruseigyoya.github.io/contact/">質問・お問い合わせ<span>分からないことや試してほしいことはこちら</span></a>
-        </div>
       </div>
       <a class="link-card" href="https://toaruseigyoya.github.io/note/">
         <span class="link-icon i-note">AI</span><span class="link-title">AI活用シリーズ</span><span class="link-desc">note記事として育てる読みもの一覧</span>
