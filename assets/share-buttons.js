@@ -12,7 +12,7 @@
   };
 
   var analytics = {
-    cloudflareToken: '',
+    cloudflareToken: '36c9e0653d3a4c43b0193186cc1c1234',
     hostnames: ['toaruseigyoya.github.io']
   };
 
