@@ -11,6 +11,11 @@
     copyPrompt: '\u3053\u306eURL\u3092\u30b3\u30d4\u30fc\u3057\u3066\u304f\u3060\u3055\u3044'
   };
 
+  var analytics = {
+    cloudflareToken: '',
+    hostnames: ['toaruseigyoya.github.io']
+  };
+
   var icons = {
     x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.2 2.9h3.2l-7 8 8.2 10.2h-6.4l-5-6.3-5.7 6.3H2.3l7.5-8.4L2 2.9h6.6l4.5 5.7 5.1-5.7Zm-1.1 16.4h1.8L7.6 4.6H5.7l11.4 14.7Z"/></svg>',
     facebook: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.1V6.3c0-.9.3-1.4 1.5-1.4H18V1.7c-.5-.1-2-.2-3.1-.2-3 0-5 1.8-5 5.1v1.5H6.6v3.6h3.3v10.8H14V11.7h3.4l.5-3.6H14Z"/></svg>',
@@ -117,7 +122,24 @@
     document.head.appendChild(style);
   }
 
+  function initAnalytics() {
+    if (!analytics.cloudflareToken) return;
+    if (analytics.hostnames.indexOf(location.hostname) === -1) return;
+    if (document.getElementById('cloudflare-web-analytics')) return;
+
+    var script = document.createElement('script');
+    script.id = 'cloudflare-web-analytics';
+    script.defer = true;
+    script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+    script.setAttribute('data-cf-beacon', JSON.stringify({
+      token: analytics.cloudflareToken,
+      spa: false
+    }));
+    document.head.appendChild(script);
+  }
+
   function init() {
+    initAnalytics();
     if (document.querySelector('.share-buttons')) return;
     injectStyle();
     var main = document.querySelector('main') || document.body;
