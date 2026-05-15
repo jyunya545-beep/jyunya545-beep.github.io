@@ -54,6 +54,12 @@
     .site-overview p { color:var(--sub); font-size:.92rem; line-height:1.85; }
     .overview-list { display:grid; gap:7px; margin-top:12px; color:var(--ink); font-size:.88rem; font-weight:850; }
     .overview-list div { border-left:4px solid var(--mint); padding-left:10px; }
+    .section-label { margin:6px 2px 0; color:#7a6070; font-size:.78rem; font-weight:900; letter-spacing:.08em; }
+    .mini-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .mini-card { min-height:72px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); color:var(--ink); text-decoration:none; display:grid; align-content:center; gap:3px; }
+    .mini-card:hover { border-color:rgba(95,181,255,.5); box-shadow:0 10px 22px rgba(95,181,255,.12); }
+    .mini-card strong { font-size:.94rem; line-height:1.35; }
+    .mini-card span { color:var(--sub); font-size:.78rem; line-height:1.45; }
     .share-slot { display:flex; justify-content:flex-end; min-height:36px; }
     .share-slot .share-buttons { margin:0 0 4px; justify-content:flex-end; }
     .link-card { display:grid; grid-template-columns:54px minmax(0,170px) minmax(0,1fr); gap:14px; align-items:center; min-height:74px; padding:12px 14px; border-radius:14px; background:#fff; border:1px solid var(--line); color:var(--ink); text-decoration:none; transition:transform .15s, box-shadow .15s, border-color .15s; }
@@ -75,6 +81,7 @@
       .profile { position:static; }
       .link-card { grid-template-columns:48px 1fr; }
       .link-desc { grid-column:2; white-space:normal; }
+      .mini-grid { grid-template-columns:1fr; }
     }
   </style>
   <script defer src="/assets/share-buttons.js"></script>
@@ -94,8 +101,8 @@
     <section class="links" aria-label="コンテンツ一覧">
       <div class="share-slot" data-share-target="top"></div>
       <div class="build-notice">
-        このサイトは、AI活用・子育て・便利ツールを実際に試しながら更新しています。
-        <span>公開中のページから順次ご利用ください。</span>
+        AI活用、子育て中の工夫、便利ツールを実際に試しながら更新しています。
+        <span>まずは下の4つから見ると全体像がつかみやすいです。</span>
       </div>
       <div class="site-overview" id="site-overview">
         <h2>今日もあいネコとは</h2>
@@ -118,6 +125,13 @@
       <a class="link-card" href="https://toaruseigyoya.github.io/games/">
         <span class="link-icon i-game">遊</span><span class="link-title">無料ゲーム</span><span class="link-desc">作業や家事の合間に遊べる軽いゲーム</span>
       </a>
+      <div class="section-label">そのほかの入口</div>
+      <div class="mini-grid">
+        <a class="mini-card" href="https://toaruseigyoya.github.io/utilities/"><strong>汎用ツール集</strong><span>PDF・画像・文章まわりの実用ツール</span></a>
+        <a class="mini-card" href="https://toaruseigyoya.github.io/tasks/"><strong>タスク管理</strong><span>期限・進捗つきの作業整理</span></a>
+        <a class="mini-card" href="https://toaruseigyoya.github.io/articles/"><strong>読みもの</strong><span>AI活用・子育て・ツールのメモ</span></a>
+        <a class="mini-card" href="https://toaruseigyoya.github.io/affiliate/"><strong>おすすめ紹介</strong><span>便利サービスや作業効率化の紹介</span></a>
+      </div>
       <div class="site-info">
         <div class="site-info-title">サイト情報</div>
         <nav class="footer-links" aria-label="サイト情報">
