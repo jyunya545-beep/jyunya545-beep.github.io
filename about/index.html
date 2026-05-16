@@ -36,11 +36,12 @@
     }
     body{font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif;background:linear-gradient(180deg,#fff8ee 0%,#f7fbff 56%,#fff7fb 100%);color:var(--ink);line-height:1.85;min-height:100vh}
     a{color:#0f7f68;text-decoration:none;font-weight:800}a:hover{text-decoration:underline}
-    .wrap{max-width:1040px;margin:0 auto;padding:24px 18px 72px}
-    .top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}
-    .brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);font-size:.95rem}
-    .brand img{width:36px;height:36px;border-radius:10px;object-fit:cover}
-    .top nav{display:flex;flex-wrap:wrap;gap:12px;font-size:.88rem}
+    .site-banner{max-width:1040px;margin:18px auto 0;padding:0 18px}
+    .site-banner img{width:100%;max-height:300px;object-fit:contain;background:#fff;border-radius:18px;border:3px solid #fff;box-shadow:var(--shadow);display:block}
+    .wrap{max-width:1040px;margin:0 auto;padding:18px 18px 72px}
+    .top{display:flex;justify-content:flex-start;gap:16px;align-items:center;margin-bottom:18px}
+    .home-link{display:inline-flex;align-items:center;min-height:42px;padding:8px 12px;border-radius:12px;background:#f6fbff;border:1px solid #dcecf7;color:#526179;text-decoration:none;font-weight:900}
+    .home-link:hover{color:#273044;text-decoration:underline}
     .hero{display:grid;grid-template-columns:minmax(0,1.15fr) 280px;gap:28px;align-items:center;background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.95);border-radius:18px;padding:28px;box-shadow:var(--shadow)}
     .eyebrow{display:inline-block;color:#0f7f68;background:#eaf8f3;border:1px solid #c8efe3;border-radius:999px;padding:5px 10px;font-size:.8rem;font-weight:900;margin-bottom:12px}
     h1{font-size:clamp(1.95rem,5vw,3rem);line-height:1.22;letter-spacing:0;margin-bottom:14px}
@@ -77,14 +78,10 @@
   <script defer src="/assets/share-buttons.js"></script>
 </head>
 <body>
+  <div class="site-banner"><img src="../assets/images/aineko-banner.png" alt="とある制御屋の備忘録"></div>
   <main class="wrap">
     <div class="top">
-      <a class="brand" href="https://toaruseigyoya.github.io/"><img src="../assets/images/aineko-profile.png" alt="">今日もあいネコ</a>
-      <nav aria-label="主要リンク">
-        <a href="https://toaruseigyoya.github.io/tools/">公開ツール一覧</a>
-        <a href="https://toaruseigyoya.github.io/games/">無料ゲーム</a>
-        <a href="https://toaruseigyoya.github.io/contact/">お問い合わせ</a>
-      </nav>
+      <a class="home-link" href="https://toaruseigyoya.github.io/">ホームへ戻る</a>
     </div>
 
     <section class="hero">
