@@ -9,6 +9,9 @@ function doPost(e) {
   if (action === 'contact') {
     return handleContact_(data);
   }
+  if (action === 'deletecomment') {
+    return handleDeleteComment_(data);
+  }
 
   return handleComment_(data);
 }
@@ -24,7 +27,7 @@ function doGet(e) {
     return output_({
       ok: true,
       comments: comments
-        .filter(row => !row.hidden)
+        .filter(row => !row.hidden && !row.deleted)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, limit)
     }, callback);
@@ -34,7 +37,7 @@ function doGet(e) {
   return output_({
     ok: true,
     comments: comments
-      .filter(row => !row.hidden && row.pagePath === pagePath)
+      .filter(row => !row.hidden && !row.deleted && row.pagePath === pagePath)
       .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
   }, callback);
 }
@@ -52,7 +55,9 @@ function handleComment_(data) {
     return output_({ ok: false, error: 'comment_required' }, data.callback);
   }
 
-  const id = Utilities.getUuid();
+  const id = clean_(data.id, 80) || Utilities.getUuid();
+  const parentId = clean_(data.parentId, 80);
+  const deleteToken = clean_(data.deleteToken, 120) || Utilities.getUuid();
   sheet.appendRow([
     id,
     now.toISOString(),
@@ -63,11 +68,35 @@ function handleComment_(data) {
     comment,
     false,
     digest_(String(data.userAgent || '')),
-    ''
+    '',
+    parentId,
+    deleteToken,
+    false
   ]);
 
   notifyComment_(pageTitle, pageUrl, pagePath, name, comment);
   return output_({ ok: true, id: id }, data.callback);
+}
+
+function handleDeleteComment_(data) {
+  const sheet = getCommentsSheet_();
+  const id = clean_(data.id, 80);
+  const deleteToken = clean_(data.deleteToken, 120);
+  if (!id || !deleteToken) {
+    return output_({ ok: false, error: 'invalid_delete_request' }, data.callback);
+  }
+
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+    if (String(row[0] || '') === id && String(row[11] || '') === deleteToken) {
+      sheet.getRange(i + 1, 8).setValue(true);
+      sheet.getRange(i + 1, 13).setValue(true);
+      return output_({ ok: true }, data.callback);
+    }
+  }
+
+  return output_({ ok: false, error: 'not_found' }, data.callback);
 }
 
 function handleContact_(data) {
@@ -113,7 +142,10 @@ function getCommentsSheet_() {
     'comment',
     'hidden',
     'userAgentHash',
-    'memo'
+    'memo',
+    'parentId',
+    'deleteToken',
+    'deleted'
   ]);
 }
 
@@ -141,6 +173,13 @@ function getSheet_(name, headers) {
 
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(headers);
+  } else {
+    const current = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+    headers.forEach((header, index) => {
+      if (!current[index]) {
+        sheet.getRange(1, index + 1).setValue(header);
+      }
+    });
   }
   return sheet;
 }
@@ -158,8 +197,10 @@ function readComments_() {
     pageUrl: String(row[4] || ''),
     name: String(row[5] || '名前なし'),
     comment: String(row[6] || ''),
-    hidden: row[7] === true || String(row[7]).toUpperCase() === 'TRUE'
-  })).filter(row => row.id && row.comment);
+    hidden: row[7] === true || String(row[7]).toUpperCase() === 'TRUE',
+    parentId: String(row[10] || ''),
+    deleted: row[12] === true || String(row[12]).toUpperCase() === 'TRUE'
+  })).filter(row => row.id && row.id !== 'id' && row.comment && row.pagePath !== '/pagePath');
 }
 
 function notifyComment_(pageTitle, pageUrl, pagePath, name, comment) {

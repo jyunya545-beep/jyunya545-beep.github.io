@@ -137,6 +137,10 @@
       '.comment-author{font-weight:900;color:#273044}',
       '.comment-date{font-size:.78rem;color:#8a7890;font-weight:800}',
       '.comment-body{white-space:pre-wrap;color:#4f5b73;line-height:1.75;font-size:.95rem}',
+      '.comment-replies{display:grid;gap:10px;margin:10px 0 0 18px;padding-left:12px;border-left:3px solid #eef2f7}',
+      '.comment-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}',
+      '.comment-action{border:0;background:transparent;color:#0f7f68;font:inherit;font-size:.82rem;font-weight:900;padding:0;cursor:pointer}',
+      '.comment-action:hover{text-decoration:underline}',
       '.comment-empty{color:#8a7890;font-size:.92rem;line-height:1.7;margin:0 0 18px}',
       '.comment-form{display:grid;gap:10px;border-top:1px solid #eef2f7;padding-top:14px}',
       '.comment-form-title{font-weight:900;color:#273044;font-size:1rem}',
@@ -304,6 +308,7 @@
   }
 
   function commentsUrl(params) {
+    params._ts = Date.now();
     var query = Object.keys(params).map(function (key) {
       return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
     }).join('&');
@@ -335,6 +340,7 @@
     };
 
     params.callback = callbackName;
+    script.charset = 'UTF-8';
     script.src = commentsUrl(params);
     document.head.appendChild(script);
   }
@@ -373,6 +379,35 @@
     return true;
   }
 
+  function randomToken() {
+    if (window.crypto && window.crypto.getRandomValues) {
+      var bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      return Array.prototype.map.call(bytes, function (b) {
+        return ('0' + b.toString(16)).slice(-2);
+      }).join('');
+    }
+    return String(Date.now()) + String(Math.random()).slice(2);
+  }
+
+  function commentTokenKey(id) {
+    return 'aineko_comment_token:' + id;
+  }
+
+  function rememberCommentToken(id, token) {
+    try {
+      localStorage.setItem(commentTokenKey(id), token);
+    } catch (error) {}
+  }
+
+  function getCommentToken(id) {
+    try {
+      return localStorage.getItem(commentTokenKey(id));
+    } catch (error) {
+      return '';
+    }
+  }
+
   function loadComments() {
     try {
       var raw = localStorage.getItem(commentsStorageKey());
@@ -406,8 +441,11 @@
     }
   }
 
-  function renderComments(list, comments) {
+  function renderComments(list, comments, reload) {
     list.innerHTML = '';
+    comments = comments.filter(function (comment) {
+      return comment && comment.id && comment.id !== 'id' && comment.comment && comment.pagePath !== '/pagePath';
+    });
     if (!comments.length) {
       var empty = document.createElement('p');
       empty.className = 'comment-empty';
@@ -416,7 +454,14 @@
       return;
     }
 
+    var grouped = {};
     comments.forEach(function (comment) {
+      var parentId = comment.parentId || '';
+      if (!grouped[parentId]) grouped[parentId] = [];
+      grouped[parentId].push(comment);
+    });
+
+    function renderOne(comment, parent) {
       var item = document.createElement('article');
       item.className = 'comment-item';
 
@@ -436,11 +481,64 @@
       body.className = 'comment-body';
       body.textContent = comment.comment || comment.body || '';
 
+      var actions = document.createElement('div');
+      actions.className = 'comment-actions';
+
+      var reply = document.createElement('button');
+      reply.type = 'button';
+      reply.className = 'comment-action';
+      reply.textContent = '\u8fd4\u4fe1';
+      reply.addEventListener('click', function () {
+        var form = document.querySelector('.comment-form');
+        if (!form) return;
+        form.elements.parentId.value = comment.id || '';
+        form.querySelector('.comment-form-title').textContent = '\u8fd4\u4fe1\u3059\u308b';
+        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        form.elements.comment.focus();
+      });
+      actions.appendChild(reply);
+
+      var token = getCommentToken(comment.id || '');
+      if (token) {
+        var remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'comment-action';
+        remove.textContent = '\u524a\u9664';
+        remove.addEventListener('click', function () {
+          if (!window.confirm('\u3053\u306e\u30b3\u30e1\u30f3\u30c8\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f')) return;
+          postComment({
+            action: 'deleteComment',
+            id: comment.id || '',
+            deleteToken: token
+          });
+          setTimeout(function () {
+            if (typeof reload === 'function') reload();
+          }, 1200);
+        });
+        actions.appendChild(remove);
+      }
+
       meta.appendChild(author);
       meta.appendChild(date);
       item.appendChild(meta);
       item.appendChild(body);
-      list.appendChild(item);
+      item.appendChild(actions);
+
+      var children = grouped[comment.id || ''] || [];
+      if (children.length) {
+        var replies = document.createElement('div');
+        replies.className = 'comment-replies';
+        children.forEach(function (child) {
+          renderOne(child, replies);
+        });
+        item.appendChild(replies);
+      }
+
+      parent.appendChild(item);
+    }
+
+    (grouped[''] || []).forEach(function (comment) {
+      renderOne(comment, list);
     });
   }
 
@@ -461,6 +559,7 @@
           '<div class="comment-form-title">\u30b3\u30e1\u30f3\u30c8\u3059\u308b</div>' +
           '<label>\u540d\u524d<input name="name" autocomplete="name" maxlength="40" placeholder="\u540d\u524d"></label>' +
           '<label>\u30b3\u30e1\u30f3\u30c8<textarea name="comment" required maxlength="1200" placeholder="\u30b3\u30e1\u30f3\u30c8\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044"></textarea></label>' +
+          '<input type="hidden" name="parentId">' +
           '<button type="submit">\u9001\u4fe1\u3059\u308b</button>' +
           '<p class="comment-status" role="status"></p>' +
           '<p class="comment-note"></p>' +
@@ -473,15 +572,19 @@
     var form = comments.querySelector('.comment-form');
     var nameInput = form.elements.name;
     var bodyInput = form.elements.comment;
+    var parentInput = form.elements.parentId;
     var button = form.querySelector('button');
     var status = form.querySelector('.comment-status');
     var note = form.querySelector('.comment-note');
+    var reloadComments = function () {
+      loadCommentsJsonp({ mode: 'page', pagePath: pagePath() }, function (data) {
+        renderComments(list, data && data.comments ? data.comments : [], reloadComments);
+      });
+    };
 
     if (commentsEndpoint) {
       note.textContent = '\u9001\u4fe1\u3055\u308c\u305f\u30b3\u30e1\u30f3\u30c8\u306f\u3059\u3050\u306b\u8868\u793a\u3055\u308c\u307e\u3059\u3002\u7ba1\u7406\u8005\u304c\u5fc5\u8981\u306b\u5fdc\u3058\u3066\u975e\u8868\u793a\u306b\u3057\u307e\u3059\u3002';
-      loadCommentsJsonp({ mode: 'page', pagePath: pagePath() }, function (data) {
-        renderComments(list, data && data.comments ? data.comments : []);
-      });
+      reloadComments();
     } else {
       button.disabled = true;
       status.textContent = '\u30b3\u30e1\u30f3\u30c8\u6a5f\u80fd\u306f\u8a2d\u5b9a\u4e2d\u3067\u3059\u3002';
@@ -495,18 +598,25 @@
       if (!body) return;
 
       var comment = {
+        id: randomToken(),
         name: nameInput.value.trim() || '\u540d\u524d\u306a\u3057',
         comment: body,
         body: body,
+        parentId: parentInput.value || '',
         createdAt: new Date().toISOString(),
         date: new Date().toISOString()
       };
+      var deleteToken = randomToken();
+      rememberCommentToken(comment.id, deleteToken);
 
       if (commentsEndpoint) {
         button.disabled = true;
         status.textContent = '\u9001\u4fe1\u4e2d\u3067\u3059\u3002';
         postComment({
           action: 'comment',
+          id: comment.id,
+          parentId: comment.parentId,
+          deleteToken: deleteToken,
           pagePath: pagePath(),
           pageTitle: pageTitle(),
           pageUrl: pageUrl(),
@@ -515,12 +625,14 @@
         });
         setTimeout(function () {
           loadCommentsJsonp({ mode: 'page', pagePath: pagePath() }, function (data) {
-            renderComments(list, data && data.comments ? data.comments : [comment]);
+            renderComments(list, data && data.comments ? data.comments : [comment], reloadComments);
             status.textContent = '\u9001\u4fe1\u3057\u307e\u3057\u305f\u3002';
             button.disabled = false;
           });
         }, 1200);
         bodyInput.value = '';
+        parentInput.value = '';
+        form.querySelector('.comment-form-title').textContent = '\u30b3\u30e1\u30f3\u30c8\u3059\u308b';
         return;
       }
 
@@ -546,8 +658,7 @@
       linkPath = linkPath.replace(/\/index\.html$/, '/');
       if (linkPath === '/pagePath') linkPath = '/';
 
-      var title = comment.pageTitle || linkPath || '\u30da\u30fc\u30b8';
-      if (title === 'pageTitle') title = linkPath === '/' ? '\u30db\u30fc\u30e0' : linkPath;
+      var title = displayCommentTitle(comment.pageTitle, linkPath);
 
       var link = document.createElement('a');
       link.className = 'recent-comment-link';
@@ -559,6 +670,27 @@
       link.querySelector('span').textContent = formatDate(comment.createdAt || comment.date) + ' / ' + (comment.name || '\u540d\u524d\u306a\u3057') + ' / ' + String(comment.comment || comment.body || '').slice(0, 40);
       list.appendChild(link);
     });
+  }
+
+  function displayCommentTitle(title, path) {
+    var map = {
+      '/': '\u30db\u30fc\u30e0',
+      '/about/': '\u3053\u306e\u30b5\u30a4\u30c8\u306b\u3064\u3044\u3066(\u30d7\u30ed\u30d5\u30a3\u30fc\u30eb)',
+      '/note/': 'note\u6295\u7a3f\u8a18\u4e8b\u4e00\u89a7',
+      '/instagram/': 'Instagram\u6295\u7a3f\u4e00\u89a7',
+      '/tools/': '\u516c\u958b\u30c4\u30fc\u30eb\u4e00\u89a7',
+      '/games/': '\u7121\u6599\u30b2\u30fc\u30e0\u4e00\u89a7',
+      '/articles/': '\u3042\u3044\u30cd\u30b3\u65e5\u8a18',
+      '/contact/': '\u304a\u554f\u3044\u5408\u308f\u305b',
+      '/privacy/': '\u30d7\u30e9\u30a4\u30d0\u30b7\u30fc\u30dd\u30ea\u30b7\u30fc',
+      '/disclaimer/': '\u514d\u8cac\u4e8b\u9805'
+    };
+    if (map[path]) return map[path];
+
+    var value = String(title || path || '\u30da\u30fc\u30b8').trim();
+    if (!value || value === 'pageTitle') return path === '/' ? map['/'] : path;
+    value = value.split('|')[0].split('\uff5c')[0].trim();
+    return value || (path === '/' ? map['/'] : path);
   }
 
   function initRecentComments() {
