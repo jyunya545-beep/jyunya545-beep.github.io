@@ -408,6 +408,22 @@
     }
   }
 
+  function spamFingerprint() {
+    var timezone = '';
+    try {
+      timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    } catch (error) {}
+
+    return [
+      navigator.userAgent || '',
+      navigator.language || '',
+      screen.width || '',
+      screen.height || '',
+      screen.colorDepth || '',
+      timezone
+    ].join('|');
+  }
+
   function loadComments() {
     try {
       var raw = localStorage.getItem(commentsStorageKey());
@@ -621,7 +637,8 @@
           pageTitle: pageTitle(),
           pageUrl: pageUrl(),
           name: comment.name,
-          comment: body
+          comment: body,
+          fingerprint: spamFingerprint()
         });
         setTimeout(function () {
           loadCommentsJsonp({ mode: 'page', pagePath: pagePath() }, function (data) {

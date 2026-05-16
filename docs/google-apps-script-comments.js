@@ -1,6 +1,8 @@
 const COMMENTS_SHEET_NAME = 'comments';
 const CONTACTS_SHEET_NAME = 'contacts';
 const ADMIN_EMAIL = 'toaruseigyoya@gmail.com';
+const COMMENT_LIMIT_10_MINUTES = 5;
+const COMMENT_LIMIT_24_HOURS = 20;
 
 function doPost(e) {
   const data = e.parameter || {};
@@ -55,6 +57,8 @@ function handleComment_(data) {
     return output_({ ok: false, error: 'comment_required' }, data.callback);
   }
 
+  const fingerprintHash = digest_(clean_(data.fingerprint || data.userAgent, 1200));
+  const blockReason = spamBlockReason_(fingerprintHash, comment, now);
   const id = clean_(data.id, 80) || Utilities.getUuid();
   const parentId = clean_(data.parentId, 80);
   const deleteToken = clean_(data.deleteToken, 120) || Utilities.getUuid();
@@ -66,13 +70,20 @@ function handleComment_(data) {
     pageUrl,
     name,
     comment,
-    false,
-    digest_(String(data.userAgent || '')),
-    '',
+    Boolean(blockReason),
+    fingerprintHash,
+    blockReason ? 'auto_blocked: ' + blockReason : '',
     parentId,
     deleteToken,
-    false
+    false,
+    fingerprintHash,
+    blockReason
   ]);
+
+  if (blockReason) {
+    notifyBlockedComment_(pageTitle, pageUrl, pagePath, name, comment, blockReason);
+    return output_({ ok: false, error: 'rate_limited', reason: blockReason }, data.callback);
+  }
 
   notifyComment_(pageTitle, pageUrl, pagePath, name, comment);
   return output_({ ok: true, id: id }, data.callback);
@@ -145,7 +156,9 @@ function getCommentsSheet_() {
     'memo',
     'parentId',
     'deleteToken',
-    'deleted'
+    'deleted',
+    'fingerprintHash',
+    'blockedReason'
   ]);
 }
 
@@ -199,8 +212,45 @@ function readComments_() {
     comment: String(row[6] || ''),
     hidden: row[7] === true || String(row[7]).toUpperCase() === 'TRUE',
     parentId: String(row[10] || ''),
-    deleted: row[12] === true || String(row[12]).toUpperCase() === 'TRUE'
+    deleted: row[12] === true || String(row[12]).toUpperCase() === 'TRUE',
+    fingerprintHash: String(row[13] || row[8] || ''),
+    blockedReason: String(row[14] || '')
   })).filter(row => row.id && row.id !== 'id' && row.comment && row.pagePath !== '/pagePath');
+}
+
+function spamBlockReason_(fingerprintHash, comment, now) {
+  if (!fingerprintHash) return '';
+
+  const comments = readComments_();
+  const recent = comments.filter(row => row.fingerprintHash === fingerprintHash);
+  const nowMs = now.getTime();
+  const tenMinutes = 10 * 60 * 1000;
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  const count10Min = recent.filter(row => nowMs - new Date(row.createdAt).getTime() <= tenMinutes).length;
+  if (count10Min >= COMMENT_LIMIT_10_MINUTES) {
+    return 'too_many_comments_10min';
+  }
+
+  const count24Hours = recent.filter(row => nowMs - new Date(row.createdAt).getTime() <= oneDay).length;
+  if (count24Hours >= COMMENT_LIMIT_24_HOURS) {
+    return 'too_many_comments_24h';
+  }
+
+  const normalized = normalizeCommentText_(comment);
+  const duplicate = recent.some(row =>
+    nowMs - new Date(row.createdAt).getTime() <= oneDay &&
+    normalizeCommentText_(row.comment) === normalized
+  );
+  if (duplicate) {
+    return 'duplicate_comment_24h';
+  }
+
+  return '';
+}
+
+function normalizeCommentText_(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
 function notifyComment_(pageTitle, pageUrl, pagePath, name, comment) {
@@ -217,6 +267,25 @@ function notifyComment_(pageTitle, pageUrl, pagePath, name, comment) {
     comment,
     '',
     '非表示にする場合は、スプレッドシートの comments シートで hidden 列を TRUE にしてください。'
+  ].join('\n');
+  MailApp.sendEmail(ADMIN_EMAIL, subject, body);
+}
+
+function notifyBlockedComment_(pageTitle, pageUrl, pagePath, name, comment, reason) {
+  if (!ADMIN_EMAIL) return;
+  const subject = 'コメントを自動規制しました: ' + pageTitle;
+  const body = [
+    'コメントを自動規制し、非表示で保存しました。',
+    '',
+    '理由: ' + reason,
+    'ページ: ' + pageTitle,
+    'URL: ' + (pageUrl || pagePath),
+    '名前: ' + name,
+    '',
+    'コメント:',
+    comment,
+    '',
+    '表示する場合は、スプレッドシートの comments シートで hidden を FALSE にしてください。'
   ].join('\n');
   MailApp.sendEmail(ADMIN_EMAIL, subject, body);
 }
