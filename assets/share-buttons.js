@@ -11,6 +11,8 @@
     copyPrompt: '\u3053\u306eURL\u3092\u30b3\u30d4\u30fc\u3057\u3066\u304f\u3060\u3055\u3044'
   };
 
+  var prText = '\u3053\u306e\u30b5\u30a4\u30c8\u306b\u306f\u5e83\u544a\u30fb\u30a2\u30d5\u30a3\u30ea\u30a8\u30a4\u30c8\u30ea\u30f3\u30af\u3092\u542b\u3080\u5834\u5408\u304c\u3042\u308a\u307e\u3059\u3002';
+
   var analytics = {
     cloudflareToken: '36c9e0653d3a4c43b0193186cc1c1234',
     hostnames: ['toaruseigyoya.github.io']
@@ -117,9 +119,29 @@
       '.share-x{background:#111827}.share-fb{background:#1877f2}.share-line{background:#06c755}.share-note{background:#41c9b4}.share-hb{background:#00a4de}.share-pocket{background:#ef4056}.share-li{background:#0a66c2}.share-copy{background:#64748b}',
       '.share-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}',
       '.share-btn:focus-visible{outline:3px solid rgba(54,196,159,.35);outline-offset:2px}',
+      '.global-pr-notice,.pr-notice{max-width:1040px;margin:18px auto 0;padding:0 18px;color:#8a7890!important;font-size:.78rem!important;font-weight:600!important;line-height:1.7!important;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;display:block!important}',
+      '.global-pr-notice span,.pr-notice span{color:inherit!important;font:inherit!important;background:transparent!important;border:0!important;min-width:0!important;min-height:0!important;padding:0!important;border-radius:0!important}',
+      '.global-pr-label,.pr-label{font-weight:800!important;margin-right:.45em!important}',
       '@media(max-width:560px){.share-buttons{gap:7px}.share-btn{width:34px;height:34px}.share-btn svg{width:17px;height:17px}}'
     ].join('');
     document.head.appendChild(style);
+  }
+
+  function injectPrNotice() {
+    if (document.querySelector('.global-pr-notice') || document.querySelector('.pr-notice')) return;
+    var notice = document.createElement('div');
+    notice.className = 'global-pr-notice';
+    notice.setAttribute('role', 'note');
+    notice.setAttribute('aria-label', '\u5e83\u544a\u8868\u8a18');
+    notice.innerHTML = '<span class="global-pr-label">PR</span><span>' + prText + '</span>';
+
+    var footer = document.querySelector('footer');
+    if (footer && footer.parentNode) {
+      footer.parentNode.insertBefore(notice, footer);
+      return;
+    }
+
+    (document.querySelector('main') || document.body).appendChild(notice);
   }
 
   function initAnalytics() {
@@ -142,6 +164,7 @@
     initAnalytics();
     if (document.querySelector('.share-buttons')) return;
     injectStyle();
+    injectPrNotice();
     var main = document.querySelector('main') || document.body;
     var explicitTarget = document.querySelector('[data-share-target="top"]');
     if (explicitTarget) {
