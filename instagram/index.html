@@ -21,18 +21,23 @@
     .site-banner img { width:100%; max-height:300px; object-fit:contain; background:#fff; border-radius:18px; border:3px solid #fff; box-shadow:var(--shadow); display:block; }
     main { max-width:980px; margin:0 auto; padding:24px 20px 70px; }
     .crumb { display:inline-flex; min-height:40px; align-items:center; color:#0f7f68; font-size:.9rem; font-weight:900; text-decoration:none; margin-bottom:14px; }
-    .hero, .section { background:rgba(255,255,255,.9); border:1px solid rgba(255,255,255,.9); border-radius:18px; box-shadow:var(--shadow); padding:22px; margin-bottom:16px; }
+    .hero, .toolbar, .section, .empty-note { background:rgba(255,255,255,.9); border:1px solid rgba(255,255,255,.9); border-radius:18px; box-shadow:var(--shadow); padding:22px; margin-bottom:16px; }
     h1 { font-size:clamp(1.8rem,5vw,2.8rem); line-height:1.2; letter-spacing:0; margin-bottom:10px; }
     .lead { color:var(--sub); max-width:720px; font-size:1rem; }
+    .toolbar{display:grid;gap:10px}
+    .search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+    input[type="search"]{width:100%;min-height:42px;border:1.5px solid #dbe8f6;border-radius:12px;background:#fff;padding:9px 12px;font:inherit;color:var(--ink)}
+    .count{color:var(--sub);font-size:.86rem;font-weight:900;white-space:nowrap}
     .comic-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:14px; }
     .panel { aspect-ratio:1/1; border:2px dashed #f1bfd0; border-radius:12px; background:#fff8fb; display:grid; place-items:center; color:#b75b7a; font-weight:900; text-align:center; padding:10px; }
     .intro { display:grid; gap:10px; color:var(--sub); font-weight:750; }
     .thumb-slots { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:12px; }
     .thumb-slot { min-height:110px; border-radius:12px; border:1px solid var(--line); background:#fff; display:grid; place-items:center; color:#8a7890; font-size:.9rem; font-weight:900; text-align:center; padding:10px; }
+    .empty-note{display:none;color:var(--sub);font-weight:800}
     .footer-links { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
     .footer-links a { display:inline-flex; align-items:center; min-height:42px; padding:8px 12px; border-radius:12px; background:#f6fbff; border:1px solid #dcecf7; color:#526179; text-decoration:none; font-size:.9rem; font-weight:900; }
     footer { text-align:center; color:#8a7890; font-size:.9rem; padding:24px; }
-    @media (max-width:700px) { .site-banner, main { padding-inline:14px; } .hero, .section { padding:18px; } .comic-grid { grid-template-columns:1fr 1fr; } }
+    @media (max-width:700px) { .site-banner, main { padding-inline:14px; } .hero, .toolbar, .section, .empty-note { padding:18px; } .search-row{grid-template-columns:1fr} .comic-grid { grid-template-columns:1fr 1fr; } }
   </style>
   <script defer src="/assets/share-buttons.js"></script>
 </head>
@@ -44,13 +49,19 @@
       <h1>Instagram投稿一覧</h1>
       <p class="lead">今日もあいネコのInstagram作品を紹介するページです。4コマ漫画、AI画像、投稿リンクを順次追加できるようにしています。</p>
     </section>
+    <section class="toolbar" aria-label="Instagram投稿を探す">
+      <div class="search-row">
+        <input id="instagramSearch" type="search" placeholder="キーワードで検索">
+        <div class="count" id="instagramCount">0件</div>
+      </div>
+    </section>
     <section class="section">
       <h2>今日もあいネコ</h2>
       <div class="comic-grid" aria-label="4コマ漫画の仮表示枠">
-        <div class="panel">1コマ目</div>
-        <div class="panel">2コマ目</div>
-        <div class="panel">3コマ目</div>
-        <div class="panel">4コマ目</div>
+        <div class="panel searchable-item" data-search="4コマ漫画 1コマ目 今日もあいネコ">1コマ目</div>
+        <div class="panel searchable-item" data-search="4コマ漫画 2コマ目 今日もあいネコ">2コマ目</div>
+        <div class="panel searchable-item" data-search="4コマ漫画 3コマ目 今日もあいネコ">3コマ目</div>
+        <div class="panel searchable-item" data-search="4コマ漫画 4コマ目 今日もあいネコ">4コマ目</div>
       </div>
     </section>
     <section class="section">
@@ -59,12 +70,35 @@
         <p>画像一覧、投稿埋め込み、シリーズ別サムネイルを追加できる形にしています。</p>
       </div>
       <div class="thumb-slots">
-        <div class="thumb-slot">作品サムネイル</div>
-        <div class="thumb-slot">投稿リンク</div>
-        <div class="thumb-slot">シリーズ分類</div>
+        <div class="thumb-slot searchable-item" data-search="作品 サムネイル 画像 一覧">作品サムネイル</div>
+        <div class="thumb-slot searchable-item" data-search="投稿リンク Instagram URL 埋め込み">投稿リンク</div>
+        <div class="thumb-slot searchable-item" data-search="シリーズ 分類 タグ 4コマ漫画">シリーズ分類</div>
       </div>
     </section>
+    <p class="empty-note" id="instagramEmpty">該当する投稿はありません。</p>
   </main>
   <footer><nav class="footer-links" aria-label="サイト情報"><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a><a href="/disclaimer/">免責事項</a></nav>© 2026 今日もあいネコ</footer>
+  <script>
+    (function(){
+      var search = document.getElementById('instagramSearch');
+      var items = Array.from(document.querySelectorAll('.searchable-item'));
+      var count = document.getElementById('instagramCount');
+      var empty = document.getElementById('instagramEmpty');
+      function render(){
+        var q = (search.value || '').trim().toLowerCase();
+        var shown = 0;
+        items.forEach(function(item){
+          var text = (item.textContent + ' ' + (item.getAttribute('data-search') || '')).toLowerCase();
+          var visible = !q || text.indexOf(q) !== -1;
+          item.style.display = visible ? '' : 'none';
+          if (visible) shown++;
+        });
+        count.textContent = shown + '件 / ' + items.length + '件';
+        empty.style.display = shown ? 'none' : 'block';
+      }
+      search.addEventListener('input', render);
+      render();
+    })();
+  </script>
 </body>
 </html>
