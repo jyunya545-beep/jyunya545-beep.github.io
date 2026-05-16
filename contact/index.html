@@ -9,8 +9,9 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif;background:linear-gradient(180deg,#fff8ee,#f7fbff);color:#273044;line-height:1.85}
-    main{max-width:920px;margin:0 auto;padding:34px 18px 70px}a{color:#0f7f68;text-decoration:none;font-weight:700}a:hover{text-decoration:underline}
-    .top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:22px}
+    .site-banner{max-width:920px;margin:18px auto 0;padding:0 18px}.site-banner img{width:100%;max-height:300px;object-fit:contain;background:#fff;border-radius:18px;border:3px solid #fff;box-shadow:0 12px 30px rgba(85,70,50,.08);display:block}
+    main{max-width:920px;margin:0 auto;padding:18px 18px 70px}a{color:#0f7f68;text-decoration:none;font-weight:700}a:hover{text-decoration:underline}
+    .top{display:flex;justify-content:flex-start;gap:16px;align-items:center;margin-bottom:22px}.home-link{display:inline-flex;align-items:center;min-height:42px;padding:8px 12px;border-radius:12px;background:#f6fbff;border:1px solid #dcecf7;color:#526179;text-decoration:none;font-weight:900}.home-link:hover{color:#273044;text-decoration:underline}
     h1{font-size:clamp(1.65rem,4vw,2.25rem);line-height:1.25;margin-bottom:10px}h2{font-size:1.12rem;margin:28px 0 8px;border-left:5px solid #5fb5ff;padding-left:10px}
     p,li{color:#4f5b73}.box{background:#fff;border:1px solid #f0dccb;border-radius:14px;padding:18px;box-shadow:0 12px 30px rgba(85,70,50,.08);margin-top:18px}
     label{display:block;font-size:.82rem;font-weight:900;color:#4f5b73;margin:12px 0 5px}input,textarea,select{width:100%;border:1.5px solid #dbe8f6;border-radius:10px;padding:10px 11px;font:inherit;background:#fff}textarea{min-height:170px;resize:vertical}.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button,.button{border:0;border-radius:10px;background:#0f7f68;color:#fff;font:inherit;font-weight:900;padding:10px 14px;cursor:pointer;text-decoration:none}button:disabled{background:#aeb9c5;cursor:not-allowed}.sub{background:#eef7f4;color:#0f7f68}.mail{font-weight:900;color:#273044}.note{font-size:.9rem;color:#6b7488;margin-top:8px}.status{font-weight:900;margin-top:10px}.status.ok{color:#0f7f68}.status.err{color:#c53b3b}
@@ -27,8 +28,9 @@
   <script defer src="/assets/share-buttons.js"></script>
 </head>
 <body>
+  <div class="site-banner"><img src="../assets/images/aineko-banner.png" alt="とある制御屋の備忘録"></div>
   <main>
-    <div class="top"><a href="https://toaruseigyoya.github.io/">今日もあいネコ</a><a href="https://github.com/toaruseigyoya">GitHub</a></div>
+    <div class="top"><a class="home-link" href="https://toaruseigyoya.github.io/">ホームへ戻る</a></div>
     <h1>お問い合わせ</h1>
     <p>サイト内容、ツールの不具合、権利関係、広告掲載などの連絡は、以下のフォームからお願いします。</p>
     <div class="box">
