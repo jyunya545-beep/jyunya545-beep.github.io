@@ -52,10 +52,9 @@
     .mini-card span { color:var(--sub); font-size:.78rem; line-height:1.45; }
     .share-slot { display:flex; justify-content:flex-end; min-height:36px; }
     .share-slot .share-buttons { margin:0 0 4px; justify-content:flex-end; }
-    .link-card { display:grid; grid-template-columns:minmax(0,190px) minmax(0,1fr); gap:14px; align-items:center; min-height:68px; padding:12px 14px; border-radius:14px; background:#fff; border:1px solid var(--line); color:var(--ink); text-decoration:none; transition:transform .15s, box-shadow .15s, border-color .15s; }
+    .link-card { display:block; min-height:56px; padding:14px; border-radius:14px; background:#fff; border:1px solid var(--line); color:var(--ink); text-decoration:none; transition:transform .15s, box-shadow .15s, border-color .15s; }
     .link-card:hover { transform:translateY(-2px); border-color:rgba(54,196,159,.45); box-shadow:0 10px 24px rgba(54,196,159,.12); }
-    .link-title { font-size:1rem; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .link-desc { color:var(--sub); font-size:.84rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .link-title { display:block; font-size:1rem; font-weight:900; line-height:1.45; white-space:normal; overflow:visible; text-overflow:clip; }
     .site-info { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
     .site-info-title { font-size:.9rem; font-weight:900; margin-bottom:10px; }
     .footer-links { display:flex; flex-wrap:wrap; gap:10px; }
@@ -65,8 +64,7 @@
     @media (max-width:780px) {
       .page { grid-template-columns:1fr; padding-inline:14px; }
       .profile { position:static; }
-      .link-card { grid-template-columns:1fr; gap:4px; }
-      .link-desc { white-space:normal; }
+      .link-card { min-height:52px; }
       .mini-grid { grid-template-columns:1fr; }
     }
   </style>
@@ -83,19 +81,19 @@
     <section class="links" aria-label="コンテンツ一覧">
       <div class="share-slot" data-share-target="top"></div>
       <a class="link-card" href="https://toaruseigyoya.github.io/about/">
-        <span class="link-title">このサイトについて(プロフィール)</span><span class="link-desc">プロフィールと運営方針</span>
+        <span class="link-title">このサイトについて(プロフィール)</span>
       </a>
       <a class="link-card" href="https://toaruseigyoya.github.io/note/">
-        <span class="link-title">note紹介</span><span class="link-desc">AI時代を生き抜くためにシリーズ</span>
+        <span class="link-title">note投稿記事一覧</span>
       </a>
       <a class="link-card" href="https://toaruseigyoya.github.io/instagram/">
-        <span class="link-title">Instagram紹介</span><span class="link-desc">今日もあいネコの4コマ漫画</span>
+        <span class="link-title">Instagram投稿一覧</span>
       </a>
       <a class="link-card" href="https://toaruseigyoya.github.io/tools/">
-        <span class="link-title">公開ツール一覧</span><span class="link-desc">PDF・文字抽出・文章作成などをまとめて確認</span>
+        <span class="link-title">公開ツール一覧</span>
       </a>
       <a class="link-card" href="https://toaruseigyoya.github.io/games/">
-        <span class="link-title">無料ゲーム</span><span class="link-desc">作業や家事の合間に遊べる軽いゲーム</span>
+        <span class="link-title">無料ゲーム</span>
       </a>
       <div class="section-label">そのほかの入口</div>
       <div class="mini-grid">
