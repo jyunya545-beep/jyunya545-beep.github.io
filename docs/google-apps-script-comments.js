@@ -1,36 +1,16 @@
-const SHEET_NAME = 'comments';
+const COMMENTS_SHEET_NAME = 'comments';
+const CONTACTS_SHEET_NAME = 'contacts';
 const ADMIN_EMAIL = 'toaruseigyoya@gmail.com';
 
 function doPost(e) {
-  const sheet = getSheet_();
-  const now = new Date();
   const data = e.parameter || {};
-  const pagePath = normalizePath_(data.pagePath);
-  const pageTitle = clean_(data.pageTitle, 160) || pagePath;
-  const pageUrl = clean_(data.pageUrl, 500);
-  const name = clean_(data.name, 40) || '名前なし';
-  const comment = clean_(data.comment, 1200);
+  const action = String(data.action || 'comment').toLowerCase();
 
-  if (!comment) {
-    return output_({ ok: false, error: 'comment_required' }, data.callback);
+  if (action === 'contact') {
+    return handleContact_(data);
   }
 
-  const id = Utilities.getUuid();
-  sheet.appendRow([
-    id,
-    now.toISOString(),
-    pagePath,
-    pageTitle,
-    pageUrl,
-    name,
-    comment,
-    false,
-    digest_(String(data.userAgent || '')),
-    ''
-  ]);
-
-  notify_(pageTitle, pageUrl, pagePath, name, comment);
-  return output_({ ok: true, id: id }, data.callback);
+  return handleComment_(data);
 }
 
 function doGet(e) {
@@ -59,14 +39,71 @@ function doGet(e) {
   }, callback);
 }
 
-function getSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
+function handleComment_(data) {
+  const sheet = getCommentsSheet_();
+  const now = new Date();
+  const pagePath = normalizePath_(data.pagePath);
+  const pageTitle = clean_(data.pageTitle, 160) || pagePath;
+  const pageUrl = clean_(data.pageUrl, 500);
+  const name = clean_(data.name, 40) || '名前なし';
+  const comment = clean_(data.comment, 1200);
+
+  if (!comment) {
+    return output_({ ok: false, error: 'comment_required' }, data.callback);
   }
 
-  const headers = [
+  const id = Utilities.getUuid();
+  sheet.appendRow([
+    id,
+    now.toISOString(),
+    pagePath,
+    pageTitle,
+    pageUrl,
+    name,
+    comment,
+    false,
+    digest_(String(data.userAgent || '')),
+    ''
+  ]);
+
+  notifyComment_(pageTitle, pageUrl, pagePath, name, comment);
+  return output_({ ok: true, id: id }, data.callback);
+}
+
+function handleContact_(data) {
+  const sheet = getContactsSheet_();
+  const now = new Date();
+  const id = Utilities.getUuid();
+  const kind = clean_(data.kind, 80);
+  const name = clean_(data.name, 80) || '未入力';
+  const replyTo = clean_(data.replyTo, 160);
+  const targetUrl = clean_(data.url, 500);
+  const message = clean_(data.message, 3000);
+  const pageUrl = clean_(data.pageUrl, 500);
+
+  if (!message) {
+    return output_({ ok: false, error: 'message_required' }, data.callback);
+  }
+
+  sheet.appendRow([
+    id,
+    now.toISOString(),
+    kind,
+    name,
+    replyTo,
+    targetUrl,
+    message,
+    pageUrl,
+    false,
+    ''
+  ]);
+
+  notifyContact_(kind, name, replyTo, targetUrl, message, pageUrl);
+  return output_({ ok: true, id: id }, data.callback);
+}
+
+function getCommentsSheet_() {
+  return getSheet_(COMMENTS_SHEET_NAME, [
     'id',
     'createdAt',
     'pagePath',
@@ -77,7 +114,30 @@ function getSheet_() {
     'hidden',
     'userAgentHash',
     'memo'
-  ];
+  ]);
+}
+
+function getContactsSheet_() {
+  return getSheet_(CONTACTS_SHEET_NAME, [
+    'id',
+    'createdAt',
+    'kind',
+    'name',
+    'replyTo',
+    'targetUrl',
+    'message',
+    'pageUrl',
+    'handled',
+    'memo'
+  ]);
+}
+
+function getSheet_(name, headers) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+  }
 
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(headers);
@@ -86,7 +146,7 @@ function getSheet_() {
 }
 
 function readComments_() {
-  const sheet = getSheet_();
+  const sheet = getCommentsSheet_();
   const values = sheet.getDataRange().getValues();
   if (values.length <= 1) return [];
 
@@ -102,7 +162,7 @@ function readComments_() {
   })).filter(row => row.id && row.comment);
 }
 
-function notify_(pageTitle, pageUrl, pagePath, name, comment) {
+function notifyComment_(pageTitle, pageUrl, pagePath, name, comment) {
   if (!ADMIN_EMAIL) return;
   const subject = 'サイトにコメントがありました: ' + pageTitle;
   const body = [
@@ -115,9 +175,29 @@ function notify_(pageTitle, pageUrl, pagePath, name, comment) {
     'コメント:',
     comment,
     '',
-    '非表示にする場合は、スプレッドシートの hidden 列を TRUE にしてください。'
+    '非表示にする場合は、スプレッドシートの comments シートで hidden 列を TRUE にしてください。'
   ].join('\n');
   MailApp.sendEmail(ADMIN_EMAIL, subject, body);
+}
+
+function notifyContact_(kind, name, replyTo, targetUrl, message, pageUrl) {
+  if (!ADMIN_EMAIL) return;
+  const subject = 'サイトからお問い合わせがありました: ' + (kind || '種別未入力');
+  const body = [
+    'サイトからお問い合わせが送信されました。',
+    '',
+    '種別: ' + (kind || '未入力'),
+    '名前: ' + name,
+    '返信先: ' + (replyTo || '未入力'),
+    '対象URL: ' + (targetUrl || '未入力'),
+    '送信ページ: ' + (pageUrl || '未入力'),
+    '',
+    '内容:',
+    message
+  ].join('\n');
+
+  const options = replyTo ? { replyTo: replyTo } : {};
+  MailApp.sendEmail(ADMIN_EMAIL, subject, body, options);
 }
 
 function output_(obj, callback) {

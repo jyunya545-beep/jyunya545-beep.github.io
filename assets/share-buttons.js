@@ -13,7 +13,7 @@
 
   var prText = '\u3053\u306e\u30b5\u30a4\u30c8\u306b\u306f\u5e83\u544a\u30fb\u30a2\u30d5\u30a3\u30ea\u30a8\u30a4\u30c8\u30ea\u30f3\u30af\u3092\u542b\u3080\u5834\u5408\u304c\u3042\u308a\u307e\u3059\u3002';
   var commentsKeyPrefix = 'aineko_comments:';
-  var commentsEndpoint = window.AINEKO_COMMENTS_ENDPOINT || '';
+  var commentsEndpoint = window.AINEKO_SITE_ENDPOINT || window.AINEKO_COMMENTS_ENDPOINT || '';
 
   var analytics = {
     cloudflareToken: '36c9e0653d3a4c43b0193186cc1c1234',
@@ -506,6 +506,7 @@
         button.disabled = true;
         status.textContent = '\u9001\u4fe1\u4e2d\u3067\u3059\u3002';
         postComment({
+          action: 'comment',
           pagePath: pagePath(),
           pageTitle: pageTitle(),
           pageUrl: pageUrl(),

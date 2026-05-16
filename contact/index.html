@@ -25,6 +25,7 @@
   <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
   
   
+  <script src="/assets/site-config.js"></script>
   <script defer src="/assets/share-buttons.js"></script>
 </head>
 <body>
@@ -55,6 +56,7 @@
         <input id="url" name="url" type="url" placeholder="https://toaruseigyoya.github.io/...">
         <label for="message">内容</label>
         <textarea id="message" name="message" required placeholder="チャットに書くように、お問い合わせ内容を入力してください。"></textarea>
+        <input type="hidden" name="action" value="contact">
         <input type="hidden" id="pageUrl" name="pageUrl">
         <input type="hidden" id="sentAt" name="sentAt">
         <div class="row">
@@ -88,7 +90,7 @@
     const copyBtn = document.getElementById('copyBtn');
     const submitBtn = document.getElementById('submitBtn');
     const formStatus = document.getElementById('formStatus');
-    const contactEndpoint = '';
+    const contactEndpoint = window.AINEKO_SITE_ENDPOINT || '';
     mailText.textContent = mailAddress;
     if (contactEndpoint) {
       form.action = contactEndpoint;

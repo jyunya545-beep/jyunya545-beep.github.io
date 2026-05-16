@@ -6,6 +6,7 @@
   <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
   
   
+  <script src="/assets/site-config.js"></script>
   <script defer src="/assets/share-buttons.js"></script>
 </head><body><main><a href="../">← 無料ゲーム一覧</a><h1>クロスワード</h1><p>ヒントを見て英単語を入れるミニクロスワードです。</p><div class="wrap"><div id="grid" class="grid"></div><div class="card"><h2>ヒント</h2><p>横1: 人工知能</p><p>横2: 制御</p><p>横3: 道具</p><p>縦1: コードを書く人</p><p>縦2: 遊び</p><button id="check">チェック</button><p id="msg"></p></div></div></main><script>
 const ans=['AI#####','CONTROL','TOOL###','D#E#G##','E#V#A##','R#GAME#','#######'];const grid=document.getElementById('grid'),cells=[];for(let r=0;r<7;r++)for(let c=0;c<7;c++){let ch=ans[r][c],i=document.createElement('input');if(ch==='#'){i.disabled=true;i.className='cell blk'}else{i.className='cell';i.maxLength=1}cells.push(i);grid.appendChild(i)}check.onclick=()=>{let ok=true;for(let i=0;i<49;i++){let ch=ans[Math.floor(i/7)][i%7];if(ch!=='#'&&(cells[i].value||'').toUpperCase()!==ch)ok=false}msg.textContent=ok?'正解です。':'まだ違うマスがあります。'}
