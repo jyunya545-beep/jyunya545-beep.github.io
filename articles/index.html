@@ -4,72 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>あいネコ日記 | とある制御屋の備忘録</title>
-  <meta name="description" content="今日もあいネコの日記一覧です。AI活用、子育て、便利ツール、サイト制作の試行錯誤を日付やカテゴリから探せます。">
+  <meta name="description" content="今日もあいネコの日記一覧です。AI活用、サイト制作、ツールづくりの試行錯誤を日付別にまとめています。">
   <link rel="canonical" href="https://toaruseigyoya.github.io/articles/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="とある制御屋の備忘録">
   <meta property="og:title" content="あいネコ日記 | とある制御屋の備忘録">
-  <meta property="og:description" content="AI活用、子育て、便利ツール、サイト制作の試行錯誤を日記として残していくページです。">
+  <meta property="og:description" content="AI活用、サイト制作、ツールづくりの試行錯誤を日付別にまとめています。">
   <meta property="og:url" content="https://toaruseigyoya.github.io/articles/">
   <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
   <meta name="twitter:card" content="summary_large_image">
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      "name": "あいネコ日記",
-      "url": "https://toaruseigyoya.github.io/articles/",
-      "description": "今日もあいネコの日記一覧です。AI活用、子育て、便利ツール、サイト制作の試行錯誤を日付やカテゴリから探せます。",
-      "isPartOf": {
-        "@type": "WebSite",
-        "name": "とある制御屋の備忘録",
-        "url": "https://toaruseigyoya.github.io/"
-      },
-      "author": {
-        "@type": "Person",
-        "name": "今日もあいネコ"
-      }
-    }
-  </script>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--mint:#36c49f;--pink:#ff8cb3;--sky:#5fb5ff;--lemon:#ffd76a;--ink:#273044;--sub:#65708a;--line:#f0dccb;--shadow:0 14px 38px rgba(85,70,50,.10)}
-    body{font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif;background:linear-gradient(180deg,#fff8ee,#f7fbff 60%,#fff7fb);color:var(--ink);line-height:1.8;min-height:100vh}
-    .site-banner{max-width:920px;margin:18px auto 0;padding:0 18px}
-    .site-banner img{width:100%;max-height:300px;object-fit:contain;background:#fff;border-radius:18px;border:3px solid #fff;box-shadow:var(--shadow);display:block}
-    main{max-width:980px;margin:0 auto;padding:24px 20px 70px}
-    a{color:#0f7f68;text-decoration:none;font-weight:800}a:hover{text-decoration:underline}
-    .crumb{display:inline-flex;min-height:40px;align-items:center;color:#0f7f68;font-size:.9rem;font-weight:900;text-decoration:none;margin-bottom:14px}
-    .hero,.toolbar,.diary-list,.empty-note{background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.95);border-radius:18px;box-shadow:var(--shadow);padding:22px;margin-bottom:16px}
-    h1{font-size:clamp(1.8rem,5vw,2.8rem);line-height:1.2;letter-spacing:0;margin-bottom:10px}
-    .lead{color:var(--sub);max-width:760px}
-    .toolbar{display:grid;gap:12px}
-    .search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
-    input[type="search"]{width:100%;min-height:42px;border:1.5px solid #dbe8f6;border-radius:12px;background:#fff;padding:9px 12px;font:inherit;color:var(--ink)}
-    .count{color:var(--sub);font-size:.86rem;font-weight:900;white-space:nowrap}
-    .tabs{display:flex;flex-wrap:wrap;gap:8px}
-    .tab{border:1px solid #dcecf7;border-radius:999px;background:#f6fbff;color:#526179;font:inherit;font-size:.84rem;font-weight:900;padding:7px 12px;cursor:pointer}
-    .tab.active{background:#0f7f68;border-color:#0f7f68;color:#fff}
-    .diary-list{display:grid;gap:12px}
-    .diary-card{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;align-items:start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;color:var(--ink);text-decoration:none}
-    .diary-card:hover{border-color:rgba(54,196,159,.45);box-shadow:0 10px 24px rgba(54,196,159,.12);text-decoration:none}
-    .date{color:#0f7f68;font-weight:900;font-size:.9rem}
-    .diary-main{display:grid;gap:7px}
-    .diary-title{font-size:1.02rem;font-weight:900;line-height:1.45}
-    .diary-summary{color:var(--sub);font-size:.92rem;line-height:1.7}
-    .meta{display:flex;flex-wrap:wrap;gap:7px}
-    .tag{display:inline-flex;align-items:center;min-height:26px;padding:3px 9px;border-radius:999px;background:#fff4cf;border:1px solid #ffe39b;color:#7b5d2a;font-size:.78rem;font-weight:900}
-    .empty-note{display:none;color:var(--sub);font-weight:800}
-    footer{text-align:center;color:#8a7890;font-size:.9rem;padding:24px}
-    .footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}
-    .footer-links a{display:inline-flex;align-items:center;min-height:42px;padding:8px 12px;border-radius:12px;background:#f6fbff;border:1px solid #dcecf7;color:#526179;text-decoration:none;font-weight:900}
-    @media(max-width:700px){
-      .site-banner,main{padding-inline:14px}
-      .hero,.toolbar,.diary-list,.empty-note{padding:18px}
-      .search-row{grid-template-columns:1fr}
-      .diary-card{grid-template-columns:1fr;gap:8px}
-    }
-  </style>
+  <link rel="stylesheet" href="./diary.css">
   <script defer src="/assets/share-buttons.js"></script>
 </head>
 <body>
@@ -78,7 +22,7 @@
     <a class="crumb" href="/">← ホームへ戻る</a>
     <section class="hero">
       <h1>あいネコ日記</h1>
-      <p class="lead">AI活用、子育て、便利ツール、サイト制作の試行錯誤を日記として残していくページです。日付、カテゴリ、キーワードで探しやすい形にしています。</p>
+      <p class="lead">AI活用、ホームページ制作、ツールづくり、投稿自動化の試行錯誤を日付ごとに残しています。</p>
     </section>
 
     <section class="toolbar" aria-label="日記を探す">
@@ -86,135 +30,50 @@
         <input id="diarySearch" type="search" placeholder="キーワードで検索">
         <div class="count" id="diaryCount">0件</div>
       </div>
-      <div class="tabs" id="categoryTabs" aria-label="カテゴリ">
-        <button class="tab active" type="button" data-category="all">すべて</button>
-        <button class="tab" type="button" data-category="AI活用">AI活用</button>
-        <button class="tab" type="button" data-category="子育て">子育て</button>
-        <button class="tab" type="button" data-category="ツール">ツール</button>
-        <button class="tab" type="button" data-category="サイト制作">サイト制作</button>
-      </div>
     </section>
 
-    <section class="diary-list" id="diaryList" aria-label="日記一覧">
-      <a class="diary-card" href="#" data-category="サイト制作" data-search="ホームページ 整備 バナー 公開 ツール 日記">
-        <time class="date" datetime="2026-05-16">2026/5/16</time>
-        <div class="diary-main">
-          <div class="diary-title">ホームページを日記が置ける形に整理中</div>
-          <p class="diary-summary">サイト全体の表記や導線を見直しながら、日々の試行錯誤を残せる場所として「あいネコ日記」を整えています。</p>
-          <div class="meta"><span class="tag">サイト制作</span><span class="tag">ホームページ</span></div>
-        </div>
+    <section class="diary-list title-list" id="diaryList" aria-label="日記一覧">
+      <a class="diary-link" href="./2026-05-15/" data-search="note 自動投稿 バックアップ 復元 仕組み 修正">
+        <time datetime="2026-05-15">2026/5/15</time><span>うまく動いていた仕組みを戻せない怖さ</span>
       </a>
-      <a class="diary-card" href="#" data-category="AI活用" data-search="note 自動投稿 バックアップ 復元 仕組み 修正">
-        <time class="date" datetime="2026-05-15">2026/5/15</time>
-        <div class="diary-main">
-          <div class="diary-title">うまく動いていた仕組みを戻せない怖さ</div>
-          <p class="diary-summary">note自動投稿が一度は動いていたのに、修正後に動かなくなった。元に戻すよう指示しても完全には戻らず、バックアップや成功状態を記録する仕組みの重要さを痛感した。</p>
-          <div class="meta"><span class="tag">AI活用</span><span class="tag">note自動投稿</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-14/" data-search="note 自動投稿 手動投稿 トライアンドエラー ホームページ">
+        <time datetime="2026-05-14">2026/5/14</time><span>note自動投稿の形が少し見えてきた</span>
       </a>
-      <a class="diary-card" href="#" data-category="AI活用" data-search="note 自動投稿 手動投稿 トライアンドエラー ホームページ">
-        <time class="date" datetime="2026-05-14">2026/5/14</time>
-        <div class="diary-main">
-          <div class="diary-title">note自動投稿の形が少し見えてきた</div>
-          <p class="diary-summary">note自動投稿の仕組みがだいぶ固まってきた。手動で投稿した方が早かったかもしれないけれど、仕組みが完成すれば今後もっと投稿できるはずだと感じている。</p>
-          <div class="meta"><span class="tag">AI活用</span><span class="tag">note自動投稿</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-13/" data-search="ChatGPT Claude DesignGPT note 自動投稿 連携 レビュー">
+        <time datetime="2026-05-13">2026/5/13</time><span>複数AIでnote投稿を分担する構想</span>
       </a>
-      <a class="diary-card" href="#" data-category="AI活用" data-search="ChatGPT Claude DesignGPT note 自動投稿 連携 レビュー">
-        <time class="date" datetime="2026-05-13">2026/5/13</time>
-        <div class="diary-main">
-          <div class="diary-title">複数AIでnote投稿を分担する構想</div>
-          <p class="diary-summary">ChatGPTで構成、Claude Codeで文章、DesignGPTで画像、Claude in Chromeでnoteへ流し込み、最後にChatGPTでレビューする流れを考えた。まずは手動で渡しながら、投稿まで行ける形を目指す。</p>
-          <div class="meta"><span class="tag">AI活用</span><span class="tag">制作フロー</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-12/" data-search="ホームページ note 情報量 広告 申請 記事">
+        <time datetime="2026-05-12">2026/5/12</time><span>ホームページには情報量が必要そう</span>
       </a>
-      <a class="diary-card" href="#" data-category="サイト制作" data-search="ホームページ note 情報量 広告 申請 記事">
-        <time class="date" datetime="2026-05-12">2026/5/12</time>
-        <div class="diary-main">
-          <div class="diary-title">ホームページには情報量が必要そう</div>
-          <p class="diary-summary">ホームページ整備を進める中で、申請や公開に必要なのは情報量だと感じた。noteの投稿内容をサイトにも置く方向を考えつつ、記事品質の目標をどこに置くか悩んでいる。</p>
-          <div class="meta"><span class="tag">サイト制作</span><span class="tag">note</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-11/" data-search="創作意欲 ホームページ 広告 整備 AI デバッグ">
+        <time datetime="2026-05-11">2026/5/11</time><span>創作意欲が一気に広がっている</span>
       </a>
-      <a class="diary-card" href="#" data-category="サイト制作" data-search="創作意欲 ホームページ 広告 整備 AI デバッグ">
-        <time class="date" datetime="2026-05-11">2026/5/11</time>
-        <div class="diary-main">
-          <div class="diary-title">創作意欲が一気に広がっている</div>
-          <p class="diary-summary">作りたいものが増えて、少し収集がつかなくなってきた。バグ修正やデバッグもAIが手伝ってくれるので、次はホームページ整備を進めていく予定。</p>
-          <div class="meta"><span class="tag">サイト制作</span><span class="tag">試行錯誤</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-10/" data-search="4コマ漫画 リール動画 YouTubeショート note 自動投稿 Codex Claude">
+        <time datetime="2026-05-10">2026/5/10</time><span>4コマの次に、リールとnoteも気になり始める</span>
       </a>
-      <a class="diary-card" href="#" data-category="AI活用" data-search="4コマ漫画 リール動画 YouTubeショート note 自動投稿 Codex Claude">
-        <time class="date" datetime="2026-05-10">2026/5/10</time>
-        <div class="diary-main">
-          <div class="diary-title">4コマの次に、リールとnoteも気になり始める</div>
-          <p class="diary-summary">4コマ漫画の自動投稿はある程度軌道に乗ってきた。次はリール動画、ホームページ整備、note自動投稿とやりたいことが増え、Codexの修正力も頼もしく感じている。</p>
-          <div class="meta"><span class="tag">AI活用</span><span class="tag">自動投稿</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-09/" data-search="4コマ漫画 ネタ 起承転結 プロンプト AI相棒">
+        <time datetime="2026-05-09">2026/5/9</time><span>AIはネタ出しでも頼れる相棒</span>
       </a>
-      <a class="diary-card" href="#" data-category="AI活用" data-search="4コマ漫画 ネタ 起承転結 プロンプト AI相棒">
-        <time class="date" datetime="2026-05-09">2026/5/9</time>
-        <div class="diary-main">
-          <div class="diary-title">AIはネタ出しでも頼れる相棒</div>
-          <p class="diary-summary">4コマ漫画のネタを考えてみると、思ったよりいろいろ出てきた。起承転結が浮かばなくても、AIに相談すると案を広げてくれるので、本当に頼りになる相棒だと感じた。</p>
-          <div class="meta"><span class="tag">AI活用</span><span class="tag">4コマ漫画</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-08/" data-search="オリジナルキャラ 名前 設定 著作権 Deep research あいネコ">
+        <time datetime="2026-05-08">2026/5/8</time><span>キャラクター設定を本格的に考え始める</span>
       </a>
-      <a class="diary-card" href="#" data-category="AI活用" data-search="オリジナルキャラ 名前 設定 著作権 Deep research あいネコ">
-        <time class="date" datetime="2026-05-08">2026/5/8</time>
-        <div class="diary-main">
-          <div class="diary-title">キャラクター設定を本格的に考え始める</div>
-          <p class="diary-summary">オリジナルキャラクターの名前や設定資料を作成した。公開する以上、著作権も気になって調べながら進め、軽い気持ちで始めたものが少しずつ本格的になってきた。</p>
-          <div class="meta"><span class="tag">AI活用</span><span class="tag">キャラクター</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-07/" data-search="GW アイデア AIキャラ プロフィール 仕事">
+        <time datetime="2026-05-07">2026/5/7</time><span>GW明けでも、まだ止まりたくない</span>
       </a>
-      <a class="diary-card" href="#" data-category="サイト制作" data-search="GW アイデア AIキャラ プロフィール 仕事">
-        <time class="date" datetime="2026-05-07">2026/5/7</time>
-        <div class="diary-main">
-          <div class="diary-title">GW明けでも、まだ止まりたくない</div>
-          <p class="diary-summary">GWが終わったけれど、休み中にいろいろ手を出せた勢いが残っている。やりたいことやアイデアが次々出てくるので、AIキャラの絵やプロフィールを充実させたい。</p>
-          <div class="meta"><span class="tag">サイト制作</span><span class="tag">アイデア</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-06/" data-search="インスタ プロフィール アイコン キャラクター タスク管理 販売">
+        <time datetime="2026-05-06">2026/5/6</time><span>キャラクターに名前がつくと愛着がわく</span>
       </a>
-      <a class="diary-card" href="#" data-category="ツール" data-search="インスタ プロフィール アイコン キャラクター タスク管理 販売">
-        <time class="date" datetime="2026-05-06">2026/5/6</time>
-        <div class="diary-main">
-          <div class="diary-title">キャラクターに名前がつくと愛着がわく</div>
-          <p class="diary-summary">インスタのプロフィールを充実させるため、アイコンのキャラクターに名前と設定を追加した。業務用に作ったタスク管理ツールも便利で、このツール自体を販売できるのか少し気になっている。</p>
-          <div class="meta"><span class="tag">ツール</span><span class="tag">キャラクター</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-05/" data-search="インスタ 4コマ漫画 自動投稿 AI コーディング 失敗">
+        <time datetime="2026-05-05">2026/5/5</time><span>インスタ4コマ自動投稿を作り始める</span>
       </a>
-      <a class="diary-card" href="#" data-category="AI活用" data-search="インスタ 4コマ漫画 自動投稿 AI コーディング 失敗">
-        <time class="date" datetime="2026-05-05">2026/5/5</time>
-        <div class="diary-main">
-          <div class="diary-title">インスタ4コマ自動投稿を作り始める</div>
-          <p class="diary-summary">インスタへの4コマ漫画自動投稿システムの開発を開始した。最初の投稿は思った通りではなかったけれど、自動投稿自体はできていて、これもいつか良い思い出になりそうだ。</p>
-          <div class="meta"><span class="tag">AI活用</span><span class="tag">Instagram</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-04/" data-search="汎用ツール タスク管理 Notion 業務効率化 インスタ 自動投稿">
+        <time datetime="2026-05-04">2026/5/4</time><span>自分の業務で使うツールから作る</span>
       </a>
-      <a class="diary-card" href="#" data-category="ツール" data-search="汎用ツール タスク管理 Notion 業務効率化 インスタ 自動投稿">
-        <time class="date" datetime="2026-05-04">2026/5/4</time>
-        <div class="diary-main">
-          <div class="diary-title">自分の業務で使うツールから作る</div>
-          <p class="diary-summary">汎用ツール集は、まず自分の業務で役に立つものから作るのが良さそうだと感じた。タスク管理ツールを作り、業務効率化を考えたり作ったりする方が楽しいことにも気づいた。</p>
-          <div class="meta"><span class="tag">ツール</span><span class="tag">タスク管理</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-03/" data-search="Claude Code Codex MCP 汎用ツール 登録 比較">
+        <time datetime="2026-05-03">2026/5/3</time><span>単純作業はCodexに任せる方が速そう</span>
       </a>
-      <a class="diary-card" href="#" data-category="AI活用" data-search="Claude Code Codex MCP 汎用ツール 登録 比較">
-        <time class="date" datetime="2026-05-03">2026/5/3</time>
-        <div class="diary-main">
-          <div class="diary-title">単純作業はCodexに任せる方が速そう</div>
-          <p class="diary-summary">Claude CodeからMCPでCodexを呼び、単純作業を任せる仕組みを試していた。実際に動かすと速く、制限にも引っかかりにくく、役割分担の方向性が見えてきた。</p>
-          <div class="meta"><span class="tag">AI活用</span><span class="tag">Codex</span></div>
-        </div>
-      </a>
-      <a class="diary-card" href="#" data-category="サイト制作" data-search="ホームページ GitHub Claude Code Webツール 汎用ツール 制限">
-        <time class="date" datetime="2026-05-02">2026/5/2</time>
-        <div class="diary-main">
-          <div class="diary-title">ホームページ作成とWeb公開の最初の一歩</div>
-          <p class="diary-summary">GitHubとClaude Codeを連携し、簡単なWebツールを作って公開する流れを試した。最初はニッチすぎるツールになったけれど、公開までの流れを理解できたので大きな一歩だった。</p>
-          <div class="meta"><span class="tag">サイト制作</span><span class="tag">ホームページ</span></div>
-        </div>
+      <a class="diary-link" href="./2026-05-02/" data-search="ホームページ GitHub Claude Code Webツール 汎用ツール 制限">
+        <time datetime="2026-05-02">2026/5/2</time><span>ホームページ作成とWeb公開の最初の一歩</span>
       </a>
     </section>
     <p class="empty-note" id="emptyNote">該当する日記はありません。</p>
@@ -230,31 +89,21 @@
   <script>
     (function(){
       var search = document.getElementById('diarySearch');
-      var tabs = Array.from(document.querySelectorAll('.tab'));
-      var cards = Array.from(document.querySelectorAll('.diary-card'));
+      var items = Array.from(document.querySelectorAll('.diary-link'));
       var count = document.getElementById('diaryCount');
       var empty = document.getElementById('emptyNote');
-      var active = 'all';
       function render(){
         var q = (search.value || '').trim().toLowerCase();
         var shown = 0;
-        cards.forEach(function(card){
-          var category = card.getAttribute('data-category');
-          var text = (card.textContent + ' ' + card.getAttribute('data-search')).toLowerCase();
-          var visible = (active === 'all' || category === active) && (!q || text.indexOf(q) !== -1);
-          card.style.display = visible ? '' : 'none';
+        items.forEach(function(item){
+          var text = (item.textContent + ' ' + (item.getAttribute('data-search') || '')).toLowerCase();
+          var visible = !q || text.indexOf(q) !== -1;
+          item.style.display = visible ? '' : 'none';
           if (visible) shown++;
         });
-        count.textContent = shown + '件 / ' + cards.length + '件';
+        count.textContent = shown + '件 / ' + items.length + '件';
         empty.style.display = shown ? 'none' : 'block';
       }
-      tabs.forEach(function(tab){
-        tab.addEventListener('click', function(){
-          active = tab.getAttribute('data-category');
-          tabs.forEach(function(item){ item.classList.toggle('active', item === tab); });
-          render();
-        });
-      });
       search.addEventListener('input', render);
       render();
     })();

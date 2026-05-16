@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>うまく動いていた仕組みを戻せない怖さ | あいネコ日記</title>
+  <meta name="description" content="2026年5月15日の日記。note自動投稿の修正で動いていた状態を戻せず、バックアップと記録の重要さを痛感した日。">
+  <link rel="canonical" href="https://toaruseigyoya.github.io/articles/2026-05-15/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="うまく動いていた仕組みを戻せない怖さ | あいネコ日記">
+  <meta property="og:description" content="note自動投稿の修正で動いていた状態を戻せず、バックアップと記録の重要さを痛感した日。">
+  <meta property="og:url" content="https://toaruseigyoya.github.io/articles/2026-05-15/">
+  <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
+  <link rel="stylesheet" href="../diary.css">
+  <script defer src="/assets/share-buttons.js"></script>
+</head>
+<body>
+  <div class="site-banner"><img src="/assets/images/aineko-banner.png" alt="とある制御屋の備忘録"></div>
+  <main>
+    <a class="crumb" href="../">← あいネコ日記へ戻る</a>
+    <article class="entry">
+      <time datetime="2026-05-15">2026/5/15(金)</time>
+      <h1>うまく動いていた仕組みを戻せない怖さ</h1>
+      <p>note自動投稿ができていたのに、修正をした際にできなくなった。しかも「元に戻して」と指示しても、全く元に戻らない状態になってしまった。</p>
+      <p>これはかなり大きな反省点だった。うまく動いた状態をちゃんと残しておく仕組みがなければ、後から戻したくても戻せない。口頭で「前の状態に戻して」と言うだけでは不十分だった。</p>
+      <p>一旦、更新の仕方そのものを考える必要がある。バックアップを作成しておく、成功した時点のファイルやコミットを明確に残す、どのバージョンで何が動いたかを記録する。そういう基本がかなり重要だと痛感した。</p>
+      <p>共有メモリには、Claude CodeとCodexの間で作業内容を残す仕組みもある。ただ、それだけに頼るのではなく、コード側にも復元できる形で残す必要がある。成功状態を言葉で残すことと、実際に戻せる状態を保存することは別物だった。</p>
+      <p>プログラム開発を今後も続けるなら、まずはこの運用を直した方がいい。AIに作業を任せるほど、変更前後の記録、バックアップ、テスト確認が大事になる。</p>
+      <div class="tags"><span class="tag">AI活用</span><span class="tag">note自動投稿</span><span class="tag">バックアップ</span></div>
+      <nav class="nav-links"><a href="../2026-05-14/">前の日記へ</a><a href="../">一覧へ戻る</a></nav>
+    </article>
+  </main>
+  <footer><nav class="footer-links"><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a><a href="/disclaimer/">免責事項</a></nav>© 2026 とある制御屋の備忘録</footer>
+</body>
+</html>

@@ -115,7 +115,7 @@
       '.share-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}',
       '.share-title-row h1{margin-bottom:0!important;min-width:0}',
       '.share-title-row .share-buttons-top{flex:0 0 auto;justify-content:flex-end;margin:2px 0 0}',
-      '.share-buttons-bottom{margin-top:28px;padding-top:18px;border-top:1px solid rgba(100,116,139,.22)}',
+      '.share-buttons-bottom{margin-top:28px;padding-top:18px;border-top:1px solid rgba(100,116,139,.22);justify-content:flex-end}',
       '.share-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:0;border-radius:999px;color:#fff!important;text-decoration:none!important;cursor:pointer;box-shadow:0 4px 12px rgba(15,23,42,.12);transition:filter .15s,transform .15s}',
       '.share-btn svg{width:18px;height:18px;fill:currentColor;display:block}',
       '.share-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
@@ -129,6 +129,96 @@
       '@media(max-width:560px){.share-buttons{gap:7px}.share-btn{width:34px;height:34px}.share-btn svg{width:17px;height:17px}}'
     ].join('');
     document.head.appendChild(style);
+  }
+
+  function gameDescription() {
+    if (window.GAME && window.GAME.desc) return window.GAME.desc;
+
+    var metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription && metaDescription.content && metaDescription.content.indexOf('今日もあいネコのページです') === -1) {
+      return metaDescription.content;
+    }
+
+    var ogDescription = document.querySelector('meta[property="og:description"]');
+    if (ogDescription && ogDescription.content && ogDescription.content.indexOf('今日もあいネコのページです') === -1) {
+      return ogDescription.content;
+    }
+
+    var sub = document.querySelector('.hdr-sub');
+    if (sub && sub.textContent.trim()) return sub.textContent.trim();
+
+    var firstParagraph = document.querySelector('main p, .app p, .game p');
+    if (firstParagraph && firstParagraph.textContent.trim()) return firstParagraph.textContent.trim();
+
+    return 'Web上で動作するブラウザゲームです。';
+  }
+
+  function gameTitle() {
+    if (window.GAME && window.GAME.title) return window.GAME.title;
+
+    var h1 = document.querySelector('h1');
+    if (h1 && h1.textContent.trim()) return h1.textContent.trim();
+
+    var hdr = document.querySelector('.hdr-title');
+    if (hdr && hdr.textContent.trim()) return hdr.textContent.trim();
+
+    return pageTitle().replace(/\s*\|\s*無料ゲーム\s*$/, '');
+  }
+
+  function injectGameHeaderStyle() {
+    if (document.getElementById('game-standard-header-style')) return;
+    var style = document.createElement('style');
+    style.id = 'game-standard-header-style';
+    style.textContent = [
+      'body.game-detail-standardized{display:block!important;place-items:initial!important;padding:0!important}',
+      '.game-standard-header{max-width:980px;margin:0 auto;padding:18px 20px 10px;color:#273044;font-family:"Segoe UI","Yu Gothic UI","Hiragino Sans",sans-serif}',
+      '.game-standard-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}',
+      '.game-breadcrumbs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:40px;color:#64748b;font-size:.9rem;font-weight:900}',
+      '.game-breadcrumbs a{color:#0f7f68!important;text-decoration:none!important;font-weight:900!important}',
+      '.game-breadcrumbs a:hover{text-decoration:underline!important}',
+      '.game-standard-header .share-buttons{margin:0;justify-content:flex-end}',
+      '.game-standard-title{font-size:clamp(1.8rem,5vw,2.8rem);line-height:1.2;letter-spacing:0;margin:10px 0 6px;color:#273044;font-weight:900}',
+      '.game-standard-desc{max-width:720px;color:#65708a;font-size:1rem;line-height:1.75;font-weight:750;margin:0}',
+      '.game-hidden-heading{display:none!important}',
+      'body.game-detail-standardized>header{display:none!important}',
+      'body.game-detail-standardized .game,body.game-detail-standardized .app{margin-left:auto!important;margin-right:auto!important;margin-bottom:34px!important}',
+      'body.game-detail-standardized main{margin-left:auto!important;margin-right:auto!important}',
+      'body.game-detail-standardized main>a[href="../"],body.game-detail-standardized .game>.head,body.game-detail-standardized .app>.head,body.game-detail-standardized main>.head{display:none!important}',
+      '@media(max-width:700px){.game-standard-header{padding-inline:14px}.game-standard-top{display:block}.game-standard-header .share-buttons{justify-content:flex-start;margin-top:8px}}'
+    ].join('');
+    document.head.appendChild(style);
+  }
+
+  function isGameDetailPage() {
+    return /^\/games\/[^/]+\/?$/.test(location.pathname);
+  }
+
+  function initGameDetailHeader() {
+    injectStyle();
+    injectPrNotice();
+    injectGameHeaderStyle();
+    document.body.classList.add('game-detail-standardized');
+
+    var title = gameTitle();
+    var description = gameDescription();
+    var originalH1 = document.querySelector('h1');
+    if (originalH1) originalH1.classList.add('game-hidden-heading');
+
+    var header = document.createElement('section');
+    header.className = 'game-standard-header';
+    header.innerHTML =
+      '<div class="game-standard-top">' +
+        '<nav class="game-breadcrumbs" aria-label="パンくずリスト">' +
+          '<a href="/">ホーム</a><span>›</span><a href="/games/">無料ゲーム一覧</a>' +
+        '</nav>' +
+      '</div>' +
+      '<h1 class="game-standard-title"></h1>' +
+      '<p class="game-standard-desc"></p>';
+
+    header.querySelector('.game-standard-top').appendChild(buildButtons('top'));
+    header.querySelector('.game-standard-title').textContent = title;
+    header.querySelector('.game-standard-desc').textContent = description;
+    document.body.insertBefore(header, document.body.firstChild);
   }
 
   function injectPrNotice() {
@@ -178,6 +268,10 @@
   function init() {
     initAnalytics();
     if (document.querySelector('.share-buttons')) return;
+    if (isGameDetailPage()) {
+      initGameDetailHeader();
+      return;
+    }
     injectStyle();
     injectPrNotice();
     var main = document.querySelector('main') || document.body;
