@@ -534,13 +534,28 @@
     list.innerHTML = '';
 
     comments.forEach(function (comment) {
+      var linkPath = comment.pagePath || '/';
+      try {
+        if (/^https?:\/\//.test(linkPath)) {
+          linkPath = new URL(linkPath).pathname;
+        }
+      } catch (error) {
+        linkPath = '/';
+      }
+      if (linkPath.charAt(0) !== '/') linkPath = '/' + linkPath;
+      linkPath = linkPath.replace(/\/index\.html$/, '/');
+      if (linkPath === '/pagePath') linkPath = '/';
+
+      var title = comment.pageTitle || linkPath || '\u30da\u30fc\u30b8';
+      if (title === 'pageTitle') title = linkPath === '/' ? '\u30db\u30fc\u30e0' : linkPath;
+
       var link = document.createElement('a');
       link.className = 'recent-comment-link';
-      link.href = (comment.pagePath || '/') + '#comments';
+      link.href = linkPath + '#comments';
       link.innerHTML =
         '<strong></strong>' +
         '<span></span>';
-      link.querySelector('strong').textContent = (comment.pageTitle || comment.pagePath || 'ページ') + ' へのコメント';
+      link.querySelector('strong').textContent = title;
       link.querySelector('span').textContent = formatDate(comment.createdAt || comment.date) + ' / ' + (comment.name || '\u540d\u524d\u306a\u3057') + ' / ' + String(comment.comment || comment.body || '').slice(0, 40);
       list.appendChild(link);
     });
@@ -551,14 +566,18 @@
     if (location.pathname !== '/' && location.pathname !== '/index.html') return;
     if (document.querySelector('.recent-comments')) return;
 
-    var target = document.querySelector('.update-history');
-    if (!target || !target.parentNode) return;
+    var target = document.querySelector('.profile') || document.querySelector('.update-history');
+    if (!target) return;
 
     var box = document.createElement('section');
     box.className = 'recent-comments';
     box.setAttribute('aria-label', '\u6700\u8fd1\u306e\u30b3\u30e1\u30f3\u30c8');
     box.innerHTML = '<h2>\u6700\u8fd1\u306e\u30b3\u30e1\u30f3\u30c8</h2><div class="recent-comment-list"></div>';
-    target.parentNode.insertBefore(box, target.nextSibling);
+    if (target.classList && target.classList.contains('profile')) {
+      target.appendChild(box);
+    } else if (target.parentNode) {
+      target.parentNode.insertBefore(box, target.nextSibling);
+    }
 
     loadCommentsJsonp({ mode: 'recent', limit: 8 }, function (data) {
       if (!data || !data.comments || !data.comments.length) {
