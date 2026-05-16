@@ -28,12 +28,9 @@
     .hero, .section { background:rgba(255,255,255,.9); border:1px solid rgba(255,255,255,.95); border-radius:18px; box-shadow:var(--shadow); padding:22px; margin-bottom:16px; }
     h1 { font-size:clamp(1.8rem,5vw,2.8rem); line-height:1.2; letter-spacing:0; margin-bottom:10px; }
     .lead { color:var(--sub); max-width:760px; font-size:1rem; }
-    .category-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; }
-    .category-card { display:flex; flex-direction:column; gap:10px; min-height:168px; padding:18px; border:1px solid var(--line); border-radius:14px; background:#fff; color:var(--ink); text-decoration:none; transition:transform .15s, box-shadow .15s, border-color .15s; }
-    .category-card:hover { transform:translateY(-2px); border-color:rgba(54,196,159,.45); box-shadow:0 10px 24px rgba(54,196,159,.12); text-decoration:none; }
-    .category-card h2 { font-size:1.08rem; line-height:1.4; }
-    .category-card p { color:var(--sub); font-size:.9rem; flex:1; }
-    .open { color:#0f7f68; font-weight:900; font-size:.88rem; }
+    .tool-links { display:grid; gap:10px; }
+    .tool-links a { display:block; padding:8px 0; color:var(--ink); font-size:1rem; font-weight:900; text-decoration:none; border-bottom:1px solid var(--line); }
+    .tool-links a:hover { color:#0f7f68; text-decoration:underline; }
     .footer-links { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
     .footer-links a { display:inline-flex; align-items:center; min-height:42px; padding:8px 12px; border-radius:12px; background:#f6fbff; border:1px solid #dcecf7; color:#526179; text-decoration:none; font-size:.92rem; font-weight:900; }
     .footer-links a:hover { color:#273044; text-decoration:underline; }
@@ -51,25 +48,13 @@
     <a class="home-link" href="/">ホームへ戻る</a>
     <section class="hero">
       <h1>公開ツール一覧</h1>
-      <p class="lead">使いたいカテゴリを選んでください。汎用ツール、タスク管理など、目的ごとにページを分けています。</p>
+      <p class="lead">使いたいカテゴリを選んでください。</p>
     </section>
     <section class="section" aria-label="ツールカテゴリ">
-      <div class="category-grid">
-        <a class="category-card" href="/utilities/">
-          <h2>汎用ツール</h2>
-          <p>PDF、文字抽出、メール文面作成、画像作成、URL短縮などの実用ツールです。</p>
-          <span class="open">開く</span>
-        </a>
-        <a class="category-card" href="/tasks/">
-          <h2>タスク管理</h2>
-          <p>期限、進捗、グループ分けなどを使って作業を整理するページです。</p>
-          <span class="open">開く</span>
-        </a>
-        <a class="category-card" href="/affiliate/">
-          <h2>おすすめツール紹介</h2>
-          <p>作業効率化や日常で使いやすいサービス、便利ツールの紹介ページです。</p>
-          <span class="open">開く</span>
-        </a>
+      <div class="tool-links">
+        <a href="/utilities/">汎用ツール</a>
+        <a href="/tasks/">タスク管理</a>
+        <a href="/affiliate/">おすすめツール紹介</a>
       </div>
     </section>
   </main>
