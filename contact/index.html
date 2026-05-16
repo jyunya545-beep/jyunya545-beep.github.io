@@ -13,7 +13,7 @@
     .top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:22px}
     h1{font-size:clamp(1.65rem,4vw,2.25rem);line-height:1.25;margin-bottom:10px}h2{font-size:1.12rem;margin:28px 0 8px;border-left:5px solid #5fb5ff;padding-left:10px}
     p,li{color:#4f5b73}.box{background:#fff;border:1px solid #f0dccb;border-radius:14px;padding:18px;box-shadow:0 12px 30px rgba(85,70,50,.08);margin-top:18px}
-    label{display:block;font-size:.82rem;font-weight:900;color:#4f5b73;margin:12px 0 5px}input,textarea,select{width:100%;border:1.5px solid #dbe8f6;border-radius:10px;padding:10px 11px;font:inherit;background:#fff}textarea{min-height:150px;resize:vertical}.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button,.button{border:0;border-radius:10px;background:#0f7f68;color:#fff;font:inherit;font-weight:900;padding:10px 14px;cursor:pointer;text-decoration:none}.sub{background:#eef7f4;color:#0f7f68}.mail{font-weight:900;color:#273044}
+    label{display:block;font-size:.82rem;font-weight:900;color:#4f5b73;margin:12px 0 5px}input,textarea,select{width:100%;border:1.5px solid #dbe8f6;border-radius:10px;padding:10px 11px;font:inherit;background:#fff}textarea{min-height:170px;resize:vertical}.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button,.button{border:0;border-radius:10px;background:#0f7f68;color:#fff;font:inherit;font-weight:900;padding:10px 14px;cursor:pointer;text-decoration:none}button:disabled{background:#aeb9c5;cursor:not-allowed}.sub{background:#eef7f4;color:#0f7f68}.mail{font-weight:900;color:#273044}.note{font-size:.9rem;color:#6b7488;margin-top:8px}.status{font-weight:900;margin-top:10px}.status.ok{color:#0f7f68}.status.err{color:#c53b3b}
     ul{padding-left:1.4em}footer{text-align:center;color:#8a7890;font-size:.9rem;padding:24px}.footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}.footer-links a{display:inline-flex;align-items:center;min-height:42px;padding:8px 12px;border-radius:12px;background:#f6fbff;border:1px solid #dcecf7;color:#526179;text-decoration:none;font-weight:900}
   </style>
   <meta property="og:type" content="website">
@@ -30,12 +30,13 @@
   <main>
     <div class="top"><a href="https://toaruseigyoya.github.io/">今日もあいネコ</a><a href="https://github.com/toaruseigyoya">GitHub</a></div>
     <h1>お問い合わせ</h1>
-    <p>サイト内容、ツールの不具合、権利関係、広告掲載などの連絡は、以下のフォームまたはGitHubからお願いします。</p>
+    <p>サイト内容、ツールの不具合、権利関係、広告掲載などの連絡は、以下のフォームからお願いします。</p>
     <div class="box">
       <h2>一般向けお問い合わせ</h2>
-      <p>入力内容からメール文を作成します。送信ボタンを押すと、端末のメールアプリが開きます。</p>
-      <p>宛先: <span class="mail" id="mailText">表示中...</span></p>
-      <form id="contactForm">
+      <p>このページ内で入力して送信できます。端末のメールアプリは開きません。</p>
+      <p class="note">送信内容は管理者のGmailに届く想定です。送信用URLの設定が完了すると、このまま動作します。</p>
+      <p>連絡先: <span class="mail" id="mailText">表示中...</span></p>
+      <form id="contactForm" method="post" target="contactSink">
         <label for="kind">お問い合わせ種別</label>
         <select id="kind" name="kind">
           <option>サイト内容について</option>
@@ -46,15 +47,22 @@
         </select>
         <label for="name">お名前、ハンドルネーム</label>
         <input id="name" name="name" autocomplete="name" placeholder="例: あいネコ読者">
+        <label for="replyTo">返信先メールアドレス</label>
+        <input id="replyTo" name="replyTo" type="email" autocomplete="email" placeholder="返信が必要な場合だけ入力してください">
         <label for="url">対象ページURL</label>
         <input id="url" name="url" type="url" placeholder="https://toaruseigyoya.github.io/...">
         <label for="message">内容</label>
-        <textarea id="message" name="message" required placeholder="お問い合わせ内容を入力してください。"></textarea>
+        <textarea id="message" name="message" required placeholder="チャットに書くように、お問い合わせ内容を入力してください。"></textarea>
+        <input type="hidden" id="pageUrl" name="pageUrl">
+        <input type="hidden" id="sentAt" name="sentAt">
         <div class="row">
-          <button type="submit">メールを作成</button>
+          <button type="submit" id="submitBtn">送信する</button>
           <button type="button" class="sub" id="copyBtn">内容をコピー</button>
         </div>
+        <p class="status" id="formStatus" role="status"></p>
+        <p class="note">送信先設定が未完了の場合は送信ボタンを押せません。その場合は内容をコピーして利用してください。</p>
       </form>
+      <iframe name="contactSink" title="contact form sink" hidden></iframe>
     </div>
     <div class="box">
       <h2>開発者向け連絡</h2>
@@ -81,15 +89,28 @@
     const mailText = document.getElementById('mailText');
     const form = document.getElementById('contactForm');
     const copyBtn = document.getElementById('copyBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const formStatus = document.getElementById('formStatus');
+    const contactEndpoint = '';
     mailText.textContent = mailAddress;
+    if (contactEndpoint) {
+      form.action = contactEndpoint;
+      formStatus.textContent = '';
+    } else {
+      submitBtn.disabled = true;
+      formStatus.textContent = '送信先設定が未完了です。';
+      formStatus.className = 'status err';
+    }
     function buildBody() {
       const kind = document.getElementById('kind').value.trim();
       const name = document.getElementById('name').value.trim();
+      const replyTo = document.getElementById('replyTo').value.trim();
       const url = document.getElementById('url').value.trim();
       const message = document.getElementById('message').value.trim();
       return [
         'お問い合わせ種別: ' + kind,
         'お名前: ' + (name || '未入力'),
+        '返信先: ' + (replyTo || '未入力'),
         '対象ページURL: ' + (url || '未入力'),
         '',
         '内容:',
@@ -97,10 +118,19 @@
       ].join('\n');
     }
     form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const subject = encodeURIComponent('今日もあいネコ お問い合わせ');
-      const body = encodeURIComponent(buildBody());
-      location.href = 'mailto:' + mailAddress + '?subject=' + subject + '&body=' + body;
+      if (!contactEndpoint) {
+        event.preventDefault();
+        return;
+      }
+      document.getElementById('pageUrl').value = location.href;
+      document.getElementById('sentAt').value = new Date().toISOString();
+      submitBtn.disabled = true;
+      formStatus.textContent = '送信しました。内容を確認します。';
+      formStatus.className = 'status ok';
+      setTimeout(() => {
+        form.reset();
+        submitBtn.disabled = false;
+      }, 600);
     });
     copyBtn.addEventListener('click', async () => {
       const text = buildBody();
