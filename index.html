@@ -43,15 +43,7 @@
     .avatar img { width:100%; height:100%; object-fit:cover; display:block; transform:scale(1.08); }
     .profile-name { font-size:1.35rem; font-weight:900; letter-spacing:.02em; margin-bottom:12px; }
     .profile-bio { color:var(--sub); font-size:.92rem; line-height:1.95; }
-    .profile-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
-    .profile-link { display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:7px 12px; border-radius:999px; background:#eaf8f3; border:1px solid #c8efe3; color:#0f7f68; font-size:.84rem; font-weight:900; text-decoration:none; }
-    .profile-link:hover { background:#dff4ec; text-decoration:none; }
     .links { padding:16px; display:grid; gap:10px; }
-    .site-overview { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; }
-    .site-overview h2 { font-size:1.08rem; line-height:1.45; margin-bottom:8px; }
-    .site-overview p { color:var(--sub); font-size:.92rem; line-height:1.85; }
-    .overview-list { display:grid; gap:7px; margin-top:12px; color:var(--ink); font-size:.88rem; font-weight:850; }
-    .overview-list div { border-left:4px solid var(--mint); padding-left:10px; }
     .section-label { margin:6px 2px 0; color:#7a6070; font-size:.78rem; font-weight:900; letter-spacing:.08em; }
     .mini-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
     .mini-card { min-height:72px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); color:var(--ink); text-decoration:none; display:grid; align-content:center; gap:3px; }
@@ -91,22 +83,12 @@
       <div class="avatar"><img src="assets/images/aineko-profile.png" alt="今日もあいネコ"></div>
       <h1 class="profile-name">今日もあいネコ</h1>
       <p class="profile-bio">AI×ネコで、あいネコ。<br>仕事と子育てに奮闘中。<br>AI活用、便利ツール、日々の試行錯誤を実体験からまとめています。</p>
-      <div class="profile-actions">
-        <a class="profile-link" href="https://toaruseigyoya.github.io/about/">プロフィールを見る</a>
-        <a class="profile-link" href="#site-overview">このサイトでできることを見る</a>
-      </div>
     </aside>
     <section class="links" aria-label="コンテンツ一覧">
       <div class="share-slot" data-share-target="top"></div>
-      <div class="site-overview" id="site-overview">
-        <h2>このサイトについて</h2>
-        <p>AI活用、子育て中の工夫、便利ツールを実際に試しながら更新しています。AIを仕事や暮らしに取り入れながら、発信づくりも試している個人サイトです。</p>
-        <div class="overview-list">
-          <div>公開ツールでPDF・文字抽出・文章作成などを試せます。</div>
-          <div>作業や家事の合間に遊べる軽いブラウザゲームを置いています。</div>
-          <div>note記事シリーズやInstagram向け4コマ漫画も順次更新予定です。</div>
-        </div>
-      </div>
+      <a class="link-card" href="https://toaruseigyoya.github.io/about/">
+        <span class="link-icon i-note">人</span><span class="link-title">このサイトについて(プロフィール)</span><span class="link-desc">プロフィールと運営方針</span>
+      </a>
       <a class="link-card" href="https://toaruseigyoya.github.io/note/">
         <span class="link-icon i-note">AI</span><span class="link-title">note紹介</span><span class="link-desc">AI時代を生き抜くためにシリーズ</span>
       </a>
