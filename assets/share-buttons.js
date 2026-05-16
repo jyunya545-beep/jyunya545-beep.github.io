@@ -379,6 +379,19 @@
     return true;
   }
 
+  function commentRejectMessage(reason) {
+    var messages = {
+      too_many_comments_10min: '\u77ed\u6642\u9593\u306b\u30b3\u30e1\u30f3\u30c8\u304c\u9023\u7d9a\u3057\u3066\u3044\u307e\u3059\u3002\u6642\u9593\u3092\u304a\u3044\u3066\u304b\u3089\u518d\u5ea6\u9001\u4fe1\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
+      too_many_comments_24h: '\u672c\u65e5\u306e\u30b3\u30e1\u30f3\u30c8\u6295\u7a3f\u304c\u591a\u304f\u306a\u3063\u3066\u3044\u307e\u3059\u3002\u6642\u9593\u3092\u304a\u3044\u3066\u304b\u3089\u518d\u5ea6\u9001\u4fe1\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
+      duplicate_comment_24h: '\u540c\u3058\u5185\u5bb9\u306e\u30b3\u30e1\u30f3\u30c8\u304c\u3059\u3067\u306b\u6295\u7a3f\u3055\u308c\u3066\u3044\u307e\u3059\u3002',
+      blacklist_fingerprint: '\u3053\u306e\u74b0\u5883\u304b\u3089\u306e\u30b3\u30e1\u30f3\u30c8\u306f\u73fe\u5728\u5236\u9650\u3055\u308c\u3066\u3044\u307e\u3059\u3002',
+      blacklist_name: '\u3053\u306e\u540d\u524d\u3067\u306e\u30b3\u30e1\u30f3\u30c8\u306f\u73fe\u5728\u5236\u9650\u3055\u308c\u3066\u3044\u307e\u3059\u3002',
+      blacklist_word: '\u30b3\u30e1\u30f3\u30c8\u5185\u5bb9\u306b\u9001\u4fe1\u3067\u304d\u306a\u3044\u8868\u73fe\u304c\u542b\u307e\u308c\u3066\u3044\u307e\u3059\u3002',
+      blacklist_page: '\u3053\u306e\u30da\u30fc\u30b8\u3067\u306e\u30b3\u30e1\u30f3\u30c8\u306f\u73fe\u5728\u5236\u9650\u3055\u308c\u3066\u3044\u307e\u3059\u3002'
+    };
+    return messages[reason] || '\u30b3\u30e1\u30f3\u30c8\u3092\u9001\u4fe1\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002\u6642\u9593\u3092\u304a\u3044\u3066\u304b\u3089\u518d\u5ea6\u304a\u8a66\u3057\u304f\u3060\u3055\u3044\u3002';
+  }
+
   function randomToken() {
     if (window.crypto && window.crypto.getRandomValues) {
       var bytes = new Uint8Array(16);
@@ -628,7 +641,7 @@
       if (commentsEndpoint) {
         button.disabled = true;
         status.textContent = '\u9001\u4fe1\u4e2d\u3067\u3059\u3002';
-        postComment({
+        var payload = {
           action: 'comment',
           id: comment.id,
           parentId: comment.parentId,
@@ -639,17 +652,33 @@
           name: comment.name,
           comment: body,
           fingerprint: spamFingerprint()
-        });
-        setTimeout(function () {
-          loadCommentsJsonp({ mode: 'page', pagePath: pagePath() }, function (data) {
-            renderComments(list, data && data.comments ? data.comments : [comment], reloadComments);
-            status.textContent = '\u9001\u4fe1\u3057\u307e\u3057\u305f\u3002';
+        };
+
+        loadCommentsJsonp({
+          mode: 'checkComment',
+          pagePath: payload.pagePath,
+          name: payload.name,
+          comment: payload.comment,
+          fingerprint: payload.fingerprint
+        }, function (check) {
+          if (!check || check.ok !== true) {
+            status.textContent = commentRejectMessage(check && check.reason);
             button.disabled = false;
-          });
-        }, 1200);
-        bodyInput.value = '';
-        parentInput.value = '';
-        form.querySelector('.comment-form-title').textContent = '\u30b3\u30e1\u30f3\u30c8\u3059\u308b';
+            return;
+          }
+
+          postComment(payload);
+          setTimeout(function () {
+            loadCommentsJsonp({ mode: 'page', pagePath: pagePath() }, function (data) {
+              renderComments(list, data && data.comments ? data.comments : [comment], reloadComments);
+              status.textContent = '\u9001\u4fe1\u3057\u307e\u3057\u305f\u3002';
+              button.disabled = false;
+            });
+          }, 1200);
+          bodyInput.value = '';
+          parentInput.value = '';
+          form.querySelector('.comment-form-title').textContent = '\u30b3\u30e1\u30f3\u30c8\u3059\u308b';
+        });
         return;
       }
 

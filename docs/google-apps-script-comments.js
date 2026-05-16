@@ -1,5 +1,6 @@
 const COMMENTS_SHEET_NAME = 'comments';
 const CONTACTS_SHEET_NAME = 'contacts';
+const COMMENT_BLACKLIST_SHEET_NAME = 'comment_blacklist';
 const ADMIN_EMAIL = 'toaruseigyoya@gmail.com';
 const COMMENT_LIMIT_10_MINUTES = 5;
 const COMMENT_LIMIT_24_HOURS = 20;
@@ -22,6 +23,11 @@ function doGet(e) {
   const data = e.parameter || {};
   const mode = data.mode || 'page';
   const callback = data.callback;
+
+  if (mode === 'checkComment') {
+    return output_(checkComment_(data), callback);
+  }
+
   const comments = readComments_();
 
   if (mode === 'recent') {
@@ -58,7 +64,11 @@ function handleComment_(data) {
   }
 
   const fingerprintHash = digest_(clean_(data.fingerprint || data.userAgent, 1200));
-  const blockReason = spamBlockReason_(fingerprintHash, comment, now);
+  const decision = commentDecision_(fingerprintHash, pagePath, name, comment, now);
+  if (!decision.ok) {
+    return output_({ ok: false, error: 'rejected', reason: decision.reason }, data.callback);
+  }
+
   const id = clean_(data.id, 80) || Utilities.getUuid();
   const parentId = clean_(data.parentId, 80);
   const deleteToken = clean_(data.deleteToken, 120) || Utilities.getUuid();
@@ -70,23 +80,31 @@ function handleComment_(data) {
     pageUrl,
     name,
     comment,
-    Boolean(blockReason),
+    false,
     fingerprintHash,
-    blockReason ? 'auto_blocked: ' + blockReason : '',
+    '',
     parentId,
     deleteToken,
     false,
     fingerprintHash,
-    blockReason
+    ''
   ]);
-
-  if (blockReason) {
-    notifyBlockedComment_(pageTitle, pageUrl, pagePath, name, comment, blockReason);
-    return output_({ ok: false, error: 'rate_limited', reason: blockReason }, data.callback);
-  }
 
   notifyComment_(pageTitle, pageUrl, pagePath, name, comment);
   return output_({ ok: true, id: id }, data.callback);
+}
+
+function checkComment_(data) {
+  const now = new Date();
+  const pagePath = normalizePath_(data.pagePath);
+  const name = clean_(data.name, 40) || '名前なし';
+  const comment = clean_(data.comment, 1200);
+  if (!comment) {
+    return { ok: false, error: 'comment_required' };
+  }
+
+  const fingerprintHash = digest_(clean_(data.fingerprint || data.userAgent, 1200));
+  return commentDecision_(fingerprintHash, pagePath, name, comment, now);
 }
 
 function handleDeleteComment_(data) {
@@ -177,6 +195,15 @@ function getContactsSheet_() {
   ]);
 }
 
+function getCommentBlacklistSheet_() {
+  return getSheet_(COMMENT_BLACKLIST_SHEET_NAME, [
+    'kind',
+    'value',
+    'enabled',
+    'memo'
+  ]);
+}
+
 function getSheet_(name, headers) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(name);
@@ -216,6 +243,61 @@ function readComments_() {
     fingerprintHash: String(row[13] || row[8] || ''),
     blockedReason: String(row[14] || '')
   })).filter(row => row.id && row.id !== 'id' && row.comment && row.pagePath !== '/pagePath');
+}
+
+function readCommentBlacklist_() {
+  const sheet = getCommentBlacklistSheet_();
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) return [];
+
+  return values.slice(1).map(row => ({
+    kind: normalizeCommentText_(row[0]),
+    value: String(row[1] || '').trim(),
+    enabled: row[2] === true || String(row[2] || '').toUpperCase() === 'TRUE',
+    memo: String(row[3] || '')
+  })).filter(row => row.kind && row.value && row.enabled);
+}
+
+function commentDecision_(fingerprintHash, pagePath, name, comment, now) {
+  const blacklistReason = blacklistBlockReason_(fingerprintHash, pagePath, name, comment);
+  if (blacklistReason) {
+    return { ok: false, reason: blacklistReason };
+  }
+
+  const spamReason = spamBlockReason_(fingerprintHash, comment, now);
+  if (spamReason) {
+    return { ok: false, reason: spamReason };
+  }
+
+  return { ok: true };
+}
+
+function blacklistBlockReason_(fingerprintHash, pagePath, name, comment) {
+  const normalizedName = normalizeCommentText_(name);
+  const normalizedComment = normalizeCommentText_(comment);
+  const normalizedPath = normalizePath_(pagePath);
+  const rules = readCommentBlacklist_();
+
+  for (let i = 0; i < rules.length; i++) {
+    const rule = rules[i];
+    const value = String(rule.value || '').trim();
+    const normalizedValue = normalizeCommentText_(value);
+
+    if (rule.kind === 'fingerprint' && fingerprintHash && value === fingerprintHash) {
+      return 'blacklist_fingerprint';
+    }
+    if (rule.kind === 'name' && normalizedName === normalizedValue) {
+      return 'blacklist_name';
+    }
+    if (rule.kind === 'word' && normalizedComment.indexOf(normalizedValue) !== -1) {
+      return 'blacklist_word';
+    }
+    if (rule.kind === 'pagepath' && normalizedPath === normalizePath_(value)) {
+      return 'blacklist_page';
+    }
+  }
+
+  return '';
 }
 
 function spamBlockReason_(fingerprintHash, comment, now) {
