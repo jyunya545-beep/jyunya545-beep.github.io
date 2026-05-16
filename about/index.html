@@ -38,17 +38,14 @@
     a{color:#0f7f68;text-decoration:none;font-weight:800}a:hover{text-decoration:underline}
     .site-banner{max-width:920px;margin:18px auto 0;padding:0 18px}
     .site-banner img{width:100%;max-height:300px;object-fit:contain;background:#fff;border-radius:18px;border:3px solid #fff;box-shadow:var(--shadow);display:block}
-    .wrap{max-width:920px;margin:0 auto;padding:18px 18px 72px}
+    main{max-width:920px;margin:0 auto;padding:18px 18px 72px}
     .top{display:flex;justify-content:flex-start;gap:16px;align-items:center;margin-bottom:22px}
     .home-link{display:inline-flex;align-items:center;min-height:42px;padding:8px 12px;border-radius:12px;background:#f6fbff;border:1px solid #dcecf7;color:#526179;text-decoration:none;font-weight:900}
     .home-link:hover{color:#273044;text-decoration:underline}
-    .hero{display:grid;grid-template-columns:minmax(0,1.15fr) 280px;gap:28px;align-items:center;background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.95);border-radius:18px;padding:28px;box-shadow:var(--shadow)}
+    .hero{background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.95);border-radius:18px;padding:28px;box-shadow:var(--shadow)}
     .eyebrow{display:inline-block;color:#0f7f68;background:#eaf8f3;border:1px solid #c8efe3;border-radius:999px;padding:5px 10px;font-size:.8rem;font-weight:900;margin-bottom:12px}
     h1{font-size:clamp(1.95rem,5vw,3rem);line-height:1.22;letter-spacing:0;margin-bottom:14px}
     .lead{font-size:1.02rem;color:#475268;max-width:680px}
-    .hero-figure{display:grid;gap:10px;justify-items:center}
-    .hero-figure img{width:210px;height:210px;border-radius:38px;object-fit:cover;background:#fff;border:5px solid #fff;box-shadow:0 12px 30px rgba(255,140,179,.2)}
-    .hero-figure p{color:var(--muted);font-size:.82rem;text-align:center}
     section{margin-top:24px}
     .panel{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(85,70,50,.07)}
     h2{font-size:1.25rem;line-height:1.4;margin-bottom:10px}
@@ -72,28 +69,22 @@
     .footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}
     .footer-links a{display:inline-flex;align-items:center;min-height:42px;padding:8px 12px;border-radius:12px;background:#f6fbff;border:1px solid #dcecf7;color:#526179;text-decoration:none;font-weight:900}
     @media(max-width:760px){
-      .wrap{padding-inline:14px}.top{align-items:flex-start;flex-direction:column}.hero{grid-template-columns:1fr;padding:20px}.hero-figure{justify-items:start}.hero-figure img{width:150px;height:150px;border-radius:28px}.item{grid-template-columns:1fr;gap:4px}
+      main{padding-inline:14px}.top{align-items:flex-start;flex-direction:column}.hero{padding:20px}.item{grid-template-columns:1fr;gap:4px}
     }
   </style>
   <script defer src="/assets/share-buttons.js"></script>
 </head>
 <body>
   <div class="site-banner"><img src="../assets/images/aineko-banner.png" alt="とある制御屋の備忘録"></div>
-  <main class="wrap">
+  <main>
     <div class="top">
       <a class="home-link" href="https://toaruseigyoya.github.io/">ホームへ戻る</a>
     </div>
 
     <section class="hero">
-      <div>
-        <span class="eyebrow">プロフィール</span>
-        <h1>AIの最初の一歩を、仕事と暮らしの中で試しています。</h1>
-        <p class="lead">今日もあいネコは、AIを実際に試しながら、仕事・子育て・副業を少し楽にしていく実践型の備忘録です。AI初心者の「最初の一歩」を大事にしながら、試して分かったこと、うまくいかなかったこと、改善したことを発信しています。</p>
-      </div>
-      <div class="hero-figure">
-        <img src="../assets/images/aineko-profile.png" alt="今日もあいネコ">
-        <p>完璧な正解より、実際に試した記録を大事にしています。</p>
-      </div>
+      <span class="eyebrow">プロフィール</span>
+      <h1>AIの最初の一歩を、仕事と暮らしの中で試しています。</h1>
+      <p class="lead">今日もあいネコは、AIを実際に試しながら、仕事・子育て・副業を少し楽にしていく実践型の備忘録です。AI初心者の「最初の一歩」を大事にしながら、試して分かったこと、うまくいかなかったこと、改善したことを発信しています。</p>
     </section>
 
     <section class="panel">
@@ -171,7 +162,6 @@
   </main>
   <footer>
     <nav class="footer-links" aria-label="サイト情報">
-      <a href="https://toaruseigyoya.github.io/">ホーム</a>
       <a href="https://toaruseigyoya.github.io/contact/">お問い合わせ</a>
       <a href="https://toaruseigyoya.github.io/privacy/">プライバシーポリシー</a>
       <a href="https://toaruseigyoya.github.io/disclaimer/">免責事項</a>
