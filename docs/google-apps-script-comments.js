@@ -65,10 +65,12 @@ function handleComment_(data) {
   }
 
   const fingerprintHash = digest_(clean_(data.fingerprint || data.userAgent, 1200));
+  const visitorId = clean_(data.visitorId, 200);
+  const visitorHash = visitorId ? digest_(visitorId) : '';
   if (clean_(data.checked, 10) !== '1') {
-    registerCommentAttempt_(clean_(data.id, 80) || Utilities.getUuid(), now, fingerprintHash, pagePath, name, comment, 'post');
+    registerCommentAttempt_(clean_(data.id, 80) || Utilities.getUuid(), now, fingerprintHash, visitorHash, pagePath, name, comment, 'post');
   }
-  const decision = commentDecision_(fingerprintHash, pagePath, name, comment, now);
+  const decision = commentDecision_(fingerprintHash, visitorHash, pagePath, name, comment, now);
   if (!decision.ok) {
     return output_({ ok: false, error: 'rejected', reason: decision.reason }, data.callback);
   }
@@ -91,7 +93,8 @@ function handleComment_(data) {
     deleteToken,
     false,
     fingerprintHash,
-    ''
+    '',
+    visitorHash
   ]);
 
   notifyComment_(pageTitle, pageUrl, pagePath, name, comment);
@@ -109,8 +112,10 @@ function checkComment_(data) {
   }
 
   const fingerprintHash = digest_(clean_(data.fingerprint || data.userAgent, 1200));
-  registerCommentAttempt_(id, now, fingerprintHash, pagePath, name, comment, 'check');
-  return commentDecision_(fingerprintHash, pagePath, name, comment, now);
+  const visitorId = clean_(data.visitorId, 200);
+  const visitorHash = visitorId ? digest_(visitorId) : '';
+  registerCommentAttempt_(id, now, fingerprintHash, visitorHash, pagePath, name, comment, 'check');
+  return commentDecision_(fingerprintHash, visitorHash, pagePath, name, comment, now);
 }
 
 function handleDeleteComment_(data) {
@@ -182,7 +187,8 @@ function getCommentsSheet_() {
     'deleteToken',
     'deleted',
     'fingerprintHash',
-    'blockedReason'
+    'blockedReason',
+    'visitorHash'
   ]);
 }
 
@@ -218,7 +224,8 @@ function getCommentAttemptsSheet_() {
     'pagePath',
     'name',
     'comment',
-    'source'
+    'source',
+    'visitorHash'
   ]);
 }
 
@@ -259,7 +266,8 @@ function readComments_() {
     parentId: String(row[10] || ''),
     deleted: row[12] === true || String(row[12]).toUpperCase() === 'TRUE',
     fingerprintHash: String(row[13] || row[8] || ''),
-    blockedReason: String(row[14] || '')
+    blockedReason: String(row[14] || ''),
+    visitorHash: String(row[15] || '')
   })).filter(row => row.id && row.id !== 'id' && row.comment && row.pagePath !== '/pagePath');
 }
 
@@ -276,7 +284,7 @@ function readCommentBlacklist_() {
   })).filter(row => row.kind && row.value && row.enabled);
 }
 
-function registerCommentAttempt_(id, now, fingerprintHash, pagePath, name, comment, source) {
+function registerCommentAttempt_(id, now, fingerprintHash, visitorHash, pagePath, name, comment, source) {
   const sheet = getCommentAttemptsSheet_();
   sheet.appendRow([
     id,
@@ -285,7 +293,8 @@ function registerCommentAttempt_(id, now, fingerprintHash, pagePath, name, comme
     pagePath,
     name,
     comment,
-    source
+    source,
+    visitorHash
   ]);
 }
 
@@ -301,17 +310,18 @@ function readCommentAttempts_() {
     pagePath: normalizePath_(row[3]),
     name: String(row[4] || ''),
     comment: String(row[5] || ''),
-    source: String(row[6] || '')
-  })).filter(row => row.id && row.id !== 'id' && row.fingerprintHash);
+    source: String(row[6] || ''),
+    visitorHash: String(row[7] || '')
+  })).filter(row => row.id && row.id !== 'id' && (row.visitorHash || row.fingerprintHash));
 }
 
-function commentDecision_(fingerprintHash, pagePath, name, comment, now) {
-  const blacklistReason = blacklistBlockReason_(fingerprintHash, pagePath, name, comment);
+function commentDecision_(fingerprintHash, visitorHash, pagePath, name, comment, now) {
+  const blacklistReason = blacklistBlockReason_(fingerprintHash, visitorHash, pagePath, name, comment);
   if (blacklistReason) {
     return { ok: false, reason: blacklistReason };
   }
 
-  const spamReason = spamBlockReason_(fingerprintHash, comment, now);
+  const spamReason = spamBlockReason_(fingerprintHash, visitorHash, comment, now);
   if (spamReason) {
     return { ok: false, reason: spamReason };
   }
@@ -319,7 +329,7 @@ function commentDecision_(fingerprintHash, pagePath, name, comment, now) {
   return { ok: true };
 }
 
-function blacklistBlockReason_(fingerprintHash, pagePath, name, comment) {
+function blacklistBlockReason_(fingerprintHash, visitorHash, pagePath, name, comment) {
   const normalizedName = normalizeCommentText_(name);
   const normalizedComment = normalizeCommentText_(comment);
   const normalizedPath = normalizePath_(pagePath);
@@ -332,6 +342,9 @@ function blacklistBlockReason_(fingerprintHash, pagePath, name, comment) {
 
     if (rule.kind === 'fingerprint' && fingerprintHash && value === fingerprintHash) {
       return 'blacklist_fingerprint';
+    }
+    if (rule.kind === 'visitor' && visitorHash && value === visitorHash) {
+      return 'blacklist_visitor';
     }
     if (rule.kind === 'name' && normalizedName === normalizedValue) {
       return 'blacklist_name';
@@ -347,13 +360,13 @@ function blacklistBlockReason_(fingerprintHash, pagePath, name, comment) {
   return '';
 }
 
-function spamBlockReason_(fingerprintHash, comment, now) {
-  if (!fingerprintHash) return '';
+function spamBlockReason_(fingerprintHash, visitorHash, comment, now) {
+  if (!visitorHash && !fingerprintHash) return '';
 
   const comments = readComments_();
   const attempts = readCommentAttempts_();
-  const recentAttempts = attempts.filter(row => row.fingerprintHash === fingerprintHash);
-  const recentComments = comments.filter(row => row.fingerprintHash === fingerprintHash);
+  const recentAttempts = attempts.filter(row => sameCommentActor_(row, fingerprintHash, visitorHash));
+  const recentComments = comments.filter(row => sameCommentActor_(row, fingerprintHash, visitorHash));
   const nowMs = now.getTime();
   const tenMinutes = 10 * 60 * 1000;
   const oneDay = 24 * 60 * 60 * 1000;
@@ -378,6 +391,12 @@ function spamBlockReason_(fingerprintHash, comment, now) {
   }
 
   return '';
+}
+
+function sameCommentActor_(row, fingerprintHash, visitorHash) {
+  if (visitorHash && row.visitorHash === visitorHash) return true;
+  if (!visitorHash && fingerprintHash && row.fingerprintHash === fingerprintHash) return true;
+  return false;
 }
 
 function normalizeCommentText_(value) {

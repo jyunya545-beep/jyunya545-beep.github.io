@@ -385,6 +385,7 @@
       too_many_comments_24h: '\u672c\u65e5\u306e\u30b3\u30e1\u30f3\u30c8\u6295\u7a3f\u304c\u591a\u304f\u306a\u3063\u3066\u3044\u307e\u3059\u3002\u6642\u9593\u3092\u304a\u3044\u3066\u304b\u3089\u518d\u5ea6\u9001\u4fe1\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
       duplicate_comment_24h: '\u540c\u3058\u5185\u5bb9\u306e\u30b3\u30e1\u30f3\u30c8\u304c\u3059\u3067\u306b\u6295\u7a3f\u3055\u308c\u3066\u3044\u307e\u3059\u3002',
       blacklist_fingerprint: '\u3053\u306e\u74b0\u5883\u304b\u3089\u306e\u30b3\u30e1\u30f3\u30c8\u306f\u73fe\u5728\u5236\u9650\u3055\u308c\u3066\u3044\u307e\u3059\u3002',
+      blacklist_visitor: '\u3053\u306e\u30d6\u30e9\u30a6\u30b6\u304b\u3089\u306e\u30b3\u30e1\u30f3\u30c8\u306f\u73fe\u5728\u5236\u9650\u3055\u308c\u3066\u3044\u307e\u3059\u3002',
       blacklist_name: '\u3053\u306e\u540d\u524d\u3067\u306e\u30b3\u30e1\u30f3\u30c8\u306f\u73fe\u5728\u5236\u9650\u3055\u308c\u3066\u3044\u307e\u3059\u3002',
       blacklist_word: '\u30b3\u30e1\u30f3\u30c8\u5185\u5bb9\u306b\u9001\u4fe1\u3067\u304d\u306a\u3044\u8868\u73fe\u304c\u542b\u307e\u308c\u3066\u3044\u307e\u3059\u3002',
       blacklist_page: '\u3053\u306e\u30da\u30fc\u30b8\u3067\u306e\u30b3\u30e1\u30f3\u30c8\u306f\u73fe\u5728\u5236\u9650\u3055\u308c\u3066\u3044\u307e\u3059\u3002'
@@ -435,6 +436,19 @@
       screen.colorDepth || '',
       timezone
     ].join('|');
+  }
+
+  function visitorId() {
+    var key = 'aineko_visitor_id';
+    try {
+      var saved = localStorage.getItem(key);
+      if (saved) return saved;
+      var id = randomToken() + randomToken();
+      localStorage.setItem(key, id);
+      return id;
+    } catch (error) {
+      return '';
+    }
   }
 
   function loadComments() {
@@ -651,7 +665,8 @@
           pageUrl: pageUrl(),
           name: comment.name,
           comment: body,
-          fingerprint: spamFingerprint()
+          fingerprint: spamFingerprint(),
+          visitorId: visitorId()
         };
 
         loadCommentsJsonp({
@@ -660,7 +675,8 @@
           pagePath: payload.pagePath,
           name: payload.name,
           comment: payload.comment,
-          fingerprint: payload.fingerprint
+          fingerprint: payload.fingerprint,
+          visitorId: payload.visitorId
         }, function (check) {
           if (!check || check.ok !== true) {
             status.textContent = commentRejectMessage(check && check.reason);
