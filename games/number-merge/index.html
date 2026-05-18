@@ -21,21 +21,27 @@
   <div class="wrap">
     <div class="head"><a href="../">← 無料ゲーム一覧</a><strong>ナンバーマージ</strong></div>
     <div class="panel">
-      <h1>ナンバーマージ</h1><p>矢印キーまたはスワイプで同じ数字を重ねます。</p>
+      <h1>ナンバーマージ</h1><p>矢印キー、スワイプ、ドラッグで同じ数字を重ねます。</p>
       <div class="stats"><div>Score <b id="score">0</b></div><button class="btn" id="reset">新規</button></div>
       <div class="board" id="board"></div><div class="msg" id="msg"></div>
     </div>
   </div>
 <script>
-const board=document.getElementById('board'),scoreEl=document.getElementById('score'),msg=document.getElementById('msg');let g,score,startX,startY;
+const board=document.getElementById('board'),scoreEl=document.getElementById('score'),msg=document.getElementById('msg');let g,score,startX,startY,dragging=false;
 function newGame(){g=Array(16).fill(0);score=0;msg.textContent='';add();add();render()}
 function add(){const e=g.map((v,i)=>v?null:i).filter(v=>v!==null);if(e.length)g[e[Math.floor(Math.random()*e.length)]]=Math.random()<.88?2:4}
 function line(vals){const a=vals.filter(Boolean),out=[];let gain=0;for(let i=0;i<a.length;i++){if(a[i]===a[i+1]){out.push(a[i]*2);gain+=a[i]*2;i++}else out.push(a[i])}while(out.length<4)out.push(0);score+=gain;return out}
 function move(dir){const old=g.join();for(let i=0;i<4;i++){let idx=dir<2?[i*4,i*4+1,i*4+2,i*4+3]:[i,i+4,i+8,i+12];if(dir===1||dir===3)idx=idx.reverse();const res=line(idx.map(j=>g[j]));idx.forEach((j,k)=>g[j]=res[k])}if(g.join()!==old){add();render();if(!can())msg.textContent='GAME OVER'}}
 function can(){if(g.some(v=>!v))return true;for(let i=0;i<16;i++)if((i%4<3&&g[i]===g[i+1])||(i<12&&g[i]===g[i+4]))return true;return false}
 function render(){board.innerHTML='';g.forEach(v=>{const d=document.createElement('div');d.className='tile v'+v;d.textContent=v||'';board.appendChild(d)});scoreEl.textContent=score}
+function dragStart(x,y){startX=x;startY=y;dragging=true}
+function dragEnd(x,y){if(!dragging)return;dragging=false;const dx=x-startX,dy=y-startY;if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;move(Math.abs(dx)>Math.abs(dy)?(dx>0?1:0):(dy>0?3:2))}
 document.addEventListener('keydown',e=>({ArrowLeft:0,ArrowRight:1,ArrowUp:2,ArrowDown:3}[e.key]!==undefined)&&(e.preventDefault(),move({ArrowLeft:0,ArrowRight:1,ArrowUp:2,ArrowDown:3}[e.key])));
-board.ontouchstart=e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY};board.ontouchend=e=>{const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;move(Math.abs(dx)>Math.abs(dy)?(dx>0?1:0):(dy>0?3:2))};document.getElementById('reset').onclick=newGame;newGame();
+board.ontouchstart=e=>{dragStart(e.touches[0].clientX,e.touches[0].clientY)};
+board.ontouchend=e=>{dragEnd(e.changedTouches[0].clientX,e.changedTouches[0].clientY)};
+board.onmousedown=e=>{e.preventDefault();dragStart(e.clientX,e.clientY)};
+document.addEventListener('mouseup',e=>dragEnd(e.clientX,e.clientY));
+document.getElementById('reset').onclick=newGame;newGame();
 </script>
 </body>
 </html>
