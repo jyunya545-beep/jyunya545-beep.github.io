@@ -20,6 +20,10 @@ input[type="search"]{width:100%;min-height:42px;border:1.5px solid #dbe8f6;borde
 .entry time{display:inline-block;color:#0f7f68;font-weight:900;margin-bottom:8px}
 .entry p{color:var(--sub);margin-top:14px}
 .entry h2{font-size:1.18rem;line-height:1.45;margin-top:24px}
+.takeaways{margin-top:20px;padding:16px;border-radius:14px;background:#f8fcff;border:1px solid #dcecf7;color:var(--sub)}
+.takeaways h2{margin-top:0;color:var(--ink)}
+.takeaways p{margin-top:8px}
+.takeaways strong{color:#0f7f68}
 .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}
 .tag{display:inline-flex;align-items:center;min-height:26px;padding:3px 9px;border-radius:999px;background:#fff4cf;border:1px solid #ffe39b;color:#7b5d2a;font-size:.78rem;font-weight:900}
 .nav-links{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:24px}
