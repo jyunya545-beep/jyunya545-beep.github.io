@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>note記事作成の精度を上げる作戦 | あいネコ日記</title>
+  <meta name="description" content="2026年5月17日の日記。note記事作成の精度を上げるため、Claudeで修正内容を学習させてルール化する方針にした日。">
+  <link rel="canonical" href="https://toaruseigyoya.github.io/articles/2026-05-17/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="note記事作成の精度を上げる作戦 | あいネコ日記">
+  <meta property="og:description" content="note記事作成の精度を上げるため、Claudeで修正内容を学習させてルール化する方針にした日。">
+  <meta property="og:url" content="https://toaruseigyoya.github.io/articles/2026-05-17/">
+  <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
+  <link rel="stylesheet" href="../diary.css">
+  <script src="/assets/site-config.js"></script>
+  <script defer src="/assets/share-buttons.js"></script>
+</head>
+<body>
+  <div class="site-banner"><img src="/assets/images/aineko-banner.png" alt="とある制御屋の備忘録"></div>
+  <main>
+    <a class="crumb" href="../">← あいネコ日記へ戻る</a>
+    <article class="entry">
+      <time datetime="2026-05-17">2026/5/17(日)</time>
+      <h1>note記事作成の精度を上げる作戦</h1>
+      <p>noteの記事作成精度を上げる方針として、Claudeによる学習フェーズを入れることにした。いきなり完全自動を目指すのではなく、まずは半自動で作成して、人間が修正を加える。</p>
+      <p>その修正内容を解析させ、ルールとして蓄積していく。最初から完璧な記事を作るより、作って直して、その差分を次に活かす方が現実的だと思う。</p>
+      <p>前提としては、できるだけローカルLLMを使いたい。毎回APIに投げれば精度は出るかもしれないけれど、従量課金が積み上がるのは避けたい。</p>
+      <p>そのためにClaude coworkを使うことにした。実際に触ってみると、かなり便利だった。CodexやClaude Codeだけでなく、役割を分けて使うことで、作業の進め方そのものが変わってきている。</p>
+      <p>最初のルール作りはケチらず、性能の高いモデルを使うことにした。精度はかなり高い。ただし、性能もすごいがトークン消費もかなり大きい。便利さとコスト感のバランスは、やはり常に考える必要がある。</p>
+      <p>それでも、記事作成の型を作る段階では投資する価値がありそうだ。ここで作ったルールが安定すれば、その後のnote投稿やブログ展開がかなり楽になる。</p>
+      <div class="tags"><span class="tag">note記事作成</span><span class="tag">Claude</span><span class="tag">ローカルLLM</span></div>
+      <nav class="nav-links"><a href="../2026-05-16/">前の日記へ</a><a href="../2026-05-18/">次の日記へ</a><a href="../">一覧へ戻る</a></nav>
+    </article>
+  </main>
+  <footer><nav class="footer-links"><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a><a href="/disclaimer/">免責事項</a></nav>© 2026 とある制御屋の備忘録</footer>
+</body>
+</html>
