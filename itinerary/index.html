@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工程管理アプリ｜旅行・出張・現地作業の予定表</title>
+  <meta name="description" content="旅行、出張、現地作業の移動・宿泊・自由予定をまとめて時系列の工程表にできる無料Webアプリです。電車、車、ホテル、予定を手動登録して1日の流れを確認できます。">
+  <link rel="canonical" href="https://toaruseigyoya.github.io/itinerary/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="とある制御屋の備忘録">
+  <meta property="og:title" content="工程管理アプリ｜旅行・出張・現地作業の予定表">
+  <meta property="og:description" content="移動・宿泊・予定をまとめて時系列の工程表にできる無料Webアプリです。">
+  <meta property="og:url" content="https://toaruseigyoya.github.io/itinerary/">
+  <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --line: #d9e2ef;
+      --ink: #1f2937;
+      --muted: #667085;
+      --blue: #2563eb;
+      --cyan: #0891b2;
+      --green: #15803d;
+      --amber: #b45309;
+      --rose: #be123c;
+      --shadow: 0 16px 42px rgba(31, 41, 55, .08);
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #f8fbff, #eef6ff 48%, #fff8fb);
+      line-height: 1.6;
+    }
+    .site-banner { max-width: 920px; margin: 18px auto 0; padding: 0 18px; }
+    .site-banner img { width: 100%; max-height: 300px; object-fit: contain; background: #fff; border-radius: 18px; border: 3px solid #fff; box-shadow: var(--shadow); display: block; }
+    main { max-width: 1440px; margin: 0 auto; padding: 22px 18px 64px; }
+    .home-link { display: inline-flex; align-items: center; min-height: 42px; padding: 8px 12px; border-radius: 12px; background: #fff; border: 1px solid var(--line); color: #526179; text-decoration: none; font-size: .92rem; font-weight: 900; margin-bottom: 14px; }
+    .hero { margin-bottom: 16px; }
+    h1 { margin: 0 0 8px; font-size: clamp(1.7rem, 4vw, 2.7rem); line-height: 1.2; }
+    .lead { max-width: 860px; margin: 0; color: var(--muted); font-weight: 750; }
+    .app {
+      display: grid;
+      grid-template-columns: minmax(340px, 430px) minmax(520px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .panel {
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.95);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    h2 { margin: 0; font-size: 1rem; }
+    h3 { margin: 14px 0 8px; font-size: .92rem; }
+    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+    .tabs button, button, .link-button {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      background: #e0f2fe;
+      color: var(--cyan);
+      text-decoration: none;
+      text-align: center;
+    }
+    .tabs button.active { background: linear-gradient(135deg, var(--blue), var(--cyan)); color: #fff; }
+    .danger { background: #ffe4e6; color: var(--rose); }
+    .primary { background: linear-gradient(135deg, var(--blue), var(--cyan)); color: #fff; }
+    .ghost { background: #f2f4f7; color: var(--muted); }
+    label { display: block; margin: 8px 0 5px; color: var(--muted); font-size: .78rem; font-weight: 850; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+      padding: 9px 10px;
+      outline: none;
+    }
+    textarea { min-height: 76px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: rgba(37,99,235,.55); box-shadow: 0 0 0 4px rgba(37,99,235,.1); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .form-grid .wide { grid-column: 1 / -1; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .status { min-height: 26px; margin-top: 8px; color: var(--rose); font-size: .82rem; font-weight: 900; }
+    .hint { margin: 7px 0 0; color: var(--muted); font-size: .78rem; font-weight: 750; }
+    .planner-head { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto auto; gap: 8px; align-items: end; margin-bottom: 10px; }
+    .timeline { display: grid; gap: 12px; max-height: 780px; overflow: auto; padding-right: 4px; }
+    .day { border-top: 2px solid var(--line); padding-top: 10px; }
+    .day-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; color: var(--muted); font-weight: 900; }
+    .event {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--blue);
+      border-radius: 12px;
+      background: #fff;
+      margin-bottom: 7px;
+    }
+    .event.train { border-left-color: var(--blue); }
+    .event.car { border-left-color: var(--amber); }
+    .event.hotel { border-left-color: var(--green); }
+    .event.free { border-left-color: var(--cyan); }
+    .time { font-weight: 950; color: var(--ink); white-space: nowrap; }
+    .event-title { font-weight: 950; margin-bottom: 3px; }
+    .event-meta, .event-note { color: var(--muted); font-size: .84rem; font-weight: 730; white-space: pre-wrap; }
+    .event-actions { display: flex; gap: 5px; }
+    .event-actions button { padding: 4px 7px; border-radius: 8px; font-size: .72rem; }
+    .empty { min-height: 260px; display: grid; place-items: center; text-align: center; color: var(--muted); border: 1px dashed #cbd5e1; border-radius: 14px; background: rgba(255,255,255,.55); font-weight: 850; }
+    .debug {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 14px;
+      background: rgba(255,255,255,.72);
+      color: var(--muted);
+      font-size: .86rem;
+      font-weight: 750;
+    }
+    .debug ul { margin: 8px 0 0; padding-left: 1.2em; }
+    .footer-links { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+    .footer-links a { display:inline-flex; align-items:center; min-height:42px; padding:8px 12px; border-radius:12px; background:#f6fbff; border:1px solid #dcecf7; color:#526179; text-decoration:none; font-size:.92rem; font-weight:900; }
+    footer { text-align:center; color:#8a7890; font-size:.9rem; padding:24px; }
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .planner-head { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      main, .site-banner { padding-inline: 12px; }
+      .tabs, .form-grid, .actions, .planner-head { grid-template-columns: 1fr; }
+      .event { grid-template-columns: 1fr; }
+      .event-actions { justify-content: flex-start; }
+    }
+  </style>
+  <script src="/assets/site-config.js"></script>
+  <script defer src="/assets/share-buttons.js"></script>
+</head>
+<body>
+  <div class="site-banner"><img src="/assets/images/aineko-banner.png" alt="とある制御屋の備忘録"></div>
+  <main>
+    <a class="home-link" href="/tools/">公開ツール一覧へ戻る</a>
+    <section class="hero">
+      <h1>工程管理アプリ</h1>
+      <p class="lead">旅行、出張、現地作業の「移動」「宿泊」「予定」をまとめて、1日の流れを時系列の工程表として確認できます。外部API連携なしの手動入力版です。</p>
+    </section>
+
+    <div class="app">
+      <section class="panel" aria-label="入力スペース">
+        <div class="panel-head"><h2>入力</h2><button class="ghost" id="sampleButton" type="button">サンプル</button></div>
+        <div class="tabs" role="tablist" aria-label="登録種別">
+          <button class="active" data-tab="train" type="button">電車</button>
+          <button data-tab="car" type="button">車</button>
+          <button data-tab="hotel" type="button">宿泊</button>
+          <button data-tab="free" type="button">予定</button>
+        </div>
+
+        <section class="form-section" data-form="train">
+          <h3>電車移動</h3>
+          <div class="form-grid">
+            <div><label>日付</label><input id="trainDate" type="date"></div>
+            <div><label>基準</label><select id="trainMode"><option>出発時間</option><option>到着時間</option></select></div>
+            <div><label>出発時間</label><input id="trainStart" type="time"></div>
+            <div><label>到着時間</label><input id="trainEnd" type="time"></div>
+            <div><label>出発駅</label><input id="trainFrom" list="stationSuggestions" placeholder="名古屋"></div>
+            <div><label>目的駅</label><input id="trainTo" list="stationSuggestions" placeholder="東京"></div>
+            <div class="wide"><label>条件</label><select id="trainCondition"><option>時間優先</option><option>乗り換え回数が少ないルートを優先</option><option>金額が安いルートを優先</option></select></div>
+            <div class="wide"><label>経路・メモ</label><textarea id="trainMemo" placeholder="例: 名古屋駅発 のぞみ号 東京行き"></textarea></div>
+          </div>
+          <datalist id="stationSuggestions">
+            <option value="名古屋（JR）"></option><option value="名古屋（あおなみ線）"></option><option value="名鉄名古屋"></option><option value="近鉄名古屋"></option>
+            <option value="東京"></option><option value="新大阪"></option><option value="京都"></option><option value="品川"></option><option value="岐阜"></option>
+          </datalist>
+          <p class="hint">駅名候補は仮データです。正式な経路検索は未連携のため、時間と経路は手動で入力してください。</p>
+          <div class="actions"><button class="primary" id="addTrain" type="button">工程表へ追加</button><button class="ghost" data-clear="train" type="button">入力クリア</button></div>
+        </section>
+
+        <section class="form-section" data-form="car" hidden>
+          <h3>車移動</h3>
+          <div class="form-grid">
+            <div><label>日付</label><input id="carDate" type="date"></div>
+            <div><label>基準</label><select id="carMode"><option>出発時間</option><option>到着時間</option></select></div>
+            <div><label>出発時間</label><input id="carStart" type="time" step="600"></div>
+            <div><label>到着時間</label><input id="carEnd" type="time" step="600"></div>
+            <div><label>出発地</label><input id="carFrom" placeholder="ホテル"></div>
+            <div><label>目的地</label><input id="carTo" placeholder="現地"></div>
+            <div><label>高速道路</label><select id="carHighway"><option>高速道路を使用する</option><option>高速道路を使用しない</option></select></div>
+            <div><label>ルート条件</label><select id="carCondition"><option>主要道路優先</option><option>距離優先</option></select></div>
+            <div class="wide"><label>メモ</label><textarea id="carMemo" placeholder="例: 渋滞を見て30分余裕を持つ"></textarea></div>
+          </div>
+          <p class="hint">車移動は誤差が出やすいため、時間入力は10分単位です。到着時間だけ決まっている場合は、想定所要時間をメモへ残してください。</p>
+          <div class="actions"><button class="primary" id="addCar" type="button">工程表へ追加</button><button class="ghost" data-clear="car" type="button">入力クリア</button></div>
+        </section>
+
+        <section class="form-section" data-form="hotel" hidden>
+          <h3>宿泊</h3>
+          <div class="form-grid">
+            <div><label>チェックイン日</label><input id="hotelDate" type="date"></div>
+            <div><label>チェックイン時間</label><input id="hotelStart" type="time" value="18:00"></div>
+            <div><label>チェックアウト日</label><input id="hotelOutDate" type="date"></div>
+            <div><label>チェックアウト時間</label><input id="hotelEnd" type="time" value="10:00"></div>
+            <div><label>宿泊予定地</label><input id="hotelArea" placeholder="東京駅周辺"></div>
+            <div><label>宿泊サイト</label><select id="hotelSite"><option>楽天トラベル</option><option>じゃらん</option><option>その他</option></select></div>
+            <div class="wide"><label>ホテル名</label><input id="hotelName" placeholder="ホテル名"></div>
+            <div class="wide"><label>住所</label><input id="hotelAddress" placeholder="住所"></div>
+            <div><label>金額</label><input id="hotelPrice" placeholder="12000円"></div>
+            <div><label>予約URL</label><input id="hotelUrl" placeholder="https://"></div>
+            <div class="wide"><label>メモ</label><textarea id="hotelMemo" placeholder="予約番号、朝食、駐車場など"></textarea></div>
+          </div>
+          <div class="actions"><a class="link-button" id="hotelSearchLink" href="#" target="_blank" rel="noopener">外部サイトで探す</a><button class="primary" id="addHotel" type="button">工程表へ追加</button></div>
+          <p class="hint">候補検索は外部サイトへの検索リンクです。予約後に戻って、ホテル名・住所・URL・金額を必要に応じて修正して登録してください。</p>
+        </section>
+
+        <section class="form-section" data-form="free" hidden>
+          <h3>自由スケジュール</h3>
+          <div class="form-grid">
+            <div><label>日付</label><input id="freeDate" type="date"></div>
+            <div><label>色</label><input id="freeColor" type="color" value="#0891b2"></div>
+            <div><label>開始時間</label><input id="freeStart" type="time"></div>
+            <div><label>終了時間</label><input id="freeEnd" type="time"></div>
+            <div class="wide"><label>項目名</label><input id="freeTitle" placeholder="レンタカーを借りる"></div>
+            <div class="wide"><label>メモ</label><textarea id="freeMemo" placeholder="住所、URL、持ち物、注意点など"></textarea></div>
+          </div>
+          <div class="actions"><button class="primary" id="addFree" type="button">工程表へ追加</button><button class="ghost" data-clear="free" type="button">入力クリア</button></div>
+        </section>
+        <div class="status" id="status" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" aria-label="工程表">
+        <div class="planner-head">
+          <div><label>全体日程</label><input id="projectRange" placeholder="例: 5/11～5/16"></div>
+          <button class="ghost" id="exportButton" type="button">JSON保存</button>
+          <button class="ghost" id="importButton" type="button">JSON読込</button>
+          <button class="danger" id="clearAllButton" type="button">全削除</button>
+          <input id="importFile" type="file" accept=".json,application/json" hidden>
+        </div>
+        <div class="timeline" id="timeline"></div>
+        <section class="debug" aria-label="デバッグ・調整メモ">
+          <h2>デバッグ・調整メモ</h2>
+          <ul>
+            <li>外部APIは未接続。電車経路、車ルート、ホテル候補は手動入力または外部サイト検索リンクで対応。</li>
+            <li>駅名候補は仮データ。実運用では駅データCSVまたは駅検索APIを追加する想定。</li>
+            <li>車移動は10分単位入力。渋滞や休憩の余裕時間はメモ欄へ記録。</li>
+            <li>データはブラウザのlocalStorageに保存。別端末へ移す場合はJSON保存・JSON読込を使う。</li>
+            <li>今後の調整候補: 日付範囲から日付リスト自動生成、印刷用CSS、CSV出力、Google Mapsリンク、楽天/じゃらんAPI連携。</li>
+          </ul>
+        </section>
+      </section>
+    </div>
+  </main>
+  <footer>
+    <nav class="footer-links" aria-label="サイト情報">
+      <a href="/contact/">お問い合わせ</a>
+      <a href="/privacy/">プライバシーポリシー</a>
+      <a href="/disclaimer/">免責事項</a>
+    </nav>
+    © 2026 とある制御屋の備忘録
+  </footer>
+
+  <script>
+    (function () {
+      var storageKey = 'toaruseigyoya-itinerary-app';
+      var events = load();
+      var activeTab = 'train';
+      var status = document.getElementById('status');
+      var timeline = document.getElementById('timeline');
+      var projectRange = document.getElementById('projectRange');
+
+      function $(id) { return document.getElementById(id); }
+      function show(message) { status.textContent = message || ''; }
+      function uid() { return String(Date.now()) + Math.random().toString(16).slice(2); }
+      function today() { return new Date().toISOString().slice(0, 10); }
+      function load() {
+        try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch (e) { return []; }
+      }
+      function save() {
+        localStorage.setItem(storageKey, JSON.stringify(events));
+        localStorage.setItem(storageKey + ':range', projectRange.value || '');
+      }
+      function initDates() {
+        ['trainDate','carDate','hotelDate','hotelOutDate','freeDate'].forEach(function (id) {
+          if ($(id) && !$(id).value) $(id).value = today();
+        });
+        projectRange.value = localStorage.getItem(storageKey + ':range') || '';
+      }
+      function typeLabel(type) {
+        return { train: '電車', car: '車', hotel: '宿泊', free: '予定' }[type] || '予定';
+      }
+      function sortEvents(a, b) {
+        return String(a.date).localeCompare(String(b.date)) || String(a.start || '').localeCompare(String(b.start || ''));
+      }
+      function eventTime(item) {
+        if (item.start && item.end) return item.start + '〜' + item.end;
+        return item.start || item.end || '時間未定';
+      }
+      function addEvent(item) {
+        if (!item.date) { show('日付を入力してください。'); return; }
+        if (!item.title) { show('項目名または移動先を入力してください。'); return; }
+        events.push(Object.assign({ id: uid(), color: '#2563eb' }, item));
+        save();
+        render();
+        show('工程表へ追加しました。');
+      }
+      function removeEvent(id) {
+        events = events.filter(function (item) { return item.id !== id; });
+        save();
+        render();
+      }
+      function duplicateEvent(id) {
+        var item = events.find(function (event) { return event.id === id; });
+        if (!item) return;
+        events.push(Object.assign({}, item, { id: uid(), title: item.title + ' コピー' }));
+        save();
+        render();
+      }
+      function render() {
+        timeline.innerHTML = '';
+        if (!events.length) {
+          var empty = document.createElement('div');
+          empty.className = 'empty';
+          empty.textContent = '左側から移動・宿泊・予定を登録すると、ここに時系列の工程表が表示されます。';
+          timeline.appendChild(empty);
+          return;
+        }
+        var grouped = {};
+        events.slice().sort(sortEvents).forEach(function (item) {
+          if (!grouped[item.date]) grouped[item.date] = [];
+          grouped[item.date].push(item);
+        });
+        Object.keys(grouped).sort().forEach(function (date) {
+          var day = document.createElement('section');
+          day.className = 'day';
+          var title = document.createElement('div');
+          title.className = 'day-title';
+          title.innerHTML = '<span>' + date + '</span><span>' + grouped[date].length + '件</span>';
+          day.appendChild(title);
+          grouped[date].forEach(function (item) {
+            var row = document.createElement('article');
+            row.className = 'event ' + item.type;
+            row.style.borderLeftColor = item.color || '';
+            var time = document.createElement('div');
+            time.className = 'time';
+            time.textContent = eventTime(item);
+            var body = document.createElement('div');
+            var itemTitle = document.createElement('div');
+            itemTitle.className = 'event-title';
+            itemTitle.textContent = '[' + typeLabel(item.type) + '] ' + item.title;
+            var meta = document.createElement('div');
+            meta.className = 'event-meta';
+            meta.textContent = item.meta || '';
+            var note = document.createElement('div');
+            note.className = 'event-note';
+            note.textContent = item.note || '';
+            body.appendChild(itemTitle);
+            if (item.meta) body.appendChild(meta);
+            if (item.note) body.appendChild(note);
+            var actions = document.createElement('div');
+            actions.className = 'event-actions';
+            var copy = document.createElement('button');
+            copy.type = 'button';
+            copy.className = 'ghost';
+            copy.textContent = '複製';
+            copy.addEventListener('click', function () { duplicateEvent(item.id); });
+            var del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'danger';
+            del.textContent = '削除';
+            del.addEventListener('click', function () { removeEvent(item.id); });
+            actions.appendChild(copy);
+            actions.appendChild(del);
+            row.appendChild(time);
+            row.appendChild(body);
+            row.appendChild(actions);
+            day.appendChild(row);
+          });
+          timeline.appendChild(day);
+        });
+      }
+      function clearForm(type) {
+        document.querySelectorAll('[data-form="' + type + '"] input, [data-form="' + type + '"] textarea').forEach(function (field) {
+          if (field.type === 'date') field.value = today();
+          else if (field.type !== 'color') field.value = '';
+        });
+      }
+      function hotelSearchUrl() {
+        var area = encodeURIComponent($('hotelArea').value || 'ホテル');
+        var site = $('hotelSite').value;
+        if (site === '楽天トラベル') return 'https://travel.rakuten.co.jp/keyword/Search.do?f_query=' + area;
+        if (site === 'じゃらん') return 'https://www.jalan.net/uw/uwp2011/uww2011init.do?keyword=' + area;
+        return 'https://www.google.com/search?q=' + area + '+ホテル';
+      }
+      document.querySelectorAll('.tabs button').forEach(function (button) {
+        button.addEventListener('click', function () {
+          activeTab = button.dataset.tab;
+          document.querySelectorAll('.tabs button').forEach(function (item) { item.classList.toggle('active', item === button); });
+          document.querySelectorAll('.form-section').forEach(function (section) { section.hidden = section.dataset.form !== activeTab; });
+        });
+      });
+      document.querySelectorAll('[data-clear]').forEach(function (button) {
+        button.addEventListener('click', function () { clearForm(button.dataset.clear); });
+      });
+      $('addTrain').addEventListener('click', function () {
+        addEvent({
+          type: 'train', date: $('trainDate').value, start: $('trainStart').value, end: $('trainEnd').value,
+          title: ($('trainFrom').value || '出発駅') + ' → ' + ($('trainTo').value || '目的駅'),
+          meta: $('trainCondition').value + ' / ' + $('trainMode').value,
+          note: $('trainMemo').value,
+          color: '#2563eb'
+        });
+      });
+      $('addCar').addEventListener('click', function () {
+        addEvent({
+          type: 'car', date: $('carDate').value, start: $('carStart').value, end: $('carEnd').value,
+          title: ($('carFrom').value || '出発地') + ' → ' + ($('carTo').value || '目的地'),
+          meta: $('carHighway').value + ' / ' + $('carCondition').value + ' / 10分単位',
+          note: $('carMemo').value,
+          color: '#b45309'
+        });
+      });
+      $('hotelSearchLink').addEventListener('click', function () { $('hotelSearchLink').href = hotelSearchUrl(); });
+      ['hotelArea','hotelSite'].forEach(function (id) { $(id).addEventListener('input', function () { $('hotelSearchLink').href = hotelSearchUrl(); }); });
+      $('addHotel').addEventListener('click', function () {
+        addEvent({
+          type: 'hotel', date: $('hotelDate').value, start: $('hotelStart').value, end: $('hotelEnd').value,
+          title: $('hotelName').value || (($('hotelArea').value || '宿泊地') + ' ホテル'),
+          meta: [$('hotelAddress').value, $('hotelPrice').value, $('hotelUrl').value].filter(Boolean).join('\n'),
+          note: 'チェックアウト: ' + ($('hotelOutDate').value || '') + ' ' + ($('hotelEnd').value || '') + '\n' + ($('hotelMemo').value || ''),
+          color: '#15803d'
+        });
+      });
+      $('addFree').addEventListener('click', function () {
+        addEvent({
+          type: 'free', date: $('freeDate').value, start: $('freeStart').value, end: $('freeEnd').value,
+          title: $('freeTitle').value,
+          meta: '',
+          note: $('freeMemo').value,
+          color: $('freeColor').value
+        });
+      });
+      projectRange.addEventListener('change', save);
+      $('clearAllButton').addEventListener('click', function () {
+        if (!events.length || !confirm('工程表を全て削除します。よろしいですか？')) return;
+        events = [];
+        save();
+        render();
+      });
+      $('exportButton').addEventListener('click', function () {
+        var data = { range: projectRange.value, events: events };
+        var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'itinerary-' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+      $('importButton').addEventListener('click', function () { $('importFile').click(); });
+      $('importFile').addEventListener('change', function () {
+        var file = $('importFile').files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var data = JSON.parse(String(reader.result || '{}'));
+            events = Array.isArray(data.events) ? data.events : [];
+            projectRange.value = data.range || '';
+            save();
+            render();
+            show('JSONを読み込みました。');
+          } catch (e) {
+            show('JSONを読み込めませんでした。');
+          }
+        };
+        reader.readAsText(file);
+        $('importFile').value = '';
+      });
+      $('sampleButton').addEventListener('click', function () {
+        var d = today();
+        events = [
+          { id: uid(), type: 'train', date: d, start: '07:00', end: '09:00', title: '名古屋駅 → 東京駅', meta: '時間優先 / のぞみ号', note: '指定席を確認', color: '#2563eb' },
+          { id: uid(), type: 'free', date: d, start: '09:10', end: '09:40', title: 'レンタカーを借りる', meta: '', note: '住所と予約URLをメモ', color: '#0891b2' },
+          { id: uid(), type: 'car', date: d, start: '09:50', end: '10:40', title: '東京駅 → 現地', meta: '高速道路を使用する / 主要道路優先 / 10分単位', note: '渋滞を見て余裕を持つ', color: '#b45309' },
+          { id: uid(), type: 'hotel', date: d, start: '18:00', end: '10:00', title: 'ホテルチェックイン', meta: '住所:\nURL:\n金額:', note: 'チェックアウト: ' + d + ' 10:00', color: '#15803d' }
+        ];
+        projectRange.value = 'サンプル工程';
+        save();
+        render();
+      });
+      initDates();
+      $('hotelSearchLink').href = hotelSearchUrl();
+      render();
+    })();
+  </script>
+</body>
+</html>
