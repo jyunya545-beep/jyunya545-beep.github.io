@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIを使う前に。初心者が知っておきたい4つの注意点 | とある制御屋の備忘録</title>
+  <meta name="description" content="note記事「AIを使う前に。初心者が知っておきたい4つの注意点」の要約ページ。AIの間違い、機密情報、丸投げ、最終判断について整理します。">
+  <link rel="canonical" href="https://toaruseigyoya.github.io/note/ai-beginner-cautions/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="とある制御屋の備忘録">
+  <meta property="og:title" content="AIを使う前に。初心者が知っておきたい4つの注意点">
+  <meta property="og:description" content="AI初心者が安全に使い始めるために、最初に知っておきたい4つの注意点をまとめた要約ページです。">
+  <meta property="og:url" content="https://toaruseigyoya.github.io/note/ai-beginner-cautions/">
+  <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/banner-note.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --mint:#36c49f; --sky:#5fb5ff; --pink:#ff8cb3; --ink:#273044; --sub:#65708a; --line:#f0dccb; --shadow:0 14px 38px rgba(85,70,50,.12); }
+    body { font-family:'Segoe UI','Yu Gothic UI','Hiragino Sans',sans-serif; background:linear-gradient(180deg,#fff7df,#f7fbff 58%,#fff7fb); color:var(--ink); line-height:1.85; min-height:100vh; }
+    .site-banner { max-width:920px; margin:18px auto 0; padding:0 18px; }
+    .site-banner img { width:100%; max-height:300px; object-fit:contain; background:#fff; border-radius:18px; border:3px solid #fff; box-shadow:var(--shadow); display:block; }
+    main { max-width:900px; margin:0 auto; padding:24px 20px 70px; }
+    .crumb { display:inline-flex; min-height:40px; align-items:center; color:#0f7f68; font-size:.9rem; font-weight:900; text-decoration:none; margin-bottom:14px; }
+    .hero, .article-body, .link-panel { background:rgba(255,255,255,.92); border:1px solid rgba(255,255,255,.95); border-radius:18px; box-shadow:var(--shadow); padding:24px; margin-bottom:16px; }
+    h1 { font-size:clamp(1.75rem,5vw,2.6rem); line-height:1.25; letter-spacing:0; margin-bottom:10px; }
+    h2 { font-size:1.24rem; line-height:1.45; margin:24px 0 8px; }
+    p { margin-top:10px; }
+    ul { margin:10px 0 0 1.2em; }
+    li { margin-top:6px; }
+    .meta { color:#0f7f68; font-size:.9rem; font-weight:900; }
+    .lead, .article-body p, .article-body li { color:#4f5b73; }
+    .summary-box { border-left:5px solid var(--mint); background:#f4fffb; border-radius:12px; padding:14px 16px; margin-top:16px; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+    .actions a { display:inline-flex; align-items:center; min-height:42px; border-radius:12px; border:1px solid #c8efe3; background:#eaf8f3; color:#0f7f68; text-decoration:none; padding:8px 12px; font-weight:900; }
+    .actions a.sub { border-color:#dcecf7; background:#f6fbff; color:#526179; }
+    .footer-links { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+    .footer-links a { display:inline-flex; align-items:center; min-height:42px; padding:8px 12px; border-radius:12px; background:#f6fbff; border:1px solid #dcecf7; color:#526179; text-decoration:none; font-size:.9rem; font-weight:900; }
+    footer { text-align:center; color:#8a7890; font-size:.9rem; padding:24px; }
+    @media (max-width:700px) { .site-banner, main { padding-inline:14px; } .hero, .article-body, .link-panel { padding:18px; } }
+  </style>
+  <script src="/assets/site-config.js"></script>
+  <script defer src="/assets/share-buttons.js"></script>
+</head>
+<body>
+  <div class="site-banner"><img src="/assets/images/banner-note.png" alt="とある制御屋の備忘録"></div>
+  <main>
+    <a class="crumb" href="/note/">← note投稿記事一覧へ戻る</a>
+    <section class="hero">
+      <p class="meta"><time datetime="2026-05-19">2026/5/19</time> / AI時代を生き抜くために 第2回</p>
+      <h1>AIを使う前に。初心者が知っておきたい4つの注意点</h1>
+      <p class="lead">noteに投稿した記事の要約ページです。AIを安全に使い始めるために、初心者が最初に知っておきたい注意点を整理しています。</p>
+      <div class="actions">
+        <a href="https://note.com/alne0902/n/n093b5b331cbd" target="_blank" rel="noopener">noteで原文を読む</a>
+        <a class="sub" href="/note/">一覧へ戻る</a>
+      </div>
+    </section>
+
+    <article class="article-body">
+      <div class="summary-box">
+        <p>この記事の中心は、AIを怖がりすぎず、でも信用しすぎない距離感を持つことです。AIは便利な補助ツールですが、間違いの確認、機密情報の扱い、最終判断は人間側に残しておく必要があります。</p>
+      </div>
+
+      <h2>AIは普通に間違える</h2>
+      <p>AIは文章をきれいに整えてくれますが、答えが必ず正しいとは限りません。もっともらしく間違えることがあるため、完成品ではなく下書きとして扱うのが安全です。</p>
+      <p>大事な数字、固有名詞、仕事で使う情報は、元資料や公式情報で確認する前提にしておく必要があります。</p>
+
+      <h2>機密情報は入力しない</h2>
+      <p>AIサービスに入力した内容は、外部サービス側で処理されます。パスワード、APIキー、個人情報、社外秘資料、契約書の内容などは入力しない方が安全です。</p>
+      <p>迷ったら入れない。必要な場合は、架空の会社名や仮の数字に置き換えて相談するのが現実的です。</p>
+
+      <h2>AIに全部丸投げしない</h2>
+      <p>AIに任せきりにすると、間違いに気づきにくくなったり、自分の判断力が育ちにくくなったりします。先に自分の考えをざっくり整理してから、AIに補助してもらうくらいがちょうどいい距離感です。</p>
+
+      <h2>最後の判断は自分でする</h2>
+      <p>AIは敵でも魔法でもなく、便利な補助ツールです。出てきた答えを確認し、必要に応じて直し、最終的に採用するかを決めるのは自分です。</p>
+      <p>この前提を持っておけば、AIの便利さを安全に使いやすくなります。</p>
+
+      <h2>まとめ</h2>
+      <ul>
+        <li>AIは便利ですが、万能ではありません。</li>
+        <li>AIは普通に間違えるので、盲信しないことが大切です。</li>
+        <li>機密情報は入力せず、迷ったら入れない方を選びます。</li>
+        <li>AIに全部丸投げせず、自分の考えを残します。</li>
+        <li>最後の判断は自分で行います。</li>
+      </ul>
+      <p>注意点を知っておくだけで、AIとの距離感はかなり安全になります。焦らず、補助ツールとして使うところから始めれば十分です。</p>
+    </article>
+
+    <section class="link-panel">
+      <h2>原文リンク</h2>
+      <p>全文や細かい流れはnote側に掲載しています。</p>
+      <div class="actions">
+        <a href="https://note.com/alne0902/n/n093b5b331cbd" target="_blank" rel="noopener">noteで原文を読む</a>
+      </div>
+    </section>
+  </main>
+  <footer><nav class="footer-links" aria-label="サイト情報"><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a><a href="/disclaimer/">免責事項</a></nav>© 2026 とある制御屋の備忘録</footer>
+</body>
+</html>
