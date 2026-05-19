@@ -28,8 +28,9 @@
     .search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
     input[type="search"]{width:100%;min-height:42px;border:1.5px solid #dbe8f6;border-radius:12px;background:#fff;padding:9px 12px;font:inherit;color:var(--ink)}
     .count{color:var(--sub);font-size:.86rem;font-weight:900;white-space:nowrap}
-    .comic-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:14px; }
-    .panel { aspect-ratio:1/1; border:2px dashed #f1bfd0; border-radius:12px; background:#fff8fb; display:grid; place-items:center; color:#b75b7a; font-weight:900; text-align:center; padding:10px; }
+    .comic-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin-top:14px; }
+    .panel { min-height:130px; border:1px solid var(--line); border-radius:12px; background:#fff; display:flex; flex-direction:column; justify-content:center; gap:6px; color:var(--ink); font-weight:900; text-align:left; padding:14px; }
+    .panel span { color:#b75b7a; font-size:.82rem; }
     .intro { display:grid; gap:10px; color:var(--sub); font-weight:750; }
     .thumb-slots { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:12px; }
     .thumb-slot { min-height:110px; border-radius:12px; border:1px solid var(--line); background:#fff; display:grid; place-items:center; color:#8a7890; font-size:.9rem; font-weight:900; text-align:center; padding:10px; }
@@ -48,7 +49,7 @@
     <a class="crumb" href="/">← ホームへ戻る</a>
     <section class="hero">
       <h1>Instagram投稿一覧</h1>
-      <p class="lead">今日もあいネコのInstagram作品を紹介するページです。4コマ漫画、AI画像、投稿リンクを順次追加できるようにしています。</p>
+      <p class="lead">今日もあいネコのInstagram作品を紹介するページです。AIと日常の気づきを、4コマ漫画や短い投稿として見やすく整理しています。</p>
     </section>
     <section class="toolbar" aria-label="Instagram投稿を探す">
       <div class="search-row">
@@ -57,26 +58,20 @@
       </div>
     </section>
     <section class="section">
-      <h2>今日もあいネコ</h2>
-      <div class="comic-grid" aria-label="4コマ漫画の仮表示枠">
-        <div class="panel searchable-item" data-search="4コマ漫画 1コマ目 今日もあいネコ">1コマ目</div>
-        <div class="panel searchable-item" data-search="4コマ漫画 2コマ目 今日もあいネコ">2コマ目</div>
-        <div class="panel searchable-item" data-search="4コマ漫画 3コマ目 今日もあいネコ">3コマ目</div>
-        <div class="panel searchable-item" data-search="4コマ漫画 4コマ目 今日もあいネコ">4コマ目</div>
+      <h2>投稿一覧</h2>
+      <div class="comic-grid" aria-label="Instagram投稿一覧">
+        <article class="panel searchable-item" data-search="4コマ漫画 AI 日常 今日もあいネコ"><span>4コマ漫画</span>AIと日常の気づき</article>
+        <article class="panel searchable-item" data-search="AI画像 キャラクター 今日もあいネコ"><span>AI画像</span>今日もあいネコのイメージ</article>
+        <article class="panel searchable-item" data-search="子育て AI メモ 今日もあいネコ"><span>日常メモ</span>子育てとAI活用</article>
+        <article class="panel searchable-item" data-search="制作記録 ホームページ note Instagram"><span>制作記録</span>投稿づくりの試行錯誤</article>
       </div>
     </section>
     <section class="section">
       <div class="intro">
         <p>Instagramでは、AIと子育て、日々の発見を4コマ漫画や短い投稿としてまとめていきます。</p>
-        <p>画像一覧、投稿埋め込み、シリーズ別サムネイルを追加できる形にしています。</p>
-      </div>
-      <div class="thumb-slots">
-        <div class="thumb-slot searchable-item" data-search="作品 サムネイル 画像 一覧">作品サムネイル</div>
-        <div class="thumb-slot searchable-item" data-search="投稿リンク Instagram URL 埋め込み">投稿リンク</div>
-        <div class="thumb-slot searchable-item" data-search="シリーズ 分類 タグ 4コマ漫画">シリーズ分類</div>
+        <p>投稿ごとのテーマや制作メモを整理し、あとから関連する記事や日記ともつなげて読めるようにしています。</p>
       </div>
     </section>
-    <p class="empty-note" id="instagramEmpty">該当する投稿はありません。</p>
   </main>
   <footer><nav class="footer-links" aria-label="サイト情報"><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a><a href="/disclaimer/">免責事項</a></nav>© 2026 とある制御屋の備忘録</footer>
   <script>
@@ -84,7 +79,17 @@
       var search = document.getElementById('instagramSearch');
       var items = Array.from(document.querySelectorAll('.searchable-item'));
       var count = document.getElementById('instagramCount');
-      var empty = document.getElementById('instagramEmpty');
+      var empty = null;
+      function getEmpty(){
+        if (!empty) {
+          empty = document.createElement('p');
+          empty.className = 'empty-note';
+          empty.id = 'instagramEmpty';
+          empty.textContent = '該当する投稿はありません。';
+          document.querySelector('main').appendChild(empty);
+        }
+        return empty;
+      }
       function render(){
         var q = (search.value || '').trim().toLowerCase();
         var shown = 0;
@@ -95,7 +100,12 @@
           if (visible) shown++;
         });
         count.textContent = shown + '件 / ' + items.length + '件';
-        empty.style.display = shown ? 'none' : 'block';
+        if (shown === 0) {
+          getEmpty().style.display = 'block';
+        } else if (empty) {
+          empty.remove();
+          empty = null;
+        }
       }
       search.addEventListener('input', render);
       render();

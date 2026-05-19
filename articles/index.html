@@ -86,7 +86,6 @@
         <time datetime="2026-05-02">2026/5/2</time><span>ホームページ作成とWeb公開の最初の一歩</span>
       </a>
     </section>
-    <p class="empty-note" id="emptyNote">該当する日記はありません。</p>
   </main>
   <footer>
     <nav class="footer-links" aria-label="サイト情報">
@@ -101,7 +100,17 @@
       var search = document.getElementById('diarySearch');
       var items = Array.from(document.querySelectorAll('.diary-link'));
       var count = document.getElementById('diaryCount');
-      var empty = document.getElementById('emptyNote');
+      var empty = null;
+      function getEmpty(){
+        if (!empty) {
+          empty = document.createElement('p');
+          empty.className = 'empty-note';
+          empty.id = 'emptyNote';
+          empty.textContent = '該当する日記はありません。';
+          document.querySelector('main').appendChild(empty);
+        }
+        return empty;
+      }
       function render(){
         var q = (search.value || '').trim().toLowerCase();
         var shown = 0;
@@ -112,7 +121,12 @@
           if (visible) shown++;
         });
         count.textContent = shown + '件 / ' + items.length + '件';
-        empty.style.display = shown ? 'none' : 'block';
+        if (shown === 0) {
+          getEmpty().style.display = 'block';
+        } else if (empty) {
+          empty.remove();
+          empty = null;
+        }
       }
       search.addEventListener('input', render);
       render();
