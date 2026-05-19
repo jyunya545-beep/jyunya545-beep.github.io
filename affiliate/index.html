@@ -1,17 +1,17 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>おすすめツール紹介 | 今日もあいネコ</title>
+  <title>おすすめツール紹介 | とある制御屋の備忘録</title>
   <meta name="description" content="AI活用、作業効率化、ホームページ制作、出張、開発環境などに役立つサービスや商品を紹介するページです。広告・アフィリエイトリンクを含む場合があります。">
   <link rel="canonical" href="https://toaruseigyoya.github.io/affiliate/">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="今日もあいネコ">
-  <meta property="og:title" content="おすすめツール紹介 | 今日もあいネコ">
+  <meta property="og:site_name" content="とある制御屋の備忘録">
+  <meta property="og:title" content="おすすめツール紹介 | とある制御屋の備忘録">
   <meta property="og:description" content="AI活用や作業効率化に役立つサービス・商品を紹介するページです。">
   <meta property="og:url" content="https://toaruseigyoya.github.io/affiliate/">
-  <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/aineko-banner.png">
+  <meta property="og:image" content="https://toaruseigyoya.github.io/assets/images/banner-tools.png">
   <meta name="twitter:card" content="summary_large_image">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,11 +28,9 @@
     .lead { color:var(--sub); max-width:760px; font-size:1rem; }
     .pr-notice { display:flex; gap:10px; align-items:flex-start; background:#fff7d6; border:1px solid #f3d982; color:#67511a; border-radius:14px; padding:12px 14px; margin-bottom:16px; font-size:.94rem; font-weight:900; }
     .pr-label { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; min-width:38px; min-height:28px; border-radius:999px; background:#fff; border:1px solid #f3d982; color:#8a6a12; font-size:.82rem; }
-    .ad-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-top:14px; }
-    .ad-slot, .category-card { border:1px solid var(--line); border-radius:14px; background:#fff; padding:18px; }
-    .ad-slot { min-height:190px; display:flex; flex-direction:column; gap:10px; justify-content:center; }
-    .ad-slot p, .category-card p, .note { color:var(--sub); font-size:.92rem; }
-    .placeholder { border:2px dashed #d8c1ae; border-radius:12px; min-height:84px; display:grid; place-items:center; color:#8a7890; font-size:.9rem; font-weight:900; text-align:center; padding:12px; background:#fffaf3; }
+    .article-list { display:grid; gap:12px; margin-top:14px; }
+    .article-item, .category-card { border:1px solid var(--line); border-radius:14px; background:#fff; padding:18px; }
+    .article-item p, .category-card p, .note { color:var(--sub); font-size:.92rem; }
     .category-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:14px; }
     .tag { display:inline-flex; align-items:center; align-self:flex-start; border-radius:999px; padding:4px 10px; background:#eaf8f3; color:#0f7f68; border:1px solid #c8efe3; font-size:.78rem; font-weight:900; margin-bottom:10px; }
     .guide-list { display:grid; gap:8px; color:var(--sub); font-size:.92rem; font-weight:750; padding-left:18px; }
@@ -44,7 +42,7 @@
   <script defer src="/assets/share-buttons.js"></script>
 </head>
 <body>
-  <div class="site-banner"><img src="/assets/images/aineko-banner.png" alt="今日もあいネコ"></div>
+  <div class="site-banner"><img src="/assets/images/banner-tools.png" alt="とある制御屋の備忘録"></div>
   <main>
     <a class="crumb" href="/">← ホームへ戻る</a>
     <div class="pr-notice" role="note" aria-label="広告表記">
@@ -53,25 +51,22 @@
     </div>
     <section class="hero">
       <h1>おすすめツール紹介</h1>
-      <p class="lead">このページでは、AI活用、作業効率化、ホームページ制作、出張、開発環境などに役立つサービスや商品を紹介します。まずは広告掲載テスト用のページとして整備し、今後、実際に使ってよかったものや気になっているサービスを順次追加していきます。</p>
+      <p class="lead">このページでは、AI活用、作業効率化、ホームページ制作、出張、開発環境などに役立つサービスや商品を紹介します。今後、実際に使ってよかった作業効率化ツールやサービスを紹介していきます。広告を掲載する場合は、PR表記を行います。</p>
+    </section>
+    <section class="section">
+      <h2>紹介方針</h2>
+      <p class="note">このページでは、実際に試したもの、または導入を検討しているサービスについて、メリットだけでなく注意点も含めて紹介します。</p>
     </section>
     <section class="section">
       <h2>おすすめサービス・ツール</h2>
-      <p class="note">広告タグを貼る場合は、広告主の条件とA8.netの掲載ルールを確認してから追加します。</p>
-      <div class="ad-grid">
-        <article class="ad-slot">
-          <h3>広告テスト枠：バナー</h3>
-          <div class="placeholder">
-            <!-- A8.net バナー広告タグ貼り付け位置 -->
-            A8.net バナー広告タグ貼り付け位置
-          </div>
+      <div class="article-list">
+        <article class="article-item">
+          <h3>AI作業を助けるサービス</h3>
+          <p>文章作成、情報整理、画像作成など、日常作業の時短につながるAIサービスを中心に整理していきます。</p>
         </article>
-        <article class="ad-slot">
-          <h3>広告テスト枠：テキストリンク</h3>
-          <div class="placeholder">
-            <!-- A8.net テキストリンク広告タグ貼り付け位置 -->
-            A8.net テキストリンク広告タグ貼り付け位置
-          </div>
+        <article class="article-item">
+          <h3>作業効率化ツール</h3>
+          <p>メモ、タスク管理、資料作成、ファイル整理など、仕事や個人作業で使いやすいツールを紹介していきます。</p>
         </article>
       </div>
     </section>
@@ -89,13 +84,13 @@
     <section class="section">
       <h2>A8.net登録時に使うサイト情報</h2>
       <ul class="guide-list">
-        <li>サイト名：今日もあいネコ</li>
+        <li>サイト名：とある制御屋の備忘録</li>
         <li>サイトURL：https://toaruseigyoya.github.io/</li>
         <li>サイト説明：AI活用、作業効率化、ホームページ制作、便利ツール、出張・仕事に役立つ情報などを発信する個人サイトです。</li>
         <li>カテゴリ候補：IT・Web、暮らし、仕事効率化、ブログ、個人メディア、ガジェット、学び・スキル</li>
       </ul>
     </section>
   </main>
-  <footer>© 2026 今日もあいネコ</footer>
+  <footer>© 2026 とある制御屋の備忘録</footer>
 </body>
 </html>
